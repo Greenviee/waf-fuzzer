@@ -1,10 +1,14 @@
 import html
 from core.models import Payload
 from modules.base_module import BaseModule
+from modules.xss.payloads import get_xss_payloads
 
 class XSSModule(BaseModule):
     def __init__(self):
         super().__init__("Cross-Site Scripting")
+
+    def get_payloads(self) -> list[Payload]:
+        return get_xss_payloads()
 
     def detect_xss(self, res, payload: Payload) -> bool:
         res_text = res.text
