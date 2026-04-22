@@ -32,7 +32,7 @@ def _parse_cookies(raw: str) -> dict[str, str]:
 
 
 async def main() -> None:
-    parser = argparse.ArgumentParser(description="WAF Fuzzer — integrated web vulnerability scanner CLI")
+    parser = argparse.ArgumentParser(description="WAF Fuzzer - integrated web vulnerability scanner CLI")
     parser.add_argument("-u", "--url", required=True, help="Target URL (e.g. http://example.com/vuln/?id=1)")
     parser.add_argument("-r", "--rps", type=int, default=5, help="Target requests per second throttle (default: 5)")
     parser.add_argument(
@@ -50,6 +50,31 @@ async def main() -> None:
         default="all",
         choices=["sqli", "xss", "csrf", "all"],
         help="Attack category to run (default: all)",
+    )
+    parser.add_argument(
+        "--evasion-case",
+        action="store_true",
+        help="Enable case alternation bypass variants",
+    )
+    parser.add_argument(
+        "--evasion-null-byte",
+        action="store_true",
+        help="Enable null-byte bypass variants",
+    )
+    parser.add_argument(
+        "--evasion-keyword-split",
+        action="store_true",
+        help="Enable SQL keyword split bypass variants",
+    )
+    parser.add_argument(
+        "--evasion-double-url",
+        action="store_true",
+        help="Enable double URL encoding variants",
+    )
+    parser.add_argument(
+        "--evasion-unicode",
+        action="store_true",
+        help="Enable unicode escape variants",
     )
 
     args = parser.parse_args()
@@ -70,7 +95,14 @@ async def main() -> None:
         cookies=cookies,
     )
 
-    selected_modules = get_attack_modules(attack_type=args.type)
+    selected_modules = get_attack_modules(
+        attack_type=args.type,
+        enable_case_bypass=args.evasion_case,
+        enable_null_byte_bypass=args.evasion_null_byte,
+        enable_keyword_split_bypass=args.evasion_keyword_split,
+        enable_double_url_encoding=args.evasion_double_url,
+        enable_unicode_escape=args.evasion_unicode,
+    )
     if not selected_modules:
         print(f"No modules registered for attack type {args.type!r}. Exiting.")
         return
@@ -85,6 +117,14 @@ async def main() -> None:
     print(f"Attack type:    {args.type}")
     print(f"Module count:   {len(selected_modules)}")
     print(f"Payload count:  {payload_count}")
+    print(
+        "Evasions:       space,url"
+        + (",case" if args.evasion_case else "")
+        + (",null-byte" if args.evasion_null_byte else "")
+        + (",keyword-split" if args.evasion_keyword_split else "")
+        + (",double-url" if args.evasion_double_url else "")
+        + (",unicode" if args.evasion_unicode else "")
+    )
     print(f"Throttle (rps): {args.rps} (delay {delay:.3f}s)")
     print("=" * 60 + "\n")
 
