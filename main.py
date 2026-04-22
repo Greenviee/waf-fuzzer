@@ -17,7 +17,7 @@ from core import AttackSurface, HttpMethod, ParamLocation
 from fuzzer import FuzzerEngine
 from reporter import ReportGenerator
 
-from test_dependencies import get_payloads, is_vulnerable, verbose_request_sender
+from test_dependencies import count_module_payloads, get_attack_modules, verbose_request_sender
 
 
 def _parse_cookies(raw: str) -> dict[str, str]:
@@ -70,11 +70,11 @@ async def main() -> None:
         cookies=cookies,
     )
 
-    # Load payloads via test module (per --type, resolves to the right provider function).
-    payloads = get_payloads(attack_type=args.type)
-    if not payloads:
-        print(f"No payloads registered for attack type {args.type!r}. Exiting.")
+    selected_modules = get_attack_modules(attack_type=args.type)
+    if not selected_modules:
+        print(f"No modules registered for attack type {args.type!r}. Exiting.")
         return
+    payload_count = count_module_payloads(selected_modules)
 
     delay = (1.0 / args.rps) if args.rps > 0 else 0.0
     concurrency = max(1, args.rps)
@@ -83,21 +83,22 @@ async def main() -> None:
     print(f"Target URL:     {base_url}")
     print(f"Parameters:     {list(query_params.keys())}")
     print(f"Attack type:    {args.type}")
-    print(f"Payload count:  {len(payloads)}")
+    print(f"Module count:   {len(selected_modules)}")
+    print(f"Payload count:  {payload_count}")
     print(f"Throttle (rps): {args.rps} (delay {delay:.3f}s)")
     print("=" * 60 + "\n")
 
     engine = FuzzerEngine(
         max_concurrent_requests=concurrency,
-        worker_count=concurrency,
+        worker_count=concurrency,  # kept for legacy mode compatibility
+        modules=selected_modules,
+        concurrency_per_module=concurrency,
         delay=delay,
     )
 
-    stats = await engine.run(
+    stats = await engine.run_with_attack_modules(
         surfaces=[surface],
-        payloads=payloads,
         request_sender=verbose_request_sender,
-        is_vulnerable=is_vulnerable,
     )
 
     reporter = ReportGenerator(stats=stats, findings=engine.findings)
