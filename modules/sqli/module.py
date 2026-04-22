@@ -3,11 +3,25 @@ import json
 from modules.base_module import BaseModule
 from modules.sqli.payloads import get_sqli_payloads
 from modules.sqli.analyzer import detect_sqli # 분리한 분석 함수 임포트
+from utils.mutator import PayloadMutator
 
 class SQLiModule(BaseModule):
-    def __init__(self):
+    def __init__(
+        self,
+        *,
+        enable_case_bypass: bool = False,
+        enable_null_byte_bypass: bool = False,
+        enable_keyword_split_bypass: bool = False,
+        enable_double_url_encoding: bool = False,
+        enable_unicode_escape: bool = False,
+    ):
         super().__init__("SQL Injection")
         self.error_signatures = self._load_error_signatures()
+        self.enable_case_bypass = enable_case_bypass
+        self.enable_null_byte_bypass = enable_null_byte_bypass
+        self.enable_keyword_split_bypass = enable_keyword_split_bypass
+        self.enable_double_url_encoding = enable_double_url_encoding
+        self.enable_unicode_escape = enable_unicode_escape
 
     def _load_error_signatures(self):
         file_path = os.path.join("config", "payloads", "sql_errors.json")
@@ -20,7 +34,17 @@ class SQLiModule(BaseModule):
         return []
 
     def get_payloads(self):
-        return get_sqli_payloads()
+        base_payloads = get_sqli_payloads()
+        return PayloadMutator.expand_payloads(
+            base_payloads,
+            include_space_bypass=True,
+            include_url_encoding=True,
+            include_double_url_encoding=self.enable_double_url_encoding,
+            include_unicode_escape=self.enable_unicode_escape,
+            include_case_bypass=self.enable_case_bypass,
+            include_null_byte_bypass=self.enable_null_byte_bypass,
+            include_keyword_split_bypass=self.enable_keyword_split_bypass,
+        )
 
     def analyze(self, response, payload, elapsed_time, original_res=None) -> bool:
         """
