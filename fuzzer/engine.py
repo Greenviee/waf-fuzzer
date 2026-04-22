@@ -6,6 +6,7 @@ from inspect import isawaitable
 from typing import Any, Awaitable, Callable, Iterable, Protocol
 
 import aiohttp
+from fuzzer.request_builder import send_baseline_request
 
 try:
     from core.models import AttackSurface  # type: ignore
@@ -24,15 +25,16 @@ except (ImportError, AttributeError):
 class AttackJob:
     surface: AttackSurface
     parameter: str
-    payload: str
+    payload: Any
 
 
 @dataclass(slots=True)
 class Finding:
     surface: AttackSurface
     parameter: str
-    payload: str
+    payload: Any
     response: Any
+    module_name: str | None = None
 
 
 @dataclass(slots=True)
@@ -49,12 +51,26 @@ class AsyncRequestSender(Protocol):
         session: aiohttp.ClientSession,
         surface: AttackSurface,
         parameter: str,
-        payload: str,
+        payload: Any,
     ) -> Any: ...
 
 
 VulnerabilityChecker = Callable[[Any], bool | Awaitable[bool]]
 ResultCallback = Callable[[Finding], None | Awaitable[None]]
+
+
+class AttackModule(Protocol):
+    name: str
+
+    def get_payloads(self) -> list[Any]: ...
+
+    def analyze(
+        self,
+        response: Any,
+        payload: Any,
+        elapsed_time: float,
+        original_res: Any | None = None,
+    ) -> bool | Awaitable[bool]: ...
 
 
 class FuzzerEngine:
@@ -63,6 +79,8 @@ class FuzzerEngine:
         *,
         max_concurrent_requests: int = 20,
         worker_count: int = 10,
+        modules: Iterable[AttackModule] | None = None,
+        concurrency_per_module: int | None = None,
         delay: float = 0.0,
         request_timeout: float = 15.0,
         queue_maxsize: int = 0,
@@ -71,16 +89,24 @@ class FuzzerEngine:
             raise ValueError("max_concurrent_requests must be >= 1")
         if worker_count < 1:
             raise ValueError("worker_count must be >= 1")
+        if concurrency_per_module is not None and concurrency_per_module < 1:
+            raise ValueError("concurrency_per_module must be >= 1")
         if delay < 0:
             raise ValueError("delay must be >= 0")
 
         self.max_concurrent_requests = max_concurrent_requests
         self.worker_count = worker_count
+        self.modules = tuple(modules or ())
+        self.concurrency_per_module = concurrency_per_module or worker_count
         self.delay = delay
         self.request_timeout = request_timeout
 
         self._semaphore = asyncio.Semaphore(max_concurrent_requests)
         self._queue: asyncio.Queue[AttackJob | None] = asyncio.Queue(maxsize=queue_maxsize)
+        self._module_queues: dict[str, asyncio.Queue[AttackSurface | None]] = {}
+        self._module_payloads: dict[str, list[Any]] = {}
+        self._module_workers: list[asyncio.Task[None]] = []
+        self._module_runtime_active = False
         self._stats = EngineStats()
         self._stats_lock = asyncio.Lock()
         self._findings: list[Finding] = []
@@ -102,7 +128,7 @@ class FuzzerEngine:
         self,
         *,
         surfaces: Iterable[AttackSurface],
-        payloads: Iterable[str],
+        payloads: Iterable[Any],
         request_sender: AsyncRequestSender,
         is_vulnerable: VulnerabilityChecker,
         on_finding: ResultCallback | None = None,
@@ -141,7 +167,7 @@ class FuzzerEngine:
         self,
         *,
         surfaces: Iterable[AttackSurface],
-        payloads: list[str],
+        payloads: list[Any],
     ) -> None:
         for surface in surfaces:
             for parameter in self._iter_parameters(surface):
@@ -214,6 +240,225 @@ class FuzzerEngine:
             parameter=job.parameter,
             payload=job.payload,
             response=response,
+        )
+        self._findings.append(finding)
+        async with self._stats_lock:
+            self._stats.findings += 1
+
+        if on_finding is not None:
+            callback_result = on_finding(finding)
+            if isawaitable(callback_result):
+                await callback_result
+
+    async def run_with_attack_modules(
+        self,
+        *,
+        surfaces: Iterable[AttackSurface],
+        request_sender: AsyncRequestSender,
+        on_finding: ResultCallback | None = None,
+    ) -> EngineStats:
+        """
+        Module-oriented execution mode.
+        - Creates one queue per attack module.
+        - Dispatches each incoming surface into every module queue.
+        - Loads module payloads once per worker at startup.
+        """
+        if not self.modules:
+            raise ValueError("modules must be configured to run module queue mode")
+
+        timeout = aiohttp.ClientTimeout(total=self.request_timeout)
+        connector = aiohttp.TCPConnector(limit=self.max_concurrent_requests * 2)
+
+        async with aiohttp.ClientSession(timeout=timeout, connector=connector) as session:
+            await self.start_module_mode(
+                session=session,
+                request_sender=request_sender,
+                on_finding=on_finding,
+            )
+
+            for surface in surfaces:
+                await self.submit_surface(surface)
+
+            await self.stop_module_mode()
+
+        return self.stats
+
+    async def start_module_mode(
+        self,
+        *,
+        session: aiohttp.ClientSession,
+        request_sender: AsyncRequestSender,
+        on_finding: ResultCallback | None = None,
+    ) -> None:
+        """
+        Start module workers.
+        Useful when parser/crawler streams surfaces over time.
+        """
+        if self._module_runtime_active:
+            raise RuntimeError("module mode is already running")
+        if not self.modules:
+            raise ValueError("modules must be configured before starting module mode")
+
+        self._module_queues = {
+            module.name: asyncio.Queue()
+            for module in self.modules
+        }
+        self._module_payloads = {
+            module.name: list(module.get_payloads())
+            for module in self.modules
+        }
+        self._module_workers = []
+
+        for module in self.modules:
+            queue = self._module_queues[module.name]
+            payloads = self._module_payloads[module.name]
+            for index in range(self.concurrency_per_module):
+                worker = asyncio.create_task(
+                    self._module_worker(
+                        worker_id=index + 1,
+                        session=session,
+                        module=module,
+                        queue=queue,
+                        payloads=payloads,
+                        request_sender=request_sender,
+                        on_finding=on_finding,
+                    )
+                )
+                self._module_workers.append(worker)
+
+        self._module_runtime_active = True
+
+    async def submit_surface(self, surface: AttackSurface) -> None:
+        """
+        Dispatch one parser-provided surface into every module queue.
+        """
+        if not self._module_runtime_active:
+            raise RuntimeError("module mode is not running")
+
+        param_count = len(tuple(self._iter_parameters(surface)))
+        for module in self.modules:
+            payloads = self._module_payloads.get(module.name, [])
+            queue = self._module_queues[module.name]
+
+            await queue.put(surface)
+            async with self._stats_lock:
+                self._stats.queued += param_count * len(payloads)
+
+    async def stop_module_mode(self) -> None:
+        """
+        Wait until all module queues drain, then stop workers.
+        """
+        if not self._module_runtime_active:
+            return
+
+        for queue in self._module_queues.values():
+            await queue.join()
+
+        for module in self.modules:
+            queue = self._module_queues[module.name]
+            for _ in range(self.concurrency_per_module):
+                await queue.put(None)
+
+        await asyncio.gather(*self._module_workers, return_exceptions=False)
+        self._module_workers.clear()
+        self._module_queues.clear()
+        self._module_payloads.clear()
+        self._module_runtime_active = False
+
+    async def _module_worker(
+        self,
+        *,
+        worker_id: int,
+        session: aiohttp.ClientSession,
+        module: AttackModule,
+        queue: asyncio.Queue[AttackSurface | None],
+        payloads: list[Any],
+        request_sender: AsyncRequestSender,
+        on_finding: ResultCallback | None,
+    ) -> None:
+        while True:
+            surface = await queue.get()
+            if surface is None:
+                queue.task_done()
+                return
+
+            try:
+                params = tuple(self._iter_parameters(surface))
+                if not params or not payloads:
+                    continue
+
+                baseline_response = await send_baseline_request(session, surface)
+
+                for parameter in params:
+                    for payload in payloads:
+                        await self._process_module_attack(
+                            worker_id=worker_id,
+                            module=module,
+                            session=session,
+                            surface=surface,
+                            parameter=parameter,
+                            payload=payload,
+                            baseline_response=baseline_response,
+                            request_sender=request_sender,
+                            on_finding=on_finding,
+                        )
+            finally:
+                queue.task_done()
+
+    async def _process_module_attack(
+        self,
+        *,
+        worker_id: int,
+        module: AttackModule,
+        session: aiohttp.ClientSession,
+        surface: AttackSurface,
+        parameter: str,
+        payload: Any,
+        baseline_response: Any,
+        request_sender: AsyncRequestSender,
+        on_finding: ResultCallback | None,
+    ) -> None:
+        response: Any
+        try:
+            async with self._semaphore:
+                response = await request_sender(
+                    session=session,
+                    surface=surface,
+                    parameter=parameter,
+                    payload=payload,
+                )
+                if self.delay > 0:
+                    await asyncio.sleep(self.delay)
+        except Exception as exc:
+            async with self._stats_lock:
+                self._stats.failures += 1
+                self._stats.completed += 1
+            print(f"[worker:{worker_id}][{module.name}] request failed: {exc}")
+            return
+
+        elapsed_time = float(
+            getattr(response, "elapsed_time", getattr(response, "elapsed", 0.0))
+        )
+        verdict = module.analyze(
+            response=response,
+            payload=payload,
+            elapsed_time=elapsed_time,
+            original_res=baseline_response,
+        )
+        is_hit = await verdict if isawaitable(verdict) else verdict
+
+        async with self._stats_lock:
+            self._stats.completed += 1
+
+        if not is_hit:
+            return
+
+        finding = Finding(
+            surface=surface,
+            parameter=parameter,
+            payload=payload,
+            response=response,
+            module_name=module.name,
         )
         self._findings.append(finding)
         async with self._stats_lock:
