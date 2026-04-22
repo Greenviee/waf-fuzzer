@@ -11,28 +11,21 @@ class SQLiModule(BaseModule):
 
     def detect_sqli(self, res, payload: Payload, elapsed_time: float, original_res=None) -> bool:
         """
-        보완된 SQLi 탐지 로직 (에러 시그니처 + 시간 + 불리언)
+        Payload 객체의 attack_type에 따라 다른 분석 기법 적용
         """
-        res_text = res.text.lower()
-
-        # 1. 시그니처 기반 (Error-based)
-        error_signatures = [
-            "sql syntax", "mysql_fetch", "native client", 
-            "ora-01756", "sqlite3.operationalerror", "unclosed quotation mark"
-        ]
-        if any(sig in res_text for sig in error_signatures):
+        # 1. 에러 메시지 기반 (공통 적용)
+        error_signatures = ["sql syntax", "mysql_fetch", "native client", "ora-01756"]
+        if any(sig in res.text.lower() for sig in error_signatures):
             return True
 
-        # 2. 시간 기반 (Time-based Blind)
-        if "SQLi-Time" in payload.attack_type and elapsed_time >= 4.5:
-            return True
+        # 2. 시간 지연 기반 (타입이 SQLi-Time일 때만 체크)
+        if "SQLi-Time" in payload.attack_type:
+            if elapsed_time >= 4.5:
+                return True
 
-        # 3. 논리 비교 기반 (Boolean-based Blind)
-        if original_res and "SQLi-Boolean-False" in payload.attack_type:
-            original_len = len(original_res.text)
-            current_len = len(res.text)
-            # 거짓 응답의 길이가 원본과 10% 이상 차이가 나면 의심
-            if original_len > 0 and abs(original_len - current_len) / original_len > 0.1:
+        # 3. 논리 비교 기반 (타입이 SQLi-Boolean-False일 때만 체크)
+        if "SQLi-Boolean-False" in payload.attack_type and original_res:
+            if len(res.text) < len(original_res.text) * 0.9:
                 return True
 
         return False
