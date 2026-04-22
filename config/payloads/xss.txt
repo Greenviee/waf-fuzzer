@@ -1,0 +1,3 @@
+<script>alert(1)</script>||XSS-Reflected||Medium
+<img src=x onerror=alert(1)>||XSS-Event||High
+"><svg/onload=alert(1)>||XSS-Tag||High
