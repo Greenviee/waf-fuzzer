@@ -11,11 +11,11 @@ import argparse
 import asyncio
 import sys
 import warnings
-from urllib.parse import parse_qsl, urlparse
 
-from core import AttackSurface, HttpMethod, ParamLocation
+from core import AttackSurface
 from fuzzer import FuzzerEngine
 from fuzzer.request_builder import build_and_send_request
+from mock_parser import get_dvwa_mock_surfaces
 from modules.sqli.module import SQLiModule
 from modules.xss.analyzer import XSSModule
 from reporter import ReportGenerator
@@ -39,6 +39,8 @@ def _select_modules(args) -> list:
         enable_keyword_split_bypass=args.evasion_keyword_split,
         enable_double_url_encoding=args.evasion_double_url,
         enable_unicode_escape=args.evasion_unicode,
+        include_time_based=args.include_time_based,
+        max_time_payloads=args.max_time_payloads,
     )
     xss_module = XSSModule()
 
@@ -94,8 +96,8 @@ async def _progress_printer(engine: FuzzerEngine, total_requests: int, scan_task
 
 async def main() -> None:
     parser = argparse.ArgumentParser(description="WAF Fuzzer - integrated web vulnerability scanner CLI")
-    parser.add_argument("-u", "--url", required=True, help="Target URL (e.g. http://example.com/vuln/?id=1)")
-    parser.add_argument("-r", "--rps", type=int, default=5, help="Target requests per second throttle (default: 5)")
+    parser.add_argument("-u", "--url", required=True, help="DVWA base URL (e.g. http://127.0.0.1/DVWA)")
+    parser.add_argument("-r", "--rps", type=int, default=100, help="Target requests per second throttle (default: 100)")
     parser.add_argument(
         "-c",
         "--cookie",
@@ -137,24 +139,26 @@ async def main() -> None:
         action="store_true",
         help="Enable unicode escape variants",
     )
+    parser.add_argument(
+        "--include-time-based",
+        action="store_true",
+        help="Include SQLi time/stacked payloads (much slower)",
+    )
+    parser.add_argument(
+        "--max-time-payloads",
+        type=int,
+        default=0,
+        help="Limit number of time/stacked payloads when enabled (0=all)",
+    )
 
     args = parser.parse_args()
 
-    parsed = urlparse(args.url)
-    base_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
-    query_params = dict(parse_qsl(parsed.query))
-    if not query_params:
-        query_params = {"id": "1"}
-
     cookies = _parse_cookies(args.cookie) if args.cookie else {}
-
-    surface = AttackSurface(
-        url=base_url,
-        method=HttpMethod.GET,
-        param_location=ParamLocation.QUERY,
-        parameters=query_params,
-        cookies=cookies,
-    )
+    base_url = args.url.rstrip("/")
+    surfaces = get_dvwa_mock_surfaces(base_url=base_url, cookies=cookies)
+    if not surfaces:
+        print("Mock parser returned no attack surfaces. Exiting.")
+        return
 
     selected_modules = _select_modules(args)
     if not selected_modules:
@@ -167,32 +171,31 @@ async def main() -> None:
 
     delay = (1.0 / args.rps) if args.rps > 0 else 0.0
     concurrency = max(1, args.rps)
-    surfaces = [surface]
+    queue_workers = max(1, args.rps * 2)
     total_requests = _estimate_total_requests(surfaces, selected_modules)
 
     print("=" * 60)
     print(f"Target URL:     {base_url}")
-    print(f"Parameters:     {list(query_params.keys())}")
+    print(f"Surface count:  {len(surfaces)}")
     print(f"Attack type:    {args.type}")
     print(f"Module count:   {len(selected_modules)}")
     print(f"Payload count:  {payload_count}")
-    print(f"Total requests: {total_requests}")
     print(
-        "Evasions:       space,url"
-        + (",case" if args.evasion_case else "")
-        + (",null-byte" if args.evasion_null_byte else "")
-        + (",keyword-split" if args.evasion_keyword_split else "")
-        + (",double-url" if args.evasion_double_url else "")
-        + (",unicode" if args.evasion_unicode else "")
+        "SQLi timing:    "
+        + ("included" if args.include_time_based else "excluded (fast mode)")
+        + (f", max={args.max_time_payloads}" if args.include_time_based else "")
     )
+    print(f"Total requests: {total_requests}")
+    print("Evasions:       off (mutator disabled)")
     print(f"Throttle (rps): {args.rps} (delay {delay:.3f}s)")
+    print(f"Queue workers:  {queue_workers}")
     print("=" * 60 + "\n")
 
     engine = FuzzerEngine(
         max_concurrent_requests=concurrency,
-        worker_count=concurrency,  # kept for legacy mode compatibility
+        worker_count=queue_workers,  # queue consumption workers
         modules=selected_modules,
-        concurrency_per_module=concurrency,
+        concurrency_per_module=queue_workers,
         delay=delay,
     )
 

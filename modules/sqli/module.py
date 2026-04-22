@@ -3,7 +3,6 @@ import json
 from modules.base_module import BaseModule
 from modules.sqli.payloads import get_sqli_payloads
 from modules.sqli.analyzer import detect_sqli # 분리한 분석 함수 임포트
-from utils.mutator import PayloadMutator
 
 class SQLiModule(BaseModule):
     def __init__(
@@ -14,6 +13,8 @@ class SQLiModule(BaseModule):
         enable_keyword_split_bypass: bool = False,
         enable_double_url_encoding: bool = False,
         enable_unicode_escape: bool = False,
+        include_time_based: bool = False,
+        max_time_payloads: int = 0,
     ):
         super().__init__("SQL Injection")
         self.error_signatures = self._load_error_signatures()
@@ -22,6 +23,8 @@ class SQLiModule(BaseModule):
         self.enable_keyword_split_bypass = enable_keyword_split_bypass
         self.enable_double_url_encoding = enable_double_url_encoding
         self.enable_unicode_escape = enable_unicode_escape
+        self.include_time_based = include_time_based
+        self.max_time_payloads = max_time_payloads
 
     def _load_error_signatures(self):
         file_path = os.path.join("config", "payloads", "sql_errors.json")
@@ -35,16 +38,34 @@ class SQLiModule(BaseModule):
 
     def get_payloads(self):
         base_payloads = get_sqli_payloads()
-        return PayloadMutator.expand_payloads(
-            base_payloads,
-            include_space_bypass=True,
-            include_url_encoding=True,
-            include_double_url_encoding=self.enable_double_url_encoding,
-            include_unicode_escape=self.enable_unicode_escape,
-            include_case_bypass=self.enable_case_bypass,
-            include_null_byte_bypass=self.enable_null_byte_bypass,
-            include_keyword_split_bypass=self.enable_keyword_split_bypass,
-        )
+        filtered_payloads = self._filter_slow_payloads(base_payloads)
+        # Mutator is intentionally disabled for fast DVWA-low test cycles.
+        return filtered_payloads
+
+    def _filter_slow_payloads(self, payloads):
+        """
+        Reduce scan time by excluding or limiting time/stacked payloads.
+        """
+        if self.include_time_based:
+            if self.max_time_payloads <= 0:
+                return payloads
+
+            time_payloads = []
+            fast_payloads = []
+            for payload in payloads:
+                attack_type = str(getattr(payload, "attack_type", "")).lower()
+                if "time" in attack_type or "stacked" in attack_type:
+                    time_payloads.append(payload)
+                else:
+                    fast_payloads.append(payload)
+            return fast_payloads + time_payloads[: self.max_time_payloads]
+
+        return [
+            payload
+            for payload in payloads
+            if "time" not in str(getattr(payload, "attack_type", "")).lower()
+            and "stacked" not in str(getattr(payload, "attack_type", "")).lower()
+        ]
 
     def analyze(self, response, payload, elapsed_time, original_res=None) -> bool:
         """

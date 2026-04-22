@@ -111,6 +111,13 @@ class FuzzerEngine:
         self._stats_lock = asyncio.Lock()
         self._findings: list[Finding] = []
 
+    @staticmethod
+    def _chunked(items: list[Any], size: int) -> Iterable[list[Any]]:
+        if size <= 0:
+            size = 1
+        for index in range(0, len(items), size):
+            yield items[index : index + size]
+
     @property
     def stats(self) -> EngineStats:
         return EngineStats(
@@ -388,20 +395,30 @@ class FuzzerEngine:
                     continue
 
                 baseline_response = await send_baseline_request(session, surface)
-
-                for parameter in params:
-                    for payload in payloads:
-                        await self._process_module_attack(
-                            worker_id=worker_id,
-                            module=module,
-                            session=session,
-                            surface=surface,
-                            parameter=parameter,
-                            payload=payload,
-                            baseline_response=baseline_response,
-                            request_sender=request_sender,
-                            on_finding=on_finding,
+                attack_units = [
+                    (parameter, payload)
+                    for parameter in params
+                    for payload in payloads
+                ]
+                batch_size = max(1, self.max_concurrent_requests)
+                for batch in self._chunked(attack_units, batch_size):
+                    tasks = [
+                        asyncio.create_task(
+                            self._process_module_attack(
+                                worker_id=worker_id,
+                                module=module,
+                                session=session,
+                                surface=surface,
+                                parameter=parameter,
+                                payload=payload,
+                                baseline_response=baseline_response,
+                                request_sender=request_sender,
+                                on_finding=on_finding,
+                            )
                         )
+                        for parameter, payload in batch
+                    ]
+                    await asyncio.gather(*tasks, return_exceptions=False)
             finally:
                 queue.task_done()
 
@@ -427,14 +444,16 @@ class FuzzerEngine:
                     parameter=parameter,
                     payload=payload,
                 )
-                if self.delay > 0:
-                    await asyncio.sleep(self.delay)
         except Exception as exc:
             async with self._stats_lock:
                 self._stats.failures += 1
                 self._stats.completed += 1
             print(f"[worker:{worker_id}][{module.name}] request failed: {exc}")
             return
+
+        if self.delay > 0:
+            # Sleep outside semaphore so slots are not blocked by throttle waits.
+            await asyncio.sleep(self.delay)
 
         elapsed_time = float(
             getattr(response, "elapsed_time", getattr(response, "elapsed", 0.0))
