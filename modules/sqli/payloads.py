@@ -1,13 +1,22 @@
 import os
-import random
 from core.models import Payload
+
+
+def _resolve_payload_file() -> str | None:
+    candidates = [
+        os.path.join("config", "payloads", "sqli_final.txt"),
+        os.path.join("config", "payloads", "sqli.txt"),
+    ]
+    for candidate in candidates:
+        if os.path.exists(candidate):
+            return candidate
+    return None
+
 
 def get_sqli_payloads() -> list[Payload]:
     payloads = []
-    # 전처리 스크립트로 생성한 최종 파일 경로
-    file_path = os.path.join("config", "payloads", "sqli_final.txt")
-    
-    if not os.path.exists(file_path):
+    file_path = _resolve_payload_file()
+    if not file_path:
         return []
 
     with open(file_path, "r", encoding="utf-8") as f:
