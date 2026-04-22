@@ -99,7 +99,7 @@ class ReportGenerator:
 
             response = finding.response
             status_code = getattr(response, "status", 0)
-            response_time = getattr(response, "elapsed", 0.0)
+            response_time = getattr(response, "elapsed_time", getattr(response, "elapsed", 0.0))
             error_log = getattr(response, "error", None)
 
             method = getattr(finding.surface.method, "name", str(finding.surface.method))
