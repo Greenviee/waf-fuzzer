@@ -8,7 +8,6 @@ def get_sqli_payloads() -> list[Payload]:
     file_path = os.path.join("config", "payloads", "sqli_final.txt")
     
     if not os.path.exists(file_path):
-        print(f"[-] 파일을 찾을 수 없습니다: {file_path}")
         return []
 
     with open(file_path, "r", encoding="utf-8") as f:
