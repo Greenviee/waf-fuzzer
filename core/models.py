@@ -321,6 +321,14 @@ class CrawlStats:
             'status_codes': self.status_codes,
         }
 
+
+class PageData:
+    """크롤러가 수집한 페이지 (파서에게 전달)"""
+
+    def __init__(self, url, html, depth=0):
+        self.url = url
+        self.html = html
+        self.depth = depth
 # ============================================================
 # 팀 A → 팀 B 콜백 타입 (참고용 주석)
 # ============================================================

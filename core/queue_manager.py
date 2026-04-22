@@ -187,7 +187,7 @@ class QueueManager:
         try:
             crawl_empty = len(self._crawl_results) == 0
             surface_empty = len(self._attack_surfaces) == 0
-            result = crawl_empty 및 surface_empty
+            result = crawl_empty and surface_empty
             return result
         finally:
             self._lock.release()
