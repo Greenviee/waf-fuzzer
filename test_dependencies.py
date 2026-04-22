@@ -1,15 +1,19 @@
 """
-Temporary test hooks for payloads, vulnerability checks, and logging.
+Temporary test hooks for module queue mode.
 
-Replace imports in main.py with the real payload/verification module when ready.
+Replace imports in main.py with the real team modules when ready.
 """
 
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
 
 from core import Payload
 from fuzzer import FuzzerResponse, build_and_send_request
+from modules.sqli.analyzer import SQLiModule
+from modules.xss.analyzer import XSSModule
 
 
 def _payloads_sqli() -> list[Payload]:
@@ -83,6 +87,53 @@ def is_vulnerable(response: FuzzerResponse) -> bool:
         return True
 
     return False
+
+
+@dataclass(slots=True)
+class CsrfModule:
+    """
+    Temporary CSRF module for module-queue integration tests.
+    """
+
+    name: str = "CSRF"
+
+    def get_payloads(self) -> list[Payload]:
+        return _payloads_csrf()
+
+    def analyze(
+        self,
+        response: FuzzerResponse,
+        payload: Payload,
+        elapsed_time: float,
+        original_res: FuzzerResponse | None = None,
+    ) -> bool:
+        del payload, elapsed_time, original_res
+        text = (response.text or "").lower()
+        return "password changed" in text or "csrf" in text
+
+
+def get_attack_modules(attack_type: str) -> list[Any]:
+    """
+    Return module instances used by FuzzerEngine.run_with_attack_modules().
+    """
+    module_factories: dict[str, Callable[[], Any]] = {
+        "sqli": SQLiModule,
+        "xss": XSSModule,
+        "csrf": CsrfModule,
+    }
+
+    if attack_type == "all":
+        return [factory() for factory in module_factories.values()]
+
+    factory = module_factories.get(attack_type)
+    return [factory()] if factory else []
+
+
+def count_module_payloads(modules: list[Any]) -> int:
+    """
+    Sum payload sizes across selected modules for CLI display.
+    """
+    return sum(len(module.get_payloads()) for module in modules)
 
 
 async def verbose_request_sender(session, surface, parameter, payload):
