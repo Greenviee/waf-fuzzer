@@ -1,34 +1,40 @@
-from core.models import Payload
-from modules.base_module import BaseModule
-from modules.sqli.payloads import get_sqli_payloads
+def analyze(self, response, payload, elapsed_time, original_res=None):
+    """
+    발견된 모든 취약점 징후를 수집하여 반환합니다.
+    """
+    evidences = []  # 발견된 증거들을 담을 리스트
+    res_text = response.text
+    res_text_lower = res_text.lower()
 
-class SQLiModule(BaseModule):
-    def __init__(self):
-        super().__init__("SQL Injection")
+    # 1. 시간 기반 탐지 (Time-based / Stacked)
+    if payload.attack_type in ["SQLi-Time", "SQLi-Stacked"]:
+        if elapsed_time >= 4.5:
+            evidences.append(f"[Time] Response delayed: {elapsed_time:.2f}s")
 
-    def get_payloads(self) -> list[Payload]:
-        return get_sqli_payloads()
+    # 2. 에러 기반 탐지 (Error-based)
+    # 특정 타입이 아니더라도 모든 응답에서 에러가 발생하는지 상시 체크 (더 안전함)
+    for sig in self.error_signatures:
+        if sig in res_text_lower:
+            evidences.append(f"[Error] SQL signature found: {sig}")
+            break # 에러 시그니처는 하나만 발견해도 충분하므로 한 루프 내에서 break
 
-    def detect_sqli(self, res, payload: Payload, elapsed_time: float, original_res=None) -> bool:
-        """
-        Payload 객체의 attack_type에 따라 다른 분석 기법 적용
-        """
-        # 1. 에러 메시지 기반 (공통 적용)
-        error_signatures = ["sql syntax", "mysql_fetch", "native client", "ora-01756"]
-        if any(sig in res.text.lower() for sig in error_signatures):
-            return True
+    # 3. 유니온 및 인라인 기반 탐지 (String Reflection)
+    if payload.attack_type in ["SQLi-Union", "SQLi-Inline"]:
+        target_str = "vun" # 추출 시 설정한 RANDSTR 값
+        if target_str in res_text:
+            evidences.append(f"[Reflection] Injected value '{target_str}' found in response")
 
-        # 2. 시간 지연 기반 (타입이 SQLi-Time일 때만 체크)
-        if "SQLi-Time" in payload.attack_type:
-            if elapsed_time >= 4.5:
-                return True
+    # 4. 불리언 기반 탐지 (Boolean-based)
+    if payload.attack_type == "SQLi-Boolean" and original_res:
+        original_len = len(original_res.text)
+        current_len = len(res_text)
+        
+        if original_len > 0:
+            diff_ratio = abs(original_len - current_len) / original_len
+            if diff_ratio > 0.1:
+                evidences.append(f"[Boolean] Length changed: {original_len} -> {current_len} ({diff_ratio:.1%})")
 
-        # 3. 논리 비교 기반 (타입이 SQLi-Boolean-False일 때만 체크)
-        if "SQLi-Boolean-False" in payload.attack_type and original_res:
-            if len(res.text) < len(original_res.text) * 0.9:
-                return True
-
-        return False
-
-    def analyze(self, response, payload: Payload, elapsed_time: float, original_res=None) -> bool:
-        return self.detect_sqli(response, payload, elapsed_time, original_res)
+    # 최종 결과 반환
+    # evidences 리스트가 비어있지 않으면 취약한 것으로 간주 (True)
+    is_vulnerable = len(evidences) > 0
+    return is_vulnerable, evidences
