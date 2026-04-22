@@ -26,7 +26,8 @@ def get_sqli_payloads() -> list[Payload]:
                 continue
             
             # 1. 파싱: 값 || 타입 || 위험도
-            parts = line.split("||")
+            # value 내부에 "||"가 있을 수 있으므로 뒤에서 2번만 분리
+            parts = line.rsplit("||", 2)
             if len(parts) == 3:
                 raw_value = parts[0].strip()
                 attack_type = parts[1].strip()
