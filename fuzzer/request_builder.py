@@ -21,9 +21,17 @@ class FuzzerResponse:
     status: int
     text: str
     headers: dict[str, str]
-    elapsed: float
+    elapsed_time: float
     url: str
     error: str | None = None
+
+    @property
+    def elapsed(self) -> float:
+        """
+        Backward-compatible alias.
+        Older code may still access `response.elapsed`.
+        """
+        return self.elapsed_time
 
 
 def _inject_path_payload(url: str, parameter: str, payload: str) -> str:
@@ -51,7 +59,7 @@ async def build_and_send_request(
     """
     Clone attack surface data, inject one payload, and send the HTTP request.
     """
-    method = surface.method.value
+    method = getattr(surface.method, "value", str(surface.method))
     url = surface.url
 
     req_params = copy.deepcopy(surface.parameters) if surface.parameters else {}
@@ -103,7 +111,7 @@ async def build_and_send_request(
                 status=response.status,
                 text=text,
                 headers=dict(response.headers),
-                elapsed=elapsed,
+                elapsed_time=elapsed,
                 url=str(response.url),
             )
     except asyncio.TimeoutError:
@@ -112,7 +120,7 @@ async def build_and_send_request(
             status=0,
             text="",
             headers={},
-            elapsed=elapsed,
+            elapsed_time=elapsed,
             url=url,
             error="TimeoutError",
         )
@@ -122,7 +130,7 @@ async def build_and_send_request(
             status=0,
             text="",
             headers={},
-            elapsed=elapsed,
+            elapsed_time=elapsed,
             url=url,
             error=f"ClientError: {exc}",
         )
@@ -132,7 +140,77 @@ async def build_and_send_request(
             status=0,
             text="",
             headers={},
-            elapsed=elapsed,
+            elapsed_time=elapsed,
+            url=url,
+            error=f"UnknownError: {exc}",
+        )
+
+
+async def send_baseline_request(
+    session: aiohttp.ClientSession,
+    surface: AttackSurface,
+) -> FuzzerResponse:
+    """
+    Send one non-injected baseline request for comparison analyzers.
+    """
+    method = getattr(surface.method, "value", str(surface.method))
+    url = surface.url
+
+    req_params = copy.deepcopy(surface.parameters) if surface.parameters else {}
+    headers = copy.deepcopy(surface.headers) if surface.headers else {}
+    cookies = copy.deepcopy(surface.cookies) if surface.cookies else {}
+
+    if isinstance(req_params, list):
+        req_params = {str(k): "" for k in req_params}
+
+    request_kwargs: dict[str, Any] = {}
+    if req_params:
+        request_kwargs["params"] = req_params
+    if headers:
+        request_kwargs["headers"] = headers
+    if cookies:
+        request_kwargs["cookies"] = cookies
+
+    start_time = time.monotonic()
+
+    try:
+        async with session.request(method, url, **request_kwargs) as response:
+            text = await response.text(errors="replace")
+            elapsed = time.monotonic() - start_time
+            return FuzzerResponse(
+                status=response.status,
+                text=text,
+                headers=dict(response.headers),
+                elapsed_time=elapsed,
+                url=str(response.url),
+            )
+    except asyncio.TimeoutError:
+        elapsed = time.monotonic() - start_time
+        return FuzzerResponse(
+            status=0,
+            text="",
+            headers={},
+            elapsed_time=elapsed,
+            url=url,
+            error="TimeoutError",
+        )
+    except aiohttp.ClientError as exc:
+        elapsed = time.monotonic() - start_time
+        return FuzzerResponse(
+            status=0,
+            text="",
+            headers={},
+            elapsed_time=elapsed,
+            url=url,
+            error=f"ClientError: {exc}",
+        )
+    except Exception as exc:
+        elapsed = time.monotonic() - start_time
+        return FuzzerResponse(
+            status=0,
+            text="",
+            headers={},
+            elapsed_time=elapsed,
             url=url,
             error=f"UnknownError: {exc}",
         )
