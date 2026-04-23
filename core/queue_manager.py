@@ -2,8 +2,6 @@
 """
 큐 관리자
 크롤러 → 파서 → 퍼저 간의 데이터 전달을 관리
-
-담당: Team A 공통
 """
 
 import threading
@@ -54,12 +52,11 @@ class QueueManager:
         """파서가 처리할 결과를 큐에서 가져옴"""
         self._lock.acquire()
         try:
-            if len(self._crawl_results) > 0:
+            if self._crawl_results:
                 result = self._crawl_results.popleft()
                 self._stats['crawl_results_processed'] += 1
                 return result
-            else:
-                return None
+            return None
         finally:
             self._lock.release()
 
@@ -67,8 +64,7 @@ class QueueManager:
         """처리할 CrawlResult가 있는지 확인"""
         self._lock.acquire()
         try:
-            result = len(self._crawl_results) > 0
-            return result
+            return len(self._crawl_results) > 0
         finally:
             self._lock.release()
 
@@ -76,8 +72,7 @@ class QueueManager:
         """대기 중인 CrawlResult 수"""
         self._lock.acquire()
         try:
-            count = len(self._crawl_results)
-            return count
+            return len(self._crawl_results)
         finally:
             self._lock.release()
 
@@ -86,7 +81,15 @@ class QueueManager:
     # ============================================================
 
     def add_attack_surface(self, surface):
-        """파서가 생성한 공격 표면을 큐에 추가"""
+        """
+        파서가 생성한 공격 표면을 큐에 추가
+
+        Args:
+            surface: AttackSurface 인스턴스
+
+        Returns:
+            bool: 추가 성공 여부 (중복이면 False)
+        """
         surface_id = surface.get_id()
 
         self._lock.acquire()
@@ -106,21 +109,19 @@ class QueueManager:
         """퍼저가 처리할 공격 표면을 큐에서 가져옴"""
         self._lock.acquire()
         try:
-            if len(self._attack_surfaces) > 0:
+            if self._attack_surfaces:
                 surface = self._attack_surfaces.popleft()
                 self._stats['surfaces_processed'] += 1
                 return surface
-            else:
-                return None
+            return None
         finally:
             self._lock.release()
 
     def get_attack_surfaces(self, count=10):
         """여러 개의 공격 표면을 한번에 가져옴"""
-        surfaces = []
-
         self._lock.acquire()
         try:
+            surfaces = []
             fetch_count = min(count, len(self._attack_surfaces))
             for _ in range(fetch_count):
                 surface = self._attack_surfaces.popleft()
@@ -134,8 +135,7 @@ class QueueManager:
         """처리할 AttackSurface가 있는지 확인"""
         self._lock.acquire()
         try:
-            result = len(self._attack_surfaces) > 0
-            return result
+            return len(self._attack_surfaces) > 0
         finally:
             self._lock.release()
 
@@ -143,8 +143,7 @@ class QueueManager:
         """대기 중인 AttackSurface 수"""
         self._lock.acquire()
         try:
-            count = len(self._attack_surfaces)
-            return count
+            return len(self._attack_surfaces)
         finally:
             self._lock.release()
 
@@ -185,10 +184,7 @@ class QueueManager:
         """모든 큐가 비었는지 확인"""
         self._lock.acquire()
         try:
-            crawl_empty = len(self._crawl_results) == 0
-            surface_empty = len(self._attack_surfaces) == 0
-            result = crawl_empty and surface_empty
-            return result
+            return not self._crawl_results and not self._attack_surfaces
         finally:
             self._lock.release()
 
@@ -209,12 +205,11 @@ class QueueManager:
         """파서에서 간단하게 페이지 가져오기"""
         self._lock.acquire()
         try:
-            if len(self._crawl_results) > 0:
+            if self._crawl_results:
                 page = self._crawl_results.popleft()
                 self._stats['crawl_results_processed'] += 1
                 return page
-            else:
-                return None
+            return None
         finally:
             self._lock.release()
 
@@ -222,7 +217,6 @@ class QueueManager:
         """처리할 페이지가 있는지"""
         self._lock.acquire()
         try:
-            result = len(self._crawl_results) > 0
-            return result
+            return len(self._crawl_results) > 0
         finally:
             self._lock.release()
