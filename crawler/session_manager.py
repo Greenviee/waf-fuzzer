@@ -5,6 +5,7 @@ import json
 from typing import Optional
 
 import aiohttp
+from bs4 import BeautifulSoup
 
 from utils.logger import get_logger
 
@@ -23,7 +24,9 @@ class AuthConfig:
         password_field: str = "password",
         extra_fields: Optional[dict] = None,
         success_indicator: Optional[str] = None,
-        failure_indicator: Optional[str] = None
+        failure_indicator: Optional[str] = None,
+        csrf_token_name: Optional[str] = "user_token",
+        submit_field: Optional[str] = "Login"
     ):
         """
         인증 설정 초기화
@@ -34,9 +37,11 @@ class AuthConfig:
             password: 비밀번호
             username_field: 사용자명 폼 필드명
             password_field: 비밀번호 폼 필드명
-            extra_fields: 추가 폼 필드 (CSRF 토큰 등)
+            extra_fields: 추가 폼 필드
             success_indicator: 로그인 성공 시 나타나는 문자열
             failure_indicator: 로그인 실패 시 나타나는 문자열
+            csrf_token_name: CSRF 토큰 필드명 (None이면 자동 감지)
+            submit_field: Submit 버튼 필드명
         """
         self.login_url = login_url
         self.username = username
@@ -46,6 +51,8 @@ class AuthConfig:
         self.extra_fields = extra_fields or {}
         self.success_indicator = success_indicator
         self.failure_indicator = failure_indicator
+        self.csrf_token_name = csrf_token_name
+        self.submit_field = submit_field
 
 
 class SessionManager:
@@ -91,9 +98,62 @@ class SessionManager:
             self._authenticated = False
             logger.debug("세션 종료됨")
 
+    @staticmethod
+    def _extract_csrf_token(html: str, token_name: str) -> Optional[str]:
+        """
+        HTML에서 CSRF 토큰 추출
+
+        Args:
+            html: HTML 텍스트
+            token_name: 토큰 필드명
+
+        Returns:
+            str or None: 토큰 값
+        """
+        try:
+            soup = BeautifulSoup(html, 'html.parser')
+
+            # 1. 지정된 이름으로 찾기
+            token_input = soup.find('input', {'name': token_name})
+            if token_input and token_input.get('value'):
+                return token_input.get('value')
+
+            # 2. 일반적인 CSRF 토큰 이름들로 찾기
+            common_names = [
+                'user_token',
+                'csrf_token',
+                '_token',
+                'token',
+                'csrf',
+                '_csrf_token',
+                'authenticity_token',
+                '_csrf',
+            ]
+
+            for name in common_names:
+                token_input = soup.find('input', {'name': name})
+                if token_input and token_input.get('value'):
+                    logger.debug("CSRF 토큰 발견: %s", name)
+                    return token_input.get('value')
+
+            # 3. hidden 필드 중 token이 포함된 것 찾기
+            hidden_inputs = soup.find_all('input', {'type': 'hidden'})
+            for inp in hidden_inputs:
+                name = inp.get('name', '').lower()
+                if 'token' in name or 'csrf' in name:
+                    value = inp.get('value')
+                    if value:
+                        logger.debug("CSRF 토큰 발견 (hidden): %s", inp.get('name'))
+                        return value
+
+        except Exception as e:
+            logger.warning("CSRF 토큰 추출 실패: %s", e)
+
+        return None
+
     async def login(self, auth_config: AuthConfig) -> bool:
         """
-        로그인 수행
+        로그인 수행 (CSRF 토큰 자동 처리)
 
         Args:
             auth_config: AuthConfig 인스턴스
@@ -104,15 +164,55 @@ class SessionManager:
         if self._session is None:
             await self.create_session()
 
-        # 로그인 데이터 구성
+        logger.info("로그인 시도: %s", auth_config.login_url)
+
+        # ============================================================
+        # 1단계: 로그인 페이지에서 CSRF 토큰 추출
+        # ============================================================
+        login_page = await self.get(auth_config.login_url)
+
+        if not login_page:
+            logger.error("로그인 페이지 접근 실패")
+            return False
+
+        html = login_page.get("text", "")
+
+        # CSRF 토큰 추출
+        csrf_token = None
+        if auth_config.csrf_token_name:
+            csrf_token = self._extract_csrf_token(html, auth_config.csrf_token_name)
+            if csrf_token:
+                logger.debug("CSRF 토큰 추출 성공: %s...", csrf_token[:20])
+            else:
+                logger.debug("CSRF 토큰 없음 (필요 없을 수 있음)")
+
+        # ============================================================
+        # 2단계: 로그인 데이터 구성
+        # ============================================================
         login_data = {
             auth_config.username_field: auth_config.username,
             auth_config.password_field: auth_config.password,
         }
+
+        # Submit 버튼 필드 추가
+        if auth_config.submit_field:
+            login_data[auth_config.submit_field] = auth_config.submit_field
+
+        # CSRF 토큰 추가
+        if csrf_token and auth_config.csrf_token_name:
+            login_data[auth_config.csrf_token_name] = csrf_token
+
+        # 추가 필드
         login_data.update(auth_config.extra_fields)
 
-        logger.info("로그인 시도: %s", auth_config.login_url)
+        logger.debug(
+            "로그인 데이터: %s",
+            {k: v if 'pass' not in k.lower() else '***' for k, v in login_data.items()}
+        )
 
+        # ============================================================
+        # 3단계: 로그인 요청
+        # ============================================================
         response = await self.post(auth_config.login_url, data=login_data)
 
         if not response:
@@ -120,19 +220,47 @@ class SessionManager:
             return False
 
         text = response.get("text", "")
+        final_url = response.get("url", "")
 
+        logger.debug("로그인 후 URL: %s", final_url)
+
+        # ============================================================
+        # 4단계: 로그인 결과 확인
+        # ============================================================
+
+        # 실패 지시자 확인
         if auth_config.failure_indicator and auth_config.failure_indicator in text:
-            logger.error("로그인 실패: 실패 지시자 발견")
+            logger.error(
+                "로그인 실패: 실패 지시자 발견 ('%s')",
+                auth_config.failure_indicator
+            )
             return False
 
+        # 성공 지시자 확인
         if auth_config.success_indicator:
             if auth_config.success_indicator in text:
                 self._authenticated = True
                 logger.info("로그인 성공")
                 return True
-            else:
-                logger.error("로그인 실패: 성공 지시자 없음")
-                return False
+
+            # 대소문자 무시하고 확인
+            if auth_config.success_indicator.lower() in text.lower():
+                self._authenticated = True
+                logger.info("로그인 성공 (대소문자 무시)")
+                return True
+
+            logger.error(
+                "로그인 실패: 성공 지시자 없음 ('%s')",
+                auth_config.success_indicator
+            )
+            logger.debug("응답 내용 (처음 500자): %s", text[:500])
+            return False
+
+        # 성공 지시자가 없으면 URL 또는 상태 코드로 판단
+        if 'login' not in final_url.lower():
+            self._authenticated = True
+            logger.info("로그인 성공 (URL 기반 판단)")
+            return True
 
         if response.get("status") in [200, 302]:
             self._authenticated = True
@@ -356,29 +484,11 @@ class SessionManager:
         return await self._request("DELETE", url, **kwargs)
 
     async def head(self, url: str, **kwargs) -> Optional[dict]:
-        """
-        HEAD 요청 (리소스 존재 확인용)
-
-        Args:
-            url: 요청 URL
-            **kwargs: 추가 옵션
-
-        Returns:
-            dict or None: 응답 데이터
-        """
+        """HEAD 요청"""
         return await self._request("HEAD", url, **kwargs)
 
     async def options(self, url: str, **kwargs) -> Optional[dict]:
-        """
-        OPTIONS 요청 (지원 메서드 확인용)
-
-        Args:
-            url: 요청 URL
-            **kwargs: 추가 옵션
-
-        Returns:
-            dict or None: 응답 데이터
-        """
+        """OPTIONS 요청"""
         return await self._request("OPTIONS", url, **kwargs)
 
     async def detect_methods(self, url: str) -> list:
@@ -393,17 +503,14 @@ class SessionManager:
         """
         allowed_methods = []
 
-        # 1. OPTIONS 요청으로 확인 시도
         try:
             response = await self.options(url, max_retries=1, timeout=5)
             if response:
-                # Allow 헤더에서 메서드 추출
                 allow_header = response.get("headers", {}).get("Allow", "")
                 if allow_header:
                     methods = [m.strip().upper() for m in allow_header.split(",")]
                     return methods
 
-                # Access-Control-Allow-Methods 헤더 확인 (CORS)
                 cors_header = response.get("headers", {}).get(
                     "Access-Control-Allow-Methods", ""
                 )
@@ -413,7 +520,6 @@ class SessionManager:
         except Exception:
             pass
 
-        # 2. OPTIONS 실패 시 직접 테스트
         test_methods = ["GET", "POST", "PUT", "DELETE", "HEAD"]
 
         for method in test_methods:
@@ -427,7 +533,6 @@ class SessionManager:
                 )
                 if response:
                     status = response.get("status", 0)
-                    # 405 Method Not Allowed가 아니면 지원
                     if status != 405:
                         allowed_methods.append(method)
             except Exception:
