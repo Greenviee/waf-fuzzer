@@ -19,6 +19,7 @@ from .models import (
     CrawlTask,
     CrawlResult,
     CrawlStats,
+    PageData,
 )
 
 from .queue_manager import QueueManager
@@ -36,6 +37,7 @@ __all__ = [
     'CrawlTask',
     'CrawlResult',
     'CrawlStats',
+    'PageData',
 
     # Manager
     'QueueManager',
