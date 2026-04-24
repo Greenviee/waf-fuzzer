@@ -8,7 +8,13 @@ from bs4 import BeautifulSoup
 from contextlib import asynccontextmanager
 import json
 
-from core.models import PageData, AttackSurface, HttpMethod, ParamLocation
+from core.models import (
+    PageData,
+    AttackSurface,
+    HttpMethod,
+    ParamLocation,
+    TokenDetector
+)
 from utils.logger import get_logger
 
 from .session_manager import SessionManager
@@ -49,6 +55,7 @@ class CrawlStats:
         self.forms_found = 0
         self.apis_found = 0
         self.attack_surfaces = 0
+        self.dynamic_tokens_found = 0
         self.start_time = datetime.now()
 
     @property
@@ -65,6 +72,7 @@ class CrawlStats:
             "forms_found": self.forms_found,
             "apis_found": self.apis_found,
             "attack_surfaces": self.attack_surfaces,
+            "dynamic_tokens_found": self.dynamic_tokens_found,
             "duration": self.duration
         }
 
@@ -344,7 +352,7 @@ class CrawlerEngine:
 
     async def _extract_forms_surfaces(self, soup, base_url):
         """
-        폼 기반 공격 표면 추출 (GET, POST / QUERY, BODY_FORM, BODY_JSON)
+        폼 기반 공격 표면 추출 (동적 토큰 감지 포함)
 
         Args:
             soup: BeautifulSoup 객체
@@ -359,8 +367,10 @@ class CrawlerEngine:
 
             form_url = urljoin(base_url, action) if action else base_url
 
-            # 파라미터 추출
+            # 파라미터 및 동적 토큰 추출
             parameters = {}
+            dynamic_tokens = []
+
             for input_field in form.find_all(["input", "textarea", "select"]):
                 name = input_field.get("name")
                 if not name:
@@ -368,6 +378,16 @@ class CrawlerEngine:
 
                 value = input_field.get("value", "")
                 input_type = input_field.get("type", "text")
+
+                # 동적 토큰 감지
+                if TokenDetector.detect(name, value, input_type):
+                    dynamic_tokens.append(name)
+                    self._stats.dynamic_tokens_found += 1
+                    logger.debug(
+                        "동적 토큰 감지: %s (값: %s...)",
+                        name,
+                        value[:20] if value else ""
+                    )
 
                 # hidden 필드는 값 유지, 나머지는 빈 값
                 if input_type != "hidden":
@@ -395,13 +415,26 @@ class CrawlerEngine:
                     method=http_method,
                     param_location=param_location,
                     parameters=parameters,
+                    dynamic_tokens=dynamic_tokens,
                     source_url=base_url,
                     description=f"Form [{method}] from {base_url}"
                 )
 
                 self.queue_manager.add_attack_surface(surface)
                 self._stats.attack_surfaces += 1
-                logger.debug("폼 공격 표면 추가: %s (%s)", form_url, param_location.value)
+
+                if dynamic_tokens:
+                    logger.info(
+                        "폼 공격 표면 추가: %s (동적 토큰: %s)",
+                        form_url,
+                        dynamic_tokens
+                    )
+                else:
+                    logger.debug(
+                        "폼 공격 표면 추가: %s (%s)",
+                        form_url,
+                        param_location.value
+                    )
 
     async def _extract_api_surfaces(self, html, base_url, headers):
         """
@@ -427,6 +460,7 @@ class CrawlerEngine:
                         method=HttpMethod.POST,
                         param_location=ParamLocation.BODY_JSON,
                         parameters=parameters,
+                        dynamic_tokens=[],
                         source_url=base_url,
                         description="JSON API endpoint"
                     )
@@ -451,7 +485,7 @@ class CrawlerEngine:
             for match in matches:
                 # 튜플인 경우 URL 부분 추출
                 if isinstance(match, tuple):
-                    api_path = match[-1]  # 마지막 그룹이 URL
+                    api_path = match[-1]
                     method_hint = match[0] if len(match) > 1 else "GET"
                 else:
                     api_path = match
@@ -479,6 +513,7 @@ class CrawlerEngine:
                     method=http_method,
                     param_location=ParamLocation.BODY_JSON,
                     parameters={},
+                    dynamic_tokens=[],
                     source_url=base_url,
                     description=f"API endpoint found in JavaScript [{http_method.value}]"
                 )
@@ -507,6 +542,7 @@ class CrawlerEngine:
                     method=HttpMethod.GET,
                     param_location=ParamLocation.QUERY,
                     parameters=parameters,
+                    dynamic_tokens=[],
                     source_url=base_url,
                     description="Current URL query parameters"
                 )
@@ -543,6 +579,7 @@ class CrawlerEngine:
                     method=HttpMethod.GET,
                     param_location=ParamLocation.QUERY,
                     parameters=parameters,
+                    dynamic_tokens=[],
                     source_url=base_url,
                     description="Link with query parameters"
                 )
@@ -568,13 +605,18 @@ class CrawlerEngine:
             method=HttpMethod.GET,
             param_location=ParamLocation.HEADER,
             parameters=header_parameters,
+            dynamic_tokens=[],
             source_url=base_url,
             description="HTTP Header injection points"
         )
 
         self.queue_manager.add_attack_surface(surface)
         self._stats.attack_surfaces += 1
-        logger.debug("헤더 공격 표면 추가: %s (%d개 헤더)", base_url, len(header_parameters))
+        logger.debug(
+            "헤더 공격 표면 추가: %s (%d개 헤더)",
+            base_url,
+            len(header_parameters)
+        )
 
     async def _extract_cookie_surfaces(self, base_url, cookies):
         """
@@ -606,13 +648,18 @@ class CrawlerEngine:
             param_location=ParamLocation.COOKIE,
             parameters=cookie_parameters,
             cookies=cookie_parameters,
+            dynamic_tokens=[],
             source_url=base_url,
             description=f"Cookie injection points ({len(cookie_parameters)} cookies)"
         )
 
         self.queue_manager.add_attack_surface(surface)
         self._stats.attack_surfaces += 1
-        logger.debug("쿠키 공격 표면 추가: %s (%d개 쿠키)", base_url, len(cookie_parameters))
+        logger.debug(
+            "쿠키 공격 표면 추가: %s (%d개 쿠키)",
+            base_url,
+            len(cookie_parameters)
+        )
 
     def _extract_json_parameters(self, json_data, prefix=""):
         """
@@ -716,11 +763,12 @@ class CrawlerEngine:
         """크롤링 요약 로그 출력"""
         logger.info("========== 크롤링 종료 ==========")
         logger.info(
-            "방문: %d, 에러: %d, 폼: %d, API: %d, 공격표면: %d, 시간: %.2f초",
+            "방문: %d, 에러: %d, 폼: %d, API: %d, 공격표면: %d, 동적토큰: %d, 시간: %.2f초",
             self._stats.urls_visited,
             self._stats.errors,
             self._stats.forms_found,
             self._stats.apis_found,
             self._stats.attack_surfaces,
+            self._stats.dynamic_tokens_found,
             self._stats.duration
         )
