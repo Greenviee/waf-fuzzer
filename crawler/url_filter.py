@@ -1,8 +1,8 @@
+# crawler/url_filter.py
+
 """
 URL 필터
 크롤링 대상 URL을 필터링하고 정규화
-
-담당: 팀 A - 인원 1 (크롤러 엔진 & 네트워크 담당)
 """
 
 import re
@@ -22,6 +22,7 @@ class URLFilter:
     - 파일 확장자 필터링 (이미지, CSS, JS 등 제외)
     - URL 정규화 (중복 방지)
     - 위험한 URL 패턴 제외 (logout, delete 등)
+    - API 엔드포인트 감지
     """
 
     # 제외할 파일 확장자
@@ -57,6 +58,44 @@ class URLFilter:
         r'\?.*remove',
     ]
 
+    # API 엔드포인트 패턴
+    API_PATTERNS = [
+        r'/api/',
+        r'/v\d+/',
+        r'/graphql',
+        r'/rest/',
+        r'/ajax/',
+        r'/json/',
+        r'/xml/',
+        r'\.json$',
+        r'\.xml$',
+    ]
+
+    # 흥미로운 경로 패턴 (공격 표면 가능성 높음)
+    INTERESTING_PATTERNS = [
+        r'/admin',
+        r'/login',
+        r'/register',
+        r'/signup',
+        r'/upload',
+        r'/download',
+        r'/search',
+        r'/user',
+        r'/profile',
+        r'/account',
+        r'/settings',
+        r'/config',
+        r'/edit',
+        r'/update',
+        r'/create',
+        r'/add',
+        r'/submit',
+        r'/process',
+        r'/callback',
+        r'/webhook',
+        r'/redirect',
+    ]
+
     def __init__(
             self,
             allowed_domains=None,
@@ -90,6 +129,18 @@ class URLFilter:
             compiled = re.compile(pattern, re.IGNORECASE)
             self._excluded_regex.append(compiled)
 
+        # API 패턴 컴파일
+        self._api_regex = []
+        for pattern in self.API_PATTERNS:
+            compiled = re.compile(pattern, re.IGNORECASE)
+            self._api_regex.append(compiled)
+
+        # 흥미로운 패턴 컴파일
+        self._interesting_regex = []
+        for pattern in self.INTERESTING_PATTERNS:
+            compiled = re.compile(pattern, re.IGNORECASE)
+            self._interesting_regex.append(compiled)
+
         logger.debug("URL 필터 초기화: 허용 도메인=%s", self.allowed_domains)
 
     def should_crawl(self, url):
@@ -100,32 +151,27 @@ class URLFilter:
             url: 검사할 URL
 
         Returns:
-            크롤링 여부 (True/False)
+            bool: 크롤링 여부
         """
         try:
             parsed = urlparse(url)
 
-            # 1. 스킴 체크 (http, https만 허용)
             if parsed.scheme not in self.allowed_schemes:
                 logger.debug("스킴 불허: %s", url)
                 return False
 
-            # 2. URL 길이 체크
             if len(url) > self.max_url_length:
                 logger.debug("URL 너무 김: %s...", url[:50])
                 return False
 
-            # 3. 도메인 체크
             if not self._is_domain_allowed(parsed.netloc):
                 logger.debug("도메인 불허: %s", parsed.netloc)
                 return False
 
-            # 4. 확장자 체크
             if self._has_excluded_extension(parsed.path):
                 logger.debug("확장자 제외: %s", url)
                 return False
 
-            # 5. 제외 패턴 체크
             if self._matches_excluded_pattern(url):
                 logger.debug("패턴 제외: %s", url)
                 return False
@@ -138,13 +184,10 @@ class URLFilter:
 
     def _is_domain_allowed(self, domain):
         """도메인 허용 여부 확인"""
-        # 제외 도메인 체크
         if domain in self.excluded_domains:
             return False
 
-        # 허용 도메인이 설정된 경우에만 체크
         if self.allowed_domains:
-            # 정확히 일치하거나 서브도메인인 경우 허용
             for allowed in self.allowed_domains:
                 if domain == allowed:
                     return True
@@ -152,7 +195,6 @@ class URLFilter:
                     return True
             return False
 
-        # 허용 도메인이 설정되지 않으면 모두 허용
         return True
 
     def _has_excluded_extension(self, path):
@@ -170,44 +212,34 @@ class URLFilter:
                 return True
         return False
 
-    def normalize_url(self, url):
+    @staticmethod
+    def normalize_url(url):
         """
         URL 정규화 (중복 방지용)
-
-        정규화 규칙:
-        - 스킴/호스트 소문자 변환
-        - 기본 포트 제거 (80, 443)
-        - 쿼리 파라미터 정렬
-        - 프래그먼트(#) 제거
-        - 중복 슬래시 제거
 
         Args:
             url: 원본 URL
 
         Returns:
-            정규화된 URL
+            str: 정규화된 URL
         """
         try:
             parsed = urlparse(url)
 
-            # 스킴 소문자
             scheme = parsed.scheme.lower()
 
-            # 호스트 소문자 + 기본 포트 제거
             netloc = parsed.netloc.lower()
             if ':80' in netloc and scheme == 'http':
                 netloc = netloc.replace(':80', '')
             elif ':443' in netloc and scheme == 'https':
                 netloc = netloc.replace(':443', '')
 
-            # 경로 정규화
             path = parsed.path
             if not path:
                 path = '/'
-            path = re.sub(r'/+', '/', path)  # 중복 슬래시 제거
-            path = unquote(path)  # URL 디코딩
+            path = re.sub(r'/+', '/', path)
+            path = unquote(path)
 
-            # 쿼리 파라미터 정렬
             query = ''
             if parsed.query:
                 params = parse_qs(parsed.query, keep_blank_values=True)
@@ -220,7 +252,6 @@ class URLFilter:
                         query_list.append((k, v))
                 query = urlencode(query_list, doseq=True)
 
-            # 프래그먼트 제거하고 재조합
             normalized = urlunparse((scheme, netloc, path, '', query, ''))
 
             return normalized
@@ -229,35 +260,196 @@ class URLFilter:
             logger.warning("URL 정규화 실패 (%s): %s", url, e)
             return url
 
-    def add_allowed_domain(self, domain):
+    def is_api_endpoint(self, url):
         """
-        허용 도메인 추가
+        API 엔드포인트 여부 확인
 
         Args:
-            domain: 추가할 도메인
+            url: 검사할 URL
+
+        Returns:
+            bool: API 엔드포인트 여부
         """
+        for regex in self._api_regex:
+            if regex.search(url):
+                return True
+        return False
+
+    def is_interesting_url(self, url):
+        """
+        흥미로운 URL 여부 확인
+
+        Args:
+            url: 검사할 URL
+
+        Returns:
+            bool: 흥미로운 URL 여부
+        """
+        for regex in self._interesting_regex:
+            if regex.search(url):
+                return True
+        return False
+
+    def get_url_priority(self, url):
+        """
+        URL 우선순위 반환
+
+        Args:
+            url: 검사할 URL
+
+        Returns:
+            int: 우선순위 (0-10)
+        """
+        priority = 5
+
+        if self.is_api_endpoint(url):
+            priority += 3
+
+        if self.is_interesting_url(url):
+            priority += 2
+
+        if '?' in url:
+            priority += 1
+
+        if len(url) > 500:
+            priority -= 1
+
+        return min(10, max(0, priority))
+
+    @staticmethod
+    def has_query_params(url):
+        """
+        URL에 쿼리 파라미터가 있는지 확인
+
+        Args:
+            url: 검사할 URL
+
+        Returns:
+            bool: 쿼리 파라미터 존재 여부
+        """
+        parsed = urlparse(url)
+        return bool(parsed.query)
+
+    @staticmethod
+    def get_query_params(url):
+        """
+        URL에서 쿼리 파라미터 추출
+
+        Args:
+            url: 대상 URL
+
+        Returns:
+            dict: 쿼리 파라미터 딕셔너리
+        """
+        try:
+            parsed = urlparse(url)
+            params = parse_qs(parsed.query, keep_blank_values=True)
+            return {k: v[0] if len(v) == 1 else v for k, v in params.items()}
+        except Exception:
+            return {}
+
+    @staticmethod
+    def get_base_url(url):
+        """
+        URL에서 쿼리 스트링 제거한 기본 URL 반환
+
+        Args:
+            url: 대상 URL
+
+        Returns:
+            str: 기본 URL
+        """
+        try:
+            parsed = urlparse(url)
+            return urlunparse((parsed.scheme, parsed.netloc, parsed.path, '', '', ''))
+        except Exception:
+            return url.split('?')[0]
+
+    @staticmethod
+    def get_path_segments(url):
+        """
+        URL 경로를 세그먼트로 분리
+
+        Args:
+            url: 대상 URL
+
+        Returns:
+            list: 경로 세그먼트 리스트
+        """
+        try:
+            parsed = urlparse(url)
+            path = parsed.path.strip('/')
+            if not path:
+                return []
+            return path.split('/')
+        except Exception:
+            return []
+
+    @staticmethod
+    def extract_domain(url):
+        """
+        URL에서 도메인 추출
+
+        Args:
+            url: 대상 URL
+
+        Returns:
+            str: 도메인
+        """
+        try:
+            return urlparse(url).netloc.lower()
+        except Exception:
+            return ""
+
+    def is_same_domain(self, url1, url2):
+        """
+        두 URL이 같은 도메인인지 확인
+
+        Args:
+            url1: 첫 번째 URL
+            url2: 두 번째 URL
+
+        Returns:
+            bool: 같은 도메인 여부
+        """
+        return self.extract_domain(url1) == self.extract_domain(url2)
+
+    @staticmethod
+    def is_same_origin(url1, url2):
+        """
+        두 URL이 같은 출처인지 확인
+
+        Args:
+            url1: 첫 번째 URL
+            url2: 두 번째 URL
+
+        Returns:
+            bool: 같은 출처 여부
+        """
+        try:
+            parsed1 = urlparse(url1)
+            parsed2 = urlparse(url2)
+            return (
+                parsed1.scheme == parsed2.scheme and
+                parsed1.netloc == parsed2.netloc
+            )
+        except Exception:
+            return False
+
+    def add_allowed_domain(self, domain):
+        """허용 도메인 추가"""
         domain = domain.lower().strip()
         self.allowed_domains.add(domain)
         logger.info("허용 도메인 추가: %s", domain)
 
     def add_excluded_domain(self, domain):
-        """
-        제외 도메인 추가
-
-        Args:
-            domain: 제외할 도메인
-        """
+        """제외 도메인 추가"""
         domain = domain.lower().strip()
         self.excluded_domains.add(domain)
         logger.info("제외 도메인 추가: %s", domain)
 
     def add_excluded_pattern(self, pattern):
-        """
-        제외 패턴 추가
-
-        Args:
-            pattern: 제외할 정규식 패턴
-        """
+        """제외 패턴 추가"""
         try:
             compiled = re.compile(pattern, re.IGNORECASE)
             self._excluded_regex.append(compiled)
@@ -265,13 +457,11 @@ class URLFilter:
         except re.error as e:
             logger.error("잘못된 정규식 패턴 (%s): %s", pattern, e)
 
-    def extract_domain(self, url):
-        """URL에서 도메인 추출"""
+    def add_api_pattern(self, pattern):
+        """API 패턴 추가"""
         try:
-            return urlparse(url).netloc.lower()
-        except Exception:
-            return ""
-
-    def is_same_domain(self, url1, url2):
-        """두 URL이 같은 도메인인지 확인"""
-        return self.extract_domain(url1) == self.extract_domain(url2)
+            compiled = re.compile(pattern, re.IGNORECASE)
+            self._api_regex.append(compiled)
+            logger.info("API 패턴 추가: %s", pattern)
+        except re.error as e:
+            logger.error("잘못된 정규식 패턴 (%s): %s", pattern, e)
