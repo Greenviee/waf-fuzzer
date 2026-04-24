@@ -434,6 +434,12 @@ async def main() -> None:
         default=0,
         help="Limit number of time/stacked payloads when enabled (0=all)",
     )
+    parser.add_argument(
+        "--session-pool-size",
+        type=int,
+        default=3,
+        help="Number of HTTP sessions to use in parallel (default: 3)",
+    )
 
     args = parser.parse_args()
     try:
@@ -518,6 +524,7 @@ async def main() -> None:
     print("Evasions:       off (mutator disabled)")
     print(f"Throttle (rps): {args.rps} (delay {delay:.3f}s)")
     print(f"Queue workers:  {queue_workers}")
+    print(f"Session pool:   {args.session_pool_size}")
     print("=" * 60 + "\n")
 
     engine = FuzzerEngine(
@@ -525,6 +532,7 @@ async def main() -> None:
         worker_count=queue_workers,  # queue consumption workers
         modules=selected_modules,
         concurrency_per_module=queue_workers,
+        session_pool_size=max(1, args.session_pool_size),
         delay=delay,
     )
 
