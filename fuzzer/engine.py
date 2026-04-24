@@ -423,6 +423,8 @@ class FuzzerEngine:
                     continue
 
                 baseline_response = await send_baseline_request(session, surface)
+                stop_on_success = bool(getattr(module, "stop_on_first_success", False))
+                stop_event: asyncio.Event | None = asyncio.Event() if stop_on_success else None
                 attack_units = [
                     (parameter, payload)
                     for parameter in params
@@ -430,6 +432,10 @@ class FuzzerEngine:
                 ]
                 batch_size = max(1, self.max_concurrent_requests)
                 for batch in self._chunked(attack_units, batch_size):
+                    if stop_event is not None and stop_event.is_set():
+                        async with self._stats_lock:
+                            self._stats.completed += len(batch)
+                        continue
                     tasks = [
                         asyncio.create_task(
                             self._process_module_attack(
@@ -442,11 +448,14 @@ class FuzzerEngine:
                                 baseline_response=baseline_response,
                                 request_sender=request_sender,
                                 on_finding=on_finding,
+                                stop_event=stop_event,
                             )
                         )
                         for parameter, payload in batch
                     ]
                     await asyncio.gather(*tasks, return_exceptions=False)
+                    if stop_event is not None and stop_event.is_set():
+                        break
             finally:
                 queue.task_done()
 
@@ -462,7 +471,13 @@ class FuzzerEngine:
         baseline_response: Any,
         request_sender: AsyncRequestSender,
         on_finding: ResultCallback | None,
+        stop_event: asyncio.Event | None = None,
     ) -> None:
+        if stop_event is not None and stop_event.is_set():
+            async with self._stats_lock:
+                self._stats.completed += 1
+            return
+
         response: Any
         try:
             async with self._semaphore:
@@ -499,6 +514,9 @@ class FuzzerEngine:
 
         if not is_hit:
             return
+
+        if stop_event is not None:
+            stop_event.set()
 
         finding = Finding(
             surface=surface,

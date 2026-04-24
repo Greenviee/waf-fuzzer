@@ -28,6 +28,7 @@ class BruteforceModule(BaseModule):
         max_true_bf_candidates: int = 0,
         success_keywords: list[str] | None = None,
         fail_keywords: list[str] | None = None,
+        stop_on_first_success: bool = True,
     ):
         super().__init__("Brute Force")
         self.wordlist_path = wordlist_path
@@ -39,6 +40,7 @@ class BruteforceModule(BaseModule):
         self.bf_max_length = bf_max_length
         self.max_dictionary_candidates = max_dictionary_candidates
         self.max_true_bf_candidates = max_true_bf_candidates
+        self.stop_on_first_success = stop_on_first_success
         self.success_keywords = success_keywords or [
             "welcome",
             "dashboard",
