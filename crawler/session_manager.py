@@ -2,7 +2,9 @@
 
 import asyncio
 import json
+import re
 from typing import Optional
+from urllib.parse import urljoin
 
 import aiohttp
 from bs4 import BeautifulSoup
@@ -151,6 +153,35 @@ class SessionManager:
 
         return None
 
+    @staticmethod
+    def _extract_meta_redirect(html: str, base_url: str) -> Optional[str]:
+        """
+        HTML에서 메타 리다이렉트 URL 추출
+
+        Args:
+            html: HTML 텍스트
+            base_url: 기준 URL
+
+        Returns:
+            str or None: 리다이렉트 URL
+        """
+        try:
+            # meta http-equiv="refresh" 찾기
+            match = re.search(
+                r'<meta[^>]*http-equiv=["\']?refresh["\']?[^>]*content=["\']?\d+;?\s*url=([^"\'\s>]+)',
+                html,
+                re.IGNORECASE
+            )
+            if match:
+                redirect_url = match.group(1)
+                if not redirect_url.startswith('http'):
+                    redirect_url = urljoin(base_url, redirect_url)
+                return redirect_url
+        except Exception as e:
+            logger.debug("메타 리다이렉트 추출 실패: %s", e)
+
+        return None
+
     async def login(self, auth_config: AuthConfig) -> bool:
         """
         로그인 수행 (CSRF 토큰 자동 처리)
@@ -194,15 +225,12 @@ class SessionManager:
             auth_config.password_field: auth_config.password,
         }
 
-        # Submit 버튼 필드 추가
         if auth_config.submit_field:
             login_data[auth_config.submit_field] = auth_config.submit_field
 
-        # CSRF 토큰 추가
         if csrf_token and auth_config.csrf_token_name:
             login_data[auth_config.csrf_token_name] = csrf_token
 
-        # 추가 필드
         login_data.update(auth_config.extra_fields)
 
         logger.debug(
@@ -213,7 +241,11 @@ class SessionManager:
         # ============================================================
         # 3단계: 로그인 요청
         # ============================================================
-        response = await self.post(auth_config.login_url, data=login_data)
+        response = await self.post(
+            auth_config.login_url,
+            data=login_data,
+            headers={"Content-Type": "application/x-www-form-urlencoded"}
+        )
 
         if not response:
             logger.error("로그인 요청 실패")
@@ -225,7 +257,19 @@ class SessionManager:
         logger.debug("로그인 후 URL: %s", final_url)
 
         # ============================================================
-        # 4단계: 로그인 결과 확인
+        # 4단계: 메타 리다이렉트 처리
+        # ============================================================
+        redirect_url = self._extract_meta_redirect(text, auth_config.login_url)
+        if redirect_url:
+            logger.debug("메타 리다이렉트 감지: %s", redirect_url)
+            response = await self.get(redirect_url)
+            if response:
+                text = response.get("text", "")
+                final_url = response.get("url", "")
+                logger.debug("리다이렉트 후 URL: %s", final_url)
+
+        # ============================================================
+        # 5단계: 로그인 결과 확인
         # ============================================================
 
         # 실패 지시자 확인
@@ -243,30 +287,24 @@ class SessionManager:
                 logger.info("로그인 성공")
                 return True
 
-            # 대소문자 무시하고 확인
             if auth_config.success_indicator.lower() in text.lower():
                 self._authenticated = True
                 logger.info("로그인 성공 (대소문자 무시)")
                 return True
 
-            logger.error(
-                "로그인 실패: 성공 지시자 없음 ('%s')",
-                auth_config.success_indicator
-            )
-            logger.debug("응답 내용 (처음 500자): %s", text[:500])
-            return False
-
-        # 성공 지시자가 없으면 URL 또는 상태 코드로 판단
+        # URL 기반 판단 (login 페이지가 아니면 성공)
         if 'login' not in final_url.lower():
             self._authenticated = True
-            logger.info("로그인 성공 (URL 기반 판단)")
+            logger.info("로그인 성공 (URL 기반 판단: %s)", final_url)
             return True
 
-        if response.get("status") in [200, 302]:
+        # 상태 코드 기반 판단
+        if response and response.get("status") in [200, 302]:
             self._authenticated = True
             logger.info("로그인 성공 (상태 코드 기반)")
             return True
 
+        logger.error("로그인 실패: 성공 조건 미충족")
         return False
 
     @property
@@ -460,24 +498,26 @@ class SessionManager:
             url: str,
             data: Optional[dict] = None,
             json_data: Optional[dict] = None,
+            headers: Optional[dict] = None,
             **kwargs
     ) -> Optional[dict]:
         """POST 요청"""
         if json_data is not None:
-            return await self._request("POST", url, json=json_data, **kwargs)
-        return await self._request("POST", url, data=data, **kwargs)
+            return await self._request("POST", url, json=json_data, headers=headers, **kwargs)
+        return await self._request("POST", url, data=data, headers=headers, **kwargs)
 
     async def put(
             self,
             url: str,
             data: Optional[dict] = None,
             json_data: Optional[dict] = None,
+            headers: Optional[dict] = None,
             **kwargs
     ) -> Optional[dict]:
         """PUT 요청"""
         if json_data is not None:
-            return await self._request("PUT", url, json=json_data, **kwargs)
-        return await self._request("PUT", url, data=data, **kwargs)
+            return await self._request("PUT", url, json=json_data, headers=headers, **kwargs)
+        return await self._request("PUT", url, data=data, headers=headers, **kwargs)
 
     async def delete(self, url: str, **kwargs) -> Optional[dict]:
         """DELETE 요청"""
