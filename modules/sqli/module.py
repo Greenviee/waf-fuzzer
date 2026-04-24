@@ -91,8 +91,7 @@ class SQLiModule(BaseModule):
         )
         
         if is_vuln:
-            # 발견된 상세 증거들을 로깅 (리포터 팀에서 활용 가능)
-            # print(f"[!] {self.name} Found: {', '.join(evidences)}")
+            # 발견된 상세 증거들을 로깅 (리포터에서 활용 가능)
             pass
             
         return is_vuln
