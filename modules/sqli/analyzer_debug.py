@@ -44,11 +44,13 @@ def detect_sqli(response, payload, elapsed_time, exploit_signatures, syntax_sign
     if "time" in attack_type or "stacked" in attack_type:
         if elapsed_time >= 4.5:
             evidences.append(f"[Time] Response delayed: {elapsed_time:.2f}s")
+            print("time")
 
     # 2. 실행/런타임 에러 시그니처 매칭 (Exploit & Runtime)
     for pattern in exploit_signatures:
         if re.search(pattern, scrubbed_text, re.I | re.DOTALL):
             evidences.append(f"[Error] SQL Execution Error matched: {pattern}")
+            print("runtime/function")
             break
 
     # 3. 마커 검증 및 분류
@@ -56,9 +58,11 @@ def detect_sqli(response, payload, elapsed_time, exploit_signatures, syntax_sign
         if has_syntax_error:
             # 에러 메시지가 있는 상태에서 마커가 발견됨 -> 에러 출력 기반 성공
             evidences.append(f"[Error] SQLi execution marker '{marker}' confirmed in DB output")
+            print("marker in error")
         else:
             # 에러 메시지 없이 깨끗한 본문에서 마커가 발견됨 -> Union/Inline 기반 성공
             evidences.append(f"[Reflection] SQLi marker '{marker}' found in legitimate content")
+            print("marker w/o error")
 
     # 4. 불리언 기반 탐지
     if not has_syntax_error:
@@ -68,6 +72,7 @@ def detect_sqli(response, payload, elapsed_time, exploit_signatures, syntax_sign
             diff_ratio = abs(original_len - current_len) / original_len
             if diff_ratio > 0.1:
                 evidences.append(f"[Boolean] Logical change detected ({diff_ratio:.1%})")
+                print("boolean")
 
     is_vulnerable = len(evidences) > 0
     return is_vulnerable, evidences
