@@ -81,6 +81,7 @@ class FuzzerEngine:
         worker_count: int = 10,
         modules: Iterable[AttackModule] | None = None,
         concurrency_per_module: int | None = None,
+        session_pool_size: int = 1,
         delay: float = 0.0,
         request_timeout: float = 15.0,
         queue_maxsize: int = 0,
@@ -91,6 +92,8 @@ class FuzzerEngine:
             raise ValueError("worker_count must be >= 1")
         if concurrency_per_module is not None and concurrency_per_module < 1:
             raise ValueError("concurrency_per_module must be >= 1")
+        if session_pool_size < 1:
+            raise ValueError("session_pool_size must be >= 1")
         if delay < 0:
             raise ValueError("delay must be >= 0")
 
@@ -98,6 +101,7 @@ class FuzzerEngine:
         self.worker_count = worker_count
         self.modules = tuple(modules or ())
         self.concurrency_per_module = concurrency_per_module or worker_count
+        self.session_pool_size = session_pool_size
         self.delay = delay
         self.request_timeout = request_timeout
 
@@ -131,6 +135,20 @@ class FuzzerEngine:
     def findings(self) -> list[Finding]:
         return list(self._findings)
 
+    def _create_session_pool(self) -> list[aiohttp.ClientSession]:
+        timeout = aiohttp.ClientTimeout(total=self.request_timeout)
+        connector_limit = max(
+            2,
+            (self.max_concurrent_requests * 2 + self.session_pool_size - 1) // self.session_pool_size,
+        )
+        return [
+            aiohttp.ClientSession(
+                timeout=timeout,
+                connector=aiohttp.TCPConnector(limit=connector_limit),
+            )
+            for _ in range(self.session_pool_size)
+        ]
+
     async def run(
         self,
         *,
@@ -144,15 +162,13 @@ class FuzzerEngine:
         if not payload_list:
             raise ValueError("payloads must not be empty")
 
-        timeout = aiohttp.ClientTimeout(total=self.request_timeout)
-        connector = aiohttp.TCPConnector(limit=self.max_concurrent_requests * 2)
-
-        async with aiohttp.ClientSession(timeout=timeout, connector=connector) as session:
+        sessions = self._create_session_pool()
+        try:
             workers = [
                 asyncio.create_task(
                     self._worker(
                         worker_id=index + 1,
-                        session=session,
+                        session=sessions[index % len(sessions)],
                         request_sender=request_sender,
                         is_vulnerable=is_vulnerable,
                         on_finding=on_finding,
@@ -167,6 +183,8 @@ class FuzzerEngine:
             for _ in workers:
                 await self._queue.put(None)
             await asyncio.gather(*workers, return_exceptions=False)
+        finally:
+            await asyncio.gather(*(session.close() for session in sessions))
 
         return self.stats
 
@@ -273,12 +291,10 @@ class FuzzerEngine:
         if not self.modules:
             raise ValueError("modules must be configured to run module queue mode")
 
-        timeout = aiohttp.ClientTimeout(total=self.request_timeout)
-        connector = aiohttp.TCPConnector(limit=self.max_concurrent_requests * 2)
-
-        async with aiohttp.ClientSession(timeout=timeout, connector=connector) as session:
+        sessions = self._create_session_pool()
+        try:
             await self.start_module_mode(
-                session=session,
+                sessions=sessions,
                 request_sender=request_sender,
                 on_finding=on_finding,
             )
@@ -287,13 +303,15 @@ class FuzzerEngine:
                 await self.submit_surface(surface)
 
             await self.stop_module_mode()
+        finally:
+            await asyncio.gather(*(session.close() for session in sessions))
 
         return self.stats
 
     async def start_module_mode(
         self,
         *,
-        session: aiohttp.ClientSession,
+        sessions: list[aiohttp.ClientSession],
         request_sender: AsyncRequestSender,
         on_finding: ResultCallback | None = None,
     ) -> None:
@@ -305,6 +323,8 @@ class FuzzerEngine:
             raise RuntimeError("module mode is already running")
         if not self.modules:
             raise ValueError("modules must be configured before starting module mode")
+        if not sessions:
+            raise ValueError("sessions must not be empty")
 
         self._module_queues = {
             module.name: asyncio.Queue()
@@ -323,7 +343,7 @@ class FuzzerEngine:
                 worker = asyncio.create_task(
                     self._module_worker(
                         worker_id=index + 1,
-                        session=session,
+                        session=sessions[index % len(sessions)],
                         module=module,
                         queue=queue,
                         payloads=payloads,
