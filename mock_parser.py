@@ -67,9 +67,15 @@ def get_dvwa_mock_surfaces(
             url=f"{root}/vulnerabilities/brute/",
             method=HttpMethod.GET,
             param_location=ParamLocation.QUERY,
-            parameters={"username": "admin", "password": "password", "Login": "Login"},
+            parameters={
+                "username": "admin",
+                "password": "password",
+                "Login": "Login",
+                "user_token": "",
+            },
             cookies=auth_cookies,
             description="DVWA Brute Force (GET)",
+            dynamic_tokens=["user_token"],
         ),
         # AttackSurface(
         #     url=f"{root}/vulnerabilities/upload/",
