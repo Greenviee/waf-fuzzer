@@ -1,51 +1,98 @@
 import os
-from core.models import Payload
+import json
+from modules.base_module import BaseModule
+from modules.sqli.payloads import get_sqli_payloads
+from modules.sqli.analyzer import detect_sqli 
 
-def _resolve_payload_file() -> str | None:
-    candidates = [
-        os.path.join("config", "payloads", "sqli_final.txt"),
-        os.path.join("config", "payloads", "sqli.txt"),
-    ]
-    for candidate in candidates:
-        if os.path.exists(candidate):
-            return candidate
-    return None
+class SQLiModule(BaseModule):
+    def __init__(
+        self,
+        *,
+        enable_case_bypass: bool = False,
+        enable_null_byte_bypass: bool = False,
+        enable_keyword_split_bypass: bool = False,
+        enable_double_url_encoding: bool = False,
+        enable_unicode_escape: bool = False,
+        include_time_based: bool = False,
+        max_time_payloads: int = 0,
+    ):
+        super().__init__("SQL Injection")
+        
+        # 두 가지 에러 시그니처를 각각 로드하여 오탐 방지 로직 지원
+        self.exploit_signatures = self._load_json("exploit_errors.json")
+        self.syntax_signatures = self._load_json("syntax_errors.json")
+        
+        # 설정값 유지
+        self.enable_case_bypass = enable_case_bypass
+        self.enable_null_byte_bypass = enable_null_byte_bypass
+        self.enable_keyword_split_bypass = enable_keyword_split_bypass
+        self.enable_double_url_encoding = enable_double_url_encoding
+        self.enable_unicode_escape = enable_unicode_escape
+        self.include_time_based = include_time_based
+        self.max_time_payloads = max_time_payloads
 
-def get_sqli_payloads() -> list[Payload]:
-    payloads = []
-    file_path = _resolve_payload_file()
-    if not file_path:
+    def _load_json(self, filename):
+        """config/payloads/ 폴더에서 JSON 파일을 안전하게 로드합니다."""
+        file_path = os.path.join("config", "payloads", filename)
+        if os.path.exists(file_path):
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"[-] [{self.name}] {filename} load failed: {e}")
         return []
 
-    # 고유 구분자 정의 
-    DELIM_START = "SVSDAAAA"
-    DELIM_STOP = "VASDAAAA"
+    def get_payloads(self):
+        """최종 조합된 페이로드를 가져오고 설정에 따라 필터링합니다."""
+        base_payloads = get_sqli_payloads()
+        filtered_payloads = self._filter_slow_payloads(base_payloads)
+        return filtered_payloads
 
-    with open(file_path, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line or "||" not in line:
-                continue
+    def _filter_slow_payloads(self, payloads):
+        """
+        스캔 시간을 단축하기 위해 Time-based 페이로드를 제외하거나 개수를 제한합니다.
+        """
+        if self.include_time_based:
+            if self.max_time_payloads <= 0:
+                return payloads
+
+            time_payloads = []
+            fast_payloads = []
+            for payload in payloads:
+                attack_type = str(getattr(payload, "attack_type", "")).lower()
+                if "time" in attack_type or "stacked" in attack_type:
+                    time_payloads.append(payload)
+                else:
+                    fast_payloads.append(payload)
+            # 설정된 max_time_payloads 개수만큼만 Time-based 페이로드 포함
+            return fast_payloads + time_payloads[: self.max_time_payloads]
+
+        # Time-based 제외 설정 시 일반 페이로드만 반환
+        return [
+            payload
+            for payload in payloads
+            if "time" not in str(getattr(payload, "attack_type", "")).lower()
+            and "stacked" not in str(getattr(payload, "attack_type", "")).lower()
+        ]
+
+    def analyze(self, response, payload, elapsed_time, original_res=None) -> bool:
+        """
+        analyzer.py의 detect_sqli를 호출하여 
+        단순 문법 에러와 실제 공격 성공을 구분한 결과 반환
+        """
+        # 분리된 두 세트의 시그니처를 analyzer에 전달
+        is_vuln, evidences = detect_sqli(
+            response=response, 
+            payload=payload, 
+            elapsed_time=elapsed_time, 
+            exploit_signatures=self.exploit_signatures, 
+            syntax_signatures=self.syntax_signatures,
+            original_res=original_res
+        )
+        
+        if is_vuln:
+            # 발견된 상세 증거들을 로깅 (리포터 팀에서 활용 가능)
+            # print(f"[!] {self.name} Found: {', '.join(evidences)}")
+            pass
             
-            parts = line.rsplit("||", 2)
-            if len(parts) == 3:
-                raw_value = parts[0].strip()
-                attack_type = parts[1].strip()
-                risk_level = parts[2].strip()
-
-                # 1. 마커 앞 뒤로 구분자 추가
-                final_value = raw_value.replace("vun", f"{DELIM_START}vun{DELIM_STOP}")
-                
-                # 2. 기타 플레이스홀더 최종 처리
-                for i in range(1, 10):
-                    final_value = final_value.replace(f"[RANDNUM{i}]", str(i))
-                final_value = final_value.replace("[RANDNUM]", "1")
-                final_value = final_value.replace("[ORIGVALUE]", "1")
-
-                payloads.append(Payload(
-                    value=final_value,
-                    attack_type=attack_type,
-                    risk_level=risk_level
-                ))
-                
-    return payloads
+        return is_vuln
