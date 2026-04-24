@@ -383,10 +383,12 @@ class CrawlerEngine:
                 if TokenDetector.detect(name, value, input_type):
                     dynamic_tokens.append(name)
                     self._stats.dynamic_tokens_found += 1
-                    logger.debug(
-                        "동적 토큰 감지: %s (값: %s...)",
+                    # INFO 레벨로 상세 로깅
+                    logger.info(
+                        "🔑 동적 토큰 감지: name=%s, value=%s..., type=%s",
                         name,
-                        value[:20] if value else ""
+                        value[:20] if value else "(empty)",
+                        input_type
                     )
 
                 # hidden 필드는 값 유지, 나머지는 빈 값
