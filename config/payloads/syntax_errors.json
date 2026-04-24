@@ -21,5 +21,11 @@
     "MySQLSyntaxErrorException",
     "Unexpected token.*?in statement \\[",
     "Syntax error,[^\\n]+assumed to mean",
-    "check the manual that (corresponds to|fits) your Drizzle server version"
+    "check the manual that (corresponds to|fits) your Drizzle server version",
+    "You have an error in your SQL syntax",
+    "for the right syntax to use near",
+    "SQL syntax.*?at line",
+    "check the manual that (corresponds to|fits) your .*? server version",
+    "Incorrect syntax near",
+    "Invalid SQL statement"
 ]
