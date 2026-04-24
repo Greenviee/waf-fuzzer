@@ -79,7 +79,6 @@ def get_dvwa_mock_surfaces(
         #     cookies=auth_cookies,
         #     description="DVWA File Inclusion (GET)",
         # ),
-<<<<<<< HEAD
         # AttackSurface(
         #     url=f"{root}/vulnerabilities/brute/",
         #     method=HttpMethod.GET,
@@ -88,22 +87,6 @@ def get_dvwa_mock_surfaces(
         #     cookies=auth_cookies,
         #     description="DVWA Brute Force (GET)",
         # ),
-=======
-        AttackSurface(
-            url=f"{root}/vulnerabilities/brute/",
-            method=HttpMethod.GET,
-            param_location=ParamLocation.QUERY,
-            parameters={
-                "username": "admin",
-                "password": "password",
-                "Login": "Login",
-                "user_token": "",
-            },
-            cookies=auth_cookies,
-            description="DVWA Brute Force (GET)",
-            dynamic_tokens=["user_token"],
-        ),
->>>>>>> dev-fuzzer
         # AttackSurface(
         #     url=f"{root}/vulnerabilities/upload/",
         #     method=HttpMethod.POST,
