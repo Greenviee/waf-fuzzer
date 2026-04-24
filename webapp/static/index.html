@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WAF Scanner Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    >
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+    </style>
+</head>
+<body class="h-screen overflow-hidden bg-gray-900 font-sans text-white antialiased">
+<div class="flex h-full">
+    <aside class="flex w-64 flex-col bg-gray-800 shadow-xl">
+        <div class="flex h-16 items-center border-b border-gray-700 px-6">
+            <i class="fa-solid fa-shield-halved mr-3 text-2xl text-blue-500"></i>
+            <span class="text-xl font-bold tracking-wider">WAF Fuzzer</span>
+        </div>
+        <nav class="flex-1 space-y-2 px-4 py-6">
+            <a href="#" class="flex items-center rounded-lg bg-blue-600 px-4 py-3 text-white">
+                <i class="fa-solid fa-crosshairs w-6"></i> New Scan
+            </a>
+            <a href="#" class="flex items-center rounded-lg px-4 py-3 text-gray-400 transition hover:bg-gray-700 hover:text-white">
+                <i class="fa-solid fa-list-check w-6"></i> History
+            </a>
+            <a href="#" class="flex items-center rounded-lg px-4 py-3 text-gray-400 transition hover:bg-gray-700 hover:text-white">
+                <i class="fa-solid fa-gear w-6"></i> Settings
+            </a>
+        </nav>
+    </aside>
+
+    <main class="flex h-full flex-1 flex-col overflow-y-auto">
+        <header class="flex h-16 items-center justify-between border-b border-gray-700 bg-gray-800 px-8">
+            <h1 class="text-xl font-semibold">Vulnerability Scanner</h1>
+            <i class="fa-solid fa-circle-user text-2xl text-gray-400"></i>
+        </header>
+
+        <div class="mx-auto w-full max-w-6xl space-y-8 p-8">
+            <section class="rounded-xl border border-gray-700 bg-gray-800 p-6 shadow-lg">
+                <h2 class="mb-4 border-b border-gray-700 pb-2 text-lg font-bold">
+                    <i class="fa-solid fa-rocket mr-2"></i>Target Configuration
+                </h2>
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div class="md:col-span-2">
+                        <label for="targetUrl" class="mb-1 block text-sm text-gray-400">Target URL</label>
+                        <input
+                            type="text"
+                            id="targetUrl"
+                            value="http://snowden.kr/DVWA"
+                            class="w-full rounded border border-gray-600 bg-gray-900 p-2.5 text-white focus:border-blue-500 focus:outline-none"
+                        >
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="cookieInput" class="mb-1 block text-sm text-gray-400">Session Cookie (Optional)</label>
+                        <textarea
+                            id="cookieInput"
+                            rows="2"
+                            placeholder="PHPSESSID=abc123...; security=low"
+                            class="w-full rounded border border-gray-600 bg-gray-900 p-2.5 font-mono text-sm text-white focus:border-blue-500 focus:outline-none"
+                        ></textarea>
+                        <p class="mt-1 text-xs text-gray-500">로그인이 필요한 페이지면 브라우저에서 쿠키를 복사해 입력하세요.</p>
+                    </div>
+                    <div>
+                        <label for="attackType" class="mb-1 block text-sm text-gray-400">Attack Type</label>
+                        <select
+                            id="attackType"
+                            class="w-full rounded border border-gray-600 bg-gray-900 p-2.5 text-white focus:border-blue-500 focus:outline-none"
+                        >
+                            <option value="all">All Modules</option>
+                            <option value="sqli">SQL Injection</option>
+                            <option value="bruteforce">Brute Force</option>
+                            <option value="xss">XSS</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="rps" class="mb-1 block text-sm text-gray-400">Throttle (RPS)</label>
+                        <input
+                            type="number"
+                            id="rps"
+                            value="50"
+                            min="1"
+                            class="w-full rounded border border-gray-600 bg-gray-900 p-2.5 text-white focus:border-blue-500 focus:outline-none"
+                        >
+                    </div>
+                    <div class="md:col-span-2">
+                        <div class="mb-2 flex items-center justify-between">
+                            <label class="block text-sm text-gray-400">Advanced Options (key/value)</label>
+                            <button id="addOptionBtn" type="button" class="rounded bg-gray-700 px-3 py-1 text-sm text-white hover:bg-gray-600">
+                                <i class="fa-solid fa-plus mr-1"></i>Add
+                            </button>
+                        </div>
+                        <div id="extraOptionsContainer" class="space-y-2">
+                            <div class="grid grid-cols-1 gap-2 md:grid-cols-12 option-row">
+                                <input
+                                    type="text"
+                                    class="option-key md:col-span-5 rounded border border-gray-600 bg-gray-900 p-2 text-sm text-white"
+                                    placeholder="bruteforce.max_dictionary_candidates"
+                                >
+                                <input
+                                    type="text"
+                                    class="option-value md:col-span-6 rounded border border-gray-600 bg-gray-900 p-2 text-sm text-white"
+                                    placeholder="100"
+                                >
+                                <button type="button" class="remove-option md:col-span-1 rounded bg-red-900/60 px-3 text-sm text-red-200 hover:bg-red-800">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-1 gap-2 md:grid-cols-12 option-row">
+                                <input
+                                    type="text"
+                                    class="option-key md:col-span-5 rounded border border-gray-600 bg-gray-900 p-2 text-sm text-white"
+                                    placeholder="sqli.include_time_based"
+                                >
+                                <input
+                                    type="text"
+                                    class="option-value md:col-span-6 rounded border border-gray-600 bg-gray-900 p-2 text-sm text-white"
+                                    placeholder="false"
+                                >
+                                <button type="button" class="remove-option md:col-span-1 rounded bg-red-900/60 px-3 text-sm text-red-200 hover:bg-red-800">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button
+                        id="startBtn"
+                        class="rounded bg-blue-600 px-6 py-2.5 font-bold text-white shadow-lg transition duration-200 hover:bg-blue-500"
+                    >
+                        <i class="fa-solid fa-bolt mr-2"></i> Start Scan
+                    </button>
+                </div>
+            </section>
+
+            <section id="progressCard" class="hidden rounded-xl border border-gray-700 bg-gray-800 p-6 shadow-lg">
+                <div class="mb-2 flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-blue-400" id="statusText">Scanning in progress...</h2>
+                    <span class="text-xl font-bold" id="percentText">0%</span>
+                </div>
+                <div class="relative h-4 w-full overflow-hidden rounded-full border border-gray-700 bg-gray-900">
+                    <div id="progressBar" class="h-4 rounded-full bg-blue-500 transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </section>
+
+            <section id="summaryCard" class="hidden grid grid-cols-1 gap-4 md:grid-cols-4">
+                <div class="rounded-xl border border-gray-700 bg-gray-800 p-5 text-center shadow-lg">
+                    <i class="fa-solid fa-paper-plane mb-2 text-2xl text-blue-400"></i>
+                    <div class="text-xs text-gray-400">Total Sent</div>
+                    <div id="statTotal" class="text-2xl font-bold">0</div>
+                </div>
+                <div class="rounded-xl border border-red-900/50 bg-gray-800 p-5 text-center shadow-lg">
+                    <i class="fa-solid fa-skull-crossbones mb-2 text-2xl text-red-500"></i>
+                    <div class="text-xs text-gray-400">Successful Findings</div>
+                    <div id="statVuln" class="text-2xl font-bold text-red-500">0</div>
+                </div>
+                <div class="rounded-xl border border-gray-700 bg-gray-800 p-5 text-center shadow-lg">
+                    <i class="fa-solid fa-triangle-exclamation mb-2 text-2xl text-yellow-400"></i>
+                    <div class="text-xs text-gray-400">Failed / Errors</div>
+                    <div id="statFailed" class="text-2xl font-bold text-yellow-400">0</div>
+                </div>
+                <div class="rounded-xl border border-gray-700 bg-gray-800 p-5 text-center shadow-lg">
+                    <i class="fa-solid fa-stopwatch mb-2 text-2xl text-green-400"></i>
+                    <div class="text-xs text-gray-400">Time Taken (s)</div>
+                    <div id="statTime" class="text-2xl font-bold text-green-400">0.0</div>
+                </div>
+            </section>
+
+            <section id="resultsCard" class="hidden rounded-xl border border-gray-700 bg-gray-800 p-6 shadow-lg">
+                <h2 class="mb-4 border-b border-gray-700 pb-2 text-lg font-bold text-red-400">
+                    <i class="fa-solid fa-bug mr-2"></i>Findings
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-gray-300">
+                        <thead class="bg-gray-900 text-gray-400">
+                        <tr>
+                            <th class="rounded-tl-lg px-4 py-3">Severity</th>
+                            <th class="px-4 py-3">Location</th>
+                            <th class="px-4 py-3">Parameter</th>
+                            <th class="px-4 py-3">Type</th>
+                            <th class="rounded-tr-lg px-4 py-3">Payload</th>
+                        </tr>
+                        </thead>
+                        <tbody id="resultsTableBody" class="divide-y divide-gray-700"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+
+<script>
+    let currentScanId = null;
+    let pollingInterval = null;
+
+    const startBtn = document.getElementById("startBtn");
+    const optionsContainer = document.getElementById("extraOptionsContainer");
+    const addOptionBtn = document.getElementById("addOptionBtn");
+    startBtn.addEventListener("click", startScan);
+    addOptionBtn.addEventListener("click", addOptionRow);
+    optionsContainer.addEventListener("click", (event) => {
+        const removeButton = event.target.closest(".remove-option");
+        if (!removeButton) return;
+
+        const rows = optionsContainer.querySelectorAll(".option-row");
+        if (rows.length <= 1) {
+            const row = removeButton.closest(".option-row");
+            row.querySelector(".option-key").value = "";
+            row.querySelector(".option-value").value = "";
+            return;
+        }
+        removeButton.closest(".option-row").remove();
+    });
+
+    function addOptionRow() {
+        const row = document.createElement("div");
+        row.className = "grid grid-cols-1 gap-2 md:grid-cols-12 option-row";
+        row.innerHTML = `
+            <input type="text" class="option-key md:col-span-5 rounded border border-gray-600 bg-gray-900 p-2 text-sm text-white" placeholder="module.option_name">
+            <input type="text" class="option-value md:col-span-6 rounded border border-gray-600 bg-gray-900 p-2 text-sm text-white" placeholder="value">
+            <button type="button" class="remove-option md:col-span-1 rounded bg-red-900/60 px-3 text-sm text-red-200 hover:bg-red-800"><i class="fa-solid fa-xmark"></i></button>
+        `;
+        optionsContainer.appendChild(row);
+    }
+
+    function collectExtraOptions() {
+        const rows = optionsContainer.querySelectorAll(".option-row");
+        const options = [];
+        rows.forEach((row) => {
+            const key = row.querySelector(".option-key").value.trim();
+            const value = row.querySelector(".option-value").value.trim();
+            if (!key) return;
+            options.push({ key, value });
+        });
+        return options;
+    }
+
+    async function startScan() {
+        startBtn.disabled = true;
+        startBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Starting...';
+
+        document.getElementById("progressCard").classList.remove("hidden");
+        document.getElementById("resultsCard").classList.add("hidden");
+        document.getElementById("summaryCard").classList.add("hidden");
+        document.getElementById("progressBar").style.width = "0%";
+        document.getElementById("progressBar").className = "h-4 rounded-full bg-blue-500 transition-all duration-500";
+        document.getElementById("percentText").innerText = "0%";
+        document.getElementById("statusText").innerText = "Engine starting...";
+        document.getElementById("statusText").className = "text-lg font-bold text-blue-400";
+
+        const payload = {
+            target_url: document.getElementById("targetUrl").value.trim(),
+            attack_type: document.getElementById("attackType").value,
+            rps: parseInt(document.getElementById("rps").value, 10),
+            cookie: document.getElementById("cookieInput").value.trim(),
+            extra_options: collectExtraOptions()
+        };
+
+        try {
+            const response = await fetch("/api/scan/start", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error("scan start failed");
+            }
+
+            const data = await response.json();
+            currentScanId = data.scan_id;
+
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+            pollingInterval = setInterval(pollScanStatus, 1000);
+        } catch (error) {
+            alert("Failed to start scan. Check backend logs.");
+            resetStartButton();
+        }
+    }
+
+    async function pollScanStatus() {
+        if (!currentScanId) return;
+
+        try {
+            const response = await fetch(`/api/scan/${currentScanId}`);
+            if (!response.ok) {
+                throw new Error("polling failed");
+            }
+            const data = await response.json();
+
+            document.getElementById("progressBar").style.width = `${data.progress}%`;
+            document.getElementById("percentText").innerText = `${data.progress}%`;
+
+            if (data.status === "running") {
+                document.getElementById("statusText").innerText = `Fuzzing ${data.target} [${data.type}]...`;
+                return;
+            }
+
+            if (data.status === "completed") {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+
+                document.getElementById("statusText").innerText = "Scan Completed!";
+                document.getElementById("statusText").className = "text-lg font-bold text-green-400";
+                document.getElementById("progressBar").className = "h-4 rounded-full bg-green-500 transition-all duration-500";
+
+                renderSummary(data.summary || null);
+                renderFindings(data.findings || []);
+                resetStartButton();
+            }
+        } catch (error) {
+            clearInterval(pollingInterval);
+            pollingInterval = null;
+            alert("Polling failed. Check backend logs.");
+            resetStartButton();
+        }
+    }
+
+    function renderFindings(findings) {
+        const tbody = document.getElementById("resultsTableBody");
+        tbody.innerHTML = "";
+
+        if (findings.length > 0) {
+            document.getElementById("resultsCard").classList.remove("hidden");
+        }
+
+        findings.forEach((finding) => {
+            const severityColor = finding.severity === "High" ? "bg-red-500" : "bg-yellow-500";
+            const tr = document.createElement("tr");
+            tr.className = "transition hover:bg-gray-700";
+            tr.innerHTML = `
+                <td class="px-4 py-3"><span class="${severityColor} rounded px-2 py-1 text-xs font-bold text-white">${finding.severity}</span></td>
+                <td class="px-4 py-3 font-mono text-purple-400">${finding.location}</td>
+                <td class="px-4 py-3 font-mono">${finding.parameter}</td>
+                <td class="px-4 py-3 text-gray-400">${finding.type}</td>
+                <td class="max-w-xs truncate px-4 py-3 font-mono text-xs" title="${finding.payload}">${finding.payload}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderSummary(summary) {
+        if (!summary) return;
+        document.getElementById("summaryCard").classList.remove("hidden");
+        document.getElementById("statTotal").innerText = Number(summary.total_requests || 0).toLocaleString();
+        document.getElementById("statVuln").innerText = Number(summary.successful_findings || 0).toLocaleString();
+        document.getElementById("statFailed").innerText = Number(summary.failed_requests || 0).toLocaleString();
+        document.getElementById("statTime").innerText = `${Number(summary.elapsed_time || 0).toFixed(2)}s`;
+    }
+
+    function resetStartButton() {
+        startBtn.disabled = false;
+        startBtn.innerHTML = '<i class="fa-solid fa-bolt mr-2"></i> Start Scan';
+    }
+</script>
+</body>
+</html>
