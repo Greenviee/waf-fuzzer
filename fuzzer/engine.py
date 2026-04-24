@@ -342,14 +342,18 @@ class FuzzerEngine:
         if not self._module_runtime_active:
             raise RuntimeError("module mode is not running")
 
-        param_count = len(tuple(self._iter_parameters(surface)))
         for module in self.modules:
             payloads = self._module_payloads.get(module.name, [])
             queue = self._module_queues[module.name]
+            params = tuple(self._iter_parameters(surface))
+            selector = getattr(module, "get_target_parameters", None)
+            if callable(selector):
+                selected = selector(surface, params)
+                params = tuple(selected) if selected is not None else ()
 
             await queue.put(surface)
             async with self._stats_lock:
-                self._stats.queued += param_count * len(payloads)
+                self._stats.queued += len(params) * len(payloads)
 
     async def stop_module_mode(self) -> None:
         """
@@ -391,6 +395,10 @@ class FuzzerEngine:
 
             try:
                 params = tuple(self._iter_parameters(surface))
+                selector = getattr(module, "get_target_parameters", None)
+                if callable(selector):
+                    selected = selector(surface, params)
+                    params = tuple(selected) if selected is not None else ()
                 if not params or not payloads:
                     continue
 
