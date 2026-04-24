@@ -8,7 +8,6 @@ import sys
 import warnings
 
 <<<<<<< HEAD
-<<<<<<< HEAD
 from cli.options import parse_bf_length, parse_cookies
 from cli.parser import parse_arguments
 from cli.runner import run_scan
@@ -22,8 +21,6 @@ async def main() -> None:
             args.bf_length,
             args.bf_max_length,
 =======
-=======
->>>>>>> parent of a21fc8a (Revert "Merge branch 'dev-fuzzer' into fix/fuzzer-sqlimoudule-HY")
 from core import AttackSurface, HttpMethod, ParamLocation
 from fuzzer import FuzzerEngine
 from fuzzer.request_builder import build_and_send_request

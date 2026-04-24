@@ -64,7 +64,6 @@ def get_dvwa_mock_surfaces(
         #     description="DVWA File Inclusion (GET)",
         # ),
 <<<<<<< HEAD
-<<<<<<< HEAD
         # AttackSurface(
         #     url=f"{root}/vulnerabilities/brute/",
         #     method=HttpMethod.GET,
@@ -80,8 +79,6 @@ def get_dvwa_mock_surfaces(
         #     dynamic_tokens=["user_token"],
         # ),
 =======
-=======
->>>>>>> parent of a21fc8a (Revert "Merge branch 'dev-fuzzer' into fix/fuzzer-sqlimoudule-HY")
         AttackSurface(
             url=f"{root}/vulnerabilities/brute/",
             method=HttpMethod.GET,
@@ -90,7 +87,6 @@ def get_dvwa_mock_surfaces(
             cookies=auth_cookies,
             description="DVWA Brute Force (GET)",
         ),
-<<<<<<< HEAD
 >>>>>>> parent of a21fc8a (Revert "Merge branch 'dev-fuzzer' into fix/fuzzer-sqlimoudule-HY")
         # AttackSurface(
         #     url=f"{root}/vulnerabilities/brute/",
@@ -112,8 +108,6 @@ def get_dvwa_mock_surfaces(
             cookies=auth_cookies,
             description="DVWA SQL Injection (GET)",
         ),
-=======
->>>>>>> parent of a21fc8a (Revert "Merge branch 'dev-fuzzer' into fix/fuzzer-sqlimoudule-HY")
         # AttackSurface(
         #     url=f"{root}/vulnerabilities/upload/",
         #     method=HttpMethod.POST,
