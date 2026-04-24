@@ -101,6 +101,9 @@ class CrawlerEngine:
         self._shutdown = asyncio.Event()
         self._external_session = False
 
+        # ✨ [개선 1] 중복 공격 표면 방지를 위한 해시 세트 추가
+        self._seen_surfaces = set()
+
         # 발견된 API 패턴 추적
         self._api_patterns = {
             'json': ['/api/', '/v1/', '/v2/', '/graphql'],
@@ -173,6 +176,7 @@ class CrawlerEngine:
     def _reset_state(self):
         """상태 초기화"""
         self._visited.clear()
+        self._seen_surfaces.clear()  # 상태 초기화 시 세트도 비움
         self._stats = CrawlStats()
         self._shutdown.clear()
 
@@ -196,13 +200,16 @@ class CrawlerEngine:
             await self._cleanup_workers()
 
     async def _cleanup_workers(self):
-        """워커 정리"""
+        """워커 강제 종료 및 정리"""
         self._shutdown.set()
 
-        for _ in self._workers:
-            await self._queue.put((None, None))
+        for worker in self._workers:
+            if not worker.done():
+                worker.cancel()
 
-        await asyncio.gather(*self._workers, return_exceptions=True)
+        if self._workers:
+            await asyncio.gather(*self._workers, return_exceptions=True)
+
         self._workers.clear()
 
     async def _worker(self, worker_id):
@@ -213,7 +220,7 @@ class CrawlerEngine:
             try:
                 item = await asyncio.wait_for(
                     self._queue.get(),
-                    timeout=3.0
+                    timeout=1.0
                 )
 
                 if item[0] is None:
@@ -221,13 +228,19 @@ class CrawlerEngine:
 
                 url, depth = item
 
-                if self._should_continue_crawling():
-                    await self._process_url(url, depth)
-                    await asyncio.sleep(self.config.delay)
+                if not self._should_continue_crawling():
+                    self._shutdown.set()
+                    break
+
+                await self._process_url(url, depth)
+                await asyncio.sleep(self.config.delay)
 
             except asyncio.TimeoutError:
                 if self._queue.empty() and not self._shutdown.is_set():
                     break
+            except asyncio.CancelledError:
+                logger.debug("워커 %d 강제 취소됨", worker_id)
+                break
             except Exception as e:
                 logger.error("워커 %d 오류: %s", worker_id, e)
 
@@ -236,8 +249,8 @@ class CrawlerEngine:
     def _should_continue_crawling(self):
         """크롤링 계속 여부 확인"""
         return (
-            not self._shutdown.is_set() and
-            self._stats.urls_visited < self.config.max_urls
+                not self._shutdown.is_set() and
+                self._stats.urls_visited < self.config.max_urls
         )
 
     async def _process_url(self, url, depth):
@@ -264,8 +277,8 @@ class CrawlerEngine:
     def _is_valid_url(self, url):
         """URL 유효성 검사"""
         return (
-            url not in self._visited and
-            self.url_filter.should_crawl(url)
+                url not in self._visited and
+                self.url_filter.should_crawl(url)
         )
 
     def _mark_visited(self, url):
@@ -273,28 +286,45 @@ class CrawlerEngine:
         self._visited.add(url)
         self._stats.urls_visited += 1
 
-    async def _fetch_url(self, url):
-        """URL 가져오기"""
-        response = await self.session_manager.get(url, timeout=self.config.timeout)
+    async def _fetch_url(self, url, max_retries=2):
+        """
+        URL 가져오기 ✨ [개선 3] 재시도 로직 적용
+        """
+        for attempt in range(max_retries):
+            try:
+                response = await self.session_manager.get(url, timeout=self.config.timeout)
 
-        if not response:
-            self._stats.errors += 1
-            return None
+                if not response:
+                    # 응답이 없으면 재시도
+                    if attempt < max_retries - 1:
+                        await asyncio.sleep(1.0)
+                        continue
+                    self._stats.errors += 1
+                    return None
 
-        final_url = response.get("url", url)
-        if self._is_login_redirect(url, final_url):
-            logger.warning("로그인 페이지로 리다이렉트됨: %s", final_url)
-            self._stats.errors += 1
-            return None
+                final_url = response.get("url", url)
+                if self._is_login_redirect(url, final_url):
+                    logger.warning("로그인 페이지로 리다이렉트됨: %s", final_url)
+                    self._stats.errors += 1
+                    return None
 
-        return response
+                return response
+
+            except Exception as e:
+                logger.debug("요청 실패 (%s) 시도 %d/%d: %s", url, attempt + 1, max_retries, e)
+                if attempt < max_retries - 1:
+                    await asyncio.sleep(1.0)
+                else:
+                    self._stats.errors += 1
+                    return None
+        return None
 
     @staticmethod
     def _is_login_redirect(original_url, final_url):
         """로그인 리다이렉트 여부 확인"""
         return (
-            "login" in final_url.lower() and
-            "login" not in original_url.lower()
+                "login" in final_url.lower() and
+                "login" not in original_url.lower()
         )
 
     async def _process_response(self, response, url, depth):
@@ -319,15 +349,29 @@ class CrawlerEngine:
         if depth < self.config.max_depth:
             await self._queue_next_urls(html, final_url, depth)
 
+    # ✨ [개선 1] 중복 공격 표면 필터링 및 큐 추가 래퍼(Wrapper) 메서드
+    def _add_unique_attack_surface(self, surface: AttackSurface) -> bool:
+        """
+        고유한 공격 표면만 큐에 추가합니다.
+        동일한 URL, HTTP 메서드, 파라미터 구조를 가진 표면은 무시됩니다.
+        """
+        # 파라미터 키를 정렬하여 고유 구조 식별 (값은 무시)
+        param_keys = tuple(sorted(surface.parameters.keys()))
+
+        # 해시 생성: (URL, HTTP Method, Parameter Keys)
+        surface_hash = hash((surface.url, surface.method.value, param_keys))
+
+        if surface_hash not in self._seen_surfaces:
+            self._seen_surfaces.add(surface_hash)
+            self.queue_manager.add_attack_surface(surface)
+            self._stats.attack_surfaces += 1
+            return True
+
+        return False
+
     async def _extract_attack_surfaces(self, html, base_url, headers, cookies):
         """
         공격 표면 추출 (모든 유형)
-
-        Args:
-            html: HTML 콘텐츠
-            base_url: 베이스 URL
-            headers: 응답 헤더
-            cookies: 응답 쿠키
         """
         try:
             soup = BeautifulSoup(html, "html.parser")
@@ -351,13 +395,7 @@ class CrawlerEngine:
             logger.warning("공격 표면 추출 실패: %s", e)
 
     async def _extract_forms_surfaces(self, soup, base_url):
-        """
-        폼 기반 공격 표면 추출 (동적 토큰 감지 포함)
-
-        Args:
-            soup: BeautifulSoup 객체
-            base_url: 베이스 URL
-        """
+        """폼 기반 공격 표면 추출 (동적 토큰 감지 포함)"""
         for form in soup.find_all("form"):
             self._stats.forms_found += 1
 
@@ -367,7 +405,6 @@ class CrawlerEngine:
 
             form_url = urljoin(base_url, action) if action else base_url
 
-            # 파라미터 및 동적 토큰 추출
             parameters = {}
             dynamic_tokens = []
 
@@ -379,26 +416,17 @@ class CrawlerEngine:
                 value = input_field.get("value", "")
                 input_type = input_field.get("type", "text")
 
-                # 동적 토큰 감지
                 if TokenDetector.detect(name, value, input_type):
                     dynamic_tokens.append(name)
                     self._stats.dynamic_tokens_found += 1
-                    # INFO 레벨로 상세 로깅
-                    logger.info(
-                        "🔑 동적 토큰 감지: name=%s, value=%s..., type=%s",
-                        name,
-                        value[:20] if value else "(empty)",
-                        input_type
-                    )
+                    logger.info("🔑 동적 토큰 감지: name=%s, type=%s", name, input_type)
 
-                # hidden 필드는 값 유지, 나머지는 빈 값
                 if input_type != "hidden":
                     value = ""
 
                 parameters[name] = value
 
             if parameters:
-                # 파라미터 위치 결정
                 if method == "GET":
                     param_location = ParamLocation.QUERY
                 elif "json" in enctype.lower():
@@ -406,7 +434,6 @@ class CrawlerEngine:
                 else:
                     param_location = ParamLocation.BODY_FORM
 
-                # HTTP 메서드 결정
                 try:
                     http_method = HttpMethod[method]
                 except KeyError:
@@ -422,32 +449,15 @@ class CrawlerEngine:
                     description=f"Form [{method}] from {base_url}"
                 )
 
-                self.queue_manager.add_attack_surface(surface)
-                self._stats.attack_surfaces += 1
-
-                if dynamic_tokens:
-                    logger.info(
-                        "폼 공격 표면 추가: %s (동적 토큰: %s)",
-                        form_url,
-                        dynamic_tokens
-                    )
-                else:
-                    logger.debug(
-                        "폼 공격 표면 추가: %s (%s)",
-                        form_url,
-                        param_location.value
-                    )
+                # ✨ [개선 1] 중복 필터링 적용
+                if self._add_unique_attack_surface(surface):
+                    if dynamic_tokens:
+                        logger.info("폼 공격 표면 추가: %s (동적 토큰: %s)", form_url, dynamic_tokens)
+                    else:
+                        logger.debug("폼 공격 표면 추가: %s (%s)", form_url, param_location.value)
 
     async def _extract_api_surfaces(self, html, base_url, headers):
-        """
-        AJAX/API 엔드포인트 추출 (BODY_JSON)
-
-        Args:
-            html: HTML 콘텐츠
-            base_url: 베이스 URL
-            headers: 응답 헤더
-        """
-        # JSON 응답 감지
+        """AJAX/API 엔드포인트 추출 (BODY_JSON)"""
         content_type = headers.get("content-type", "").lower()
         if "application/json" in content_type:
             self._stats.apis_found += 1
@@ -467,14 +477,13 @@ class CrawlerEngine:
                         description="JSON API endpoint"
                     )
 
-                    self.queue_manager.add_attack_surface(surface)
-                    self._stats.attack_surfaces += 1
-                    logger.debug("JSON API 공격 표면 추가: %s", base_url)
+                    # ✨ [개선 1] 중복 필터링 적용
+                    if self._add_unique_attack_surface(surface):
+                        logger.debug("JSON API 공격 표면 추가: %s", base_url)
 
             except json.JSONDecodeError:
                 pass
 
-        # JavaScript 내 API 호출 패턴 찾기
         api_patterns = [
             r'fetch\s*\(\s*["\']([^"\']+)["\']',
             r'axios\.(get|post|put|delete)\s*\(\s*["\']([^"\']+)["\']',
@@ -485,7 +494,6 @@ class CrawlerEngine:
         for pattern in api_patterns:
             matches = re.findall(pattern, html, re.IGNORECASE)
             for match in matches:
-                # 튜플인 경우 URL 부분 추출
                 if isinstance(match, tuple):
                     api_path = match[-1]
                     method_hint = match[0] if len(match) > 1 else "GET"
@@ -495,11 +503,9 @@ class CrawlerEngine:
 
                 api_url = urljoin(base_url, api_path)
 
-                # 이미 처리된 URL 스킵
                 if not self.url_filter.should_crawl(api_url):
                     continue
 
-                # HTTP 메서드 결정
                 method_map = {
                     "get": HttpMethod.GET,
                     "post": HttpMethod.POST,
@@ -520,19 +526,12 @@ class CrawlerEngine:
                     description=f"API endpoint found in JavaScript [{http_method.value}]"
                 )
 
-                self.queue_manager.add_attack_surface(surface)
-                self._stats.attack_surfaces += 1
-                logger.debug("JS API 공격 표면 추가: %s", api_url)
+                # ✨ [개선 1] 중복 필터링 적용
+                if self._add_unique_attack_surface(surface):
+                    logger.debug("JS API 공격 표면 추가: %s", api_url)
 
     async def _extract_query_surfaces(self, soup, base_url):
-        """
-        URL 쿼리 파라미터 추출 (QUERY)
-
-        Args:
-            soup: BeautifulSoup 객체
-            base_url: 베이스 URL
-        """
-        # 현재 URL의 쿼리 파라미터
+        """URL 쿼리 파라미터 추출 (QUERY)"""
         parsed = urlparse(base_url)
         if parsed.query:
             params = parse_qs(parsed.query)
@@ -549,10 +548,8 @@ class CrawlerEngine:
                     description="Current URL query parameters"
                 )
 
-                self.queue_manager.add_attack_surface(surface)
-                self._stats.attack_surfaces += 1
+                self._add_unique_attack_surface(surface)
 
-        # 페이지 내 링크의 쿼리 파라미터
         processed_urls = set()
         for link in soup.find_all("a", href=True):
             href = link["href"]
@@ -561,7 +558,6 @@ class CrawlerEngine:
 
             full_url = urljoin(base_url, href)
 
-            # 중복 방지
             url_without_query = full_url.split('?')[0]
             if url_without_query in processed_urls:
                 continue
@@ -586,21 +582,13 @@ class CrawlerEngine:
                     description="Link with query parameters"
                 )
 
-                self.queue_manager.add_attack_surface(surface)
-                self._stats.attack_surfaces += 1
-                logger.debug("쿼리 공격 표면 추가: %s", url_without_query)
+                # ✨ [개선 1] 중복 필터링 적용
+                if self._add_unique_attack_surface(surface):
+                    logger.debug("쿼리 공격 표면 추가: %s", url_without_query)
 
     async def _extract_header_surfaces(self, base_url):
-        """
-        헤더 기반 공격 표면 추출 (HEADER)
-
-        Args:
-            base_url: 베이스 URL
-        """
-        # 공격 가능한 헤더들을 파라미터로 구성
-        header_parameters = {}
-        for header_name in self._injectable_headers:
-            header_parameters[header_name] = ""
+        """헤더 기반 공격 표면 추출 (HEADER)"""
+        header_parameters = {name: "" for name in self._injectable_headers}
 
         surface = AttackSurface(
             url=base_url,
@@ -612,23 +600,12 @@ class CrawlerEngine:
             description="HTTP Header injection points"
         )
 
-        self.queue_manager.add_attack_surface(surface)
-        self._stats.attack_surfaces += 1
-        logger.debug(
-            "헤더 공격 표면 추가: %s (%d개 헤더)",
-            base_url,
-            len(header_parameters)
-        )
+        # ✨ [개선 1] 중복 필터링 적용
+        if self._add_unique_attack_surface(surface):
+            logger.debug("헤더 공격 표면 추가: %s (%d개 헤더)", base_url, len(header_parameters))
 
     async def _extract_cookie_surfaces(self, base_url, cookies):
-        """
-        쿠키 기반 공격 표면 추출 (COOKIE)
-
-        Args:
-            base_url: 베이스 URL
-            cookies: 응답에서 받은 쿠키 또는 세션의 쿠키
-        """
-        # 응답 쿠키가 없으면 세션 매니저에서 가져오기
+        """쿠키 기반 공격 표면 추출 (COOKIE)"""
         cookie_dict = cookies if cookies else {}
 
         if not cookie_dict:
@@ -638,10 +615,8 @@ class CrawlerEngine:
                 cookie_dict = {}
 
         if not cookie_dict:
-            logger.debug("쿠키 없음, 쿠키 공격 표면 스킵: %s", base_url)
             return
 
-        # 쿠키를 파라미터로 변환
         cookie_parameters = {name: value for name, value in cookie_dict.items()}
 
         surface = AttackSurface(
@@ -655,25 +630,12 @@ class CrawlerEngine:
             description=f"Cookie injection points ({len(cookie_parameters)} cookies)"
         )
 
-        self.queue_manager.add_attack_surface(surface)
-        self._stats.attack_surfaces += 1
-        logger.debug(
-            "쿠키 공격 표면 추가: %s (%d개 쿠키)",
-            base_url,
-            len(cookie_parameters)
-        )
+        # ✨ [개선 1] 중복 필터링 적용
+        if self._add_unique_attack_surface(surface):
+            logger.debug("쿠키 공격 표면 추가: %s (%d개 쿠키)", base_url, len(cookie_parameters))
 
     def _extract_json_parameters(self, json_data, prefix=""):
-        """
-        JSON 구조에서 파라미터 추출 (재귀적)
-
-        Args:
-            json_data: JSON 데이터
-            prefix: 키 프리픽스
-
-        Returns:
-            dict: 추출된 파라미터
-        """
+        """JSON 구조에서 파라미터 추출 (재귀적)"""
         parameters = {}
 
         if isinstance(json_data, dict):
