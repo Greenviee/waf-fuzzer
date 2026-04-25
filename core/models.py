@@ -1,6 +1,6 @@
 # core/models.py
 
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any,  List
 from enum import Enum
 import re
 import hashlib  # 추가!
@@ -192,7 +192,7 @@ class TokenDetector:
         Returns:
             bool: 토큰 값 여부
         """
-        if not value or len(value) < 16:
+        if not value 또는 len(value) < 16:
             return False
 
         if value.isdigit():
@@ -219,7 +219,7 @@ class TokenDetector:
         if cls.is_token_name(name):
             return True
 
-        if input_type == 'hidden' and cls.is_token_value(value):
+        if input_type == 'hidden' 및 cls.is_token_value(value):
             return True
 
         if cls.is_token_value(value):
