@@ -14,7 +14,6 @@ logger = get_logger(__name__)
 
 
 class URLFilter:
-    # ... (기존 EXCLUDED_EXTENSIONS, DEFAULT_EXCLUDED_PATTERNS 등은 모두 동일하게 유지) ...
     EXCLUDED_EXTENSIONS = {
         '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.ico', '.webp',
         '.css', '.js', '.map',
@@ -43,7 +42,6 @@ class URLFilter:
         r'/add', r'/submit', r'/process', r'/callback', r'/webhook', r'/redirect',
     ]
 
-    # ✨ [개선 3] 동일 파라미터 구조 수집 최대 개수 파라미터 추가
     def __init__(
             self,
             allowed_domains=None,
@@ -60,7 +58,6 @@ class URLFilter:
         self.max_url_length = max_url_length
         self.allowed_schemes = {'http', 'https'}
 
-        # ✨ [개선 3] URL 구조(Path + Query Keys) 방문 횟수 추적
         self.url_structure_counts = {}
         self.max_same_structure = max_same_structure
 
@@ -74,7 +71,7 @@ class URLFilter:
 
         logger.debug("URL 필터 초기화: 허용 도메인=%s", self.allowed_domains)
 
-    def should_crawl(self, url):
+    def should_crawl(self, url: str) -> bool:
         """URL을 크롤링해야 하는지 결정"""
         try:
             parsed = urlparse(url)
@@ -94,20 +91,14 @@ class URLFilter:
             if self._matches_excluded_pattern(url):
                 return False
 
-            # ✨ [개선 3] 동일한 쿼리 파라미터 구조를 가진 URL 무한 크롤링 방지
-            # 예: /board?page=1, /board?page=2 는 동일한 구조로 판단
             if parsed.query:
-                # 쿼리 스트링의 '키(Key)'들만 추출하여 정렬
                 query_keys = tuple(sorted(parse_qs(parsed.query).keys()))
-                # (경로, 키 목록) 조합으로 고유 해시 생성
                 structure_hash = hash((parsed.path, query_keys))
 
-                # 동일 구조의 URL이 제한 개수를 넘으면 수집 스킵
                 if self.url_structure_counts.get(structure_hash, 0) >= self.max_same_structure:
                     logger.debug("동일 URL 구조 제한 초과 방지: %s", url)
                     return False
 
-                # 개수 증가
                 self.url_structure_counts[structure_hash] = self.url_structure_counts.get(structure_hash, 0) + 1
 
             return True
@@ -116,8 +107,7 @@ class URLFilter:
             logger.warning("URL 필터링 오류 (%s): %s", url, e)
             return False
 
-    # ... (이하 _is_domain_allowed 부터 파일 끝까지의 모든 메서드는 완벽하므로 기존 코드 유지) ...
-    def _is_domain_allowed(self, domain):
+    def _is_domain_allowed(self, domain: str) -> bool:
         if domain in self.excluded_domains:
             return False
         if self.allowed_domains:
@@ -127,21 +117,21 @@ class URLFilter:
             return False
         return True
 
-    def _has_excluded_extension(self, path):
+    def _has_excluded_extension(self, path: str) -> bool:
         path_lower = path.lower()
         for ext in self.EXCLUDED_EXTENSIONS:
             if path_lower.endswith(ext):
                 return True
         return False
 
-    def _matches_excluded_pattern(self, url):
+    def _matches_excluded_pattern(self, url: str) -> bool:
         for regex in self._excluded_regex:
             if regex.search(url):
                 return True
         return False
 
     @staticmethod
-    def normalize_url(url):
+    def normalize_url(url: str) -> str:
         try:
             parsed = urlparse(url)
             scheme = parsed.scheme.lower()
@@ -168,22 +158,24 @@ class URLFilter:
                 query = urlencode(query_list, doseq=True)
 
             return urlunparse((scheme, netloc, path, '', query, ''))
-        except Exception:
-            return url
+        # noinspection PyBroadException
+        except Exception as e:
+            logger.debug("URL 정규화 실패 (%s): %s", url, e)
+            return str(url)
 
-    def is_api_endpoint(self, url):
+    def is_api_endpoint(self, url: str) -> bool:
         for regex in self._api_regex:
             if regex.search(url):
                 return True
         return False
 
-    def is_interesting_url(self, url):
+    def is_interesting_url(self, url: str) -> bool:
         for regex in self._interesting_regex:
             if regex.search(url):
                 return True
         return False
 
-    def get_url_priority(self, url):
+    def get_url_priority(self, url: str) -> int:
         priority = 5
         if self.is_api_endpoint(url): priority += 3
         if self.is_interesting_url(url): priority += 2
@@ -192,66 +184,76 @@ class URLFilter:
         return min(10, max(0, priority))
 
     @staticmethod
-    def has_query_params(url):
+    def has_query_params(url: str) -> bool:
         return bool(urlparse(url).query)
 
     @staticmethod
-    def get_query_params(url):
+    def get_query_params(url: str) -> dict:
         try:
             params = parse_qs(urlparse(url).query, keep_blank_values=True)
-            return {k: v[0] if len(v) == 1 else v for k, v in params.items()}
-        except Exception:
+            return {str(k): str(v[0]) if len(v) == 1 else v for k, v in params.items()}
+        # noinspection PyBroadException
+        except Exception as e:
+            logger.debug("쿼리 파라미터 추출 실패 (%s): %s", url, e)
             return {}
 
     @staticmethod
-    def get_base_url(url):
+    def get_base_url(url: str) -> str:
         try:
             parsed = urlparse(url)
             return urlunparse((parsed.scheme, parsed.netloc, parsed.path, '', '', ''))
-        except Exception:
-            return url.split('?')[0]
+        # noinspection PyBroadException
+        except Exception as e:
+            logger.debug("기본 URL 추출 실패 (%s): %s", url, e)
+            return str(url).split('?')[0]
 
     @staticmethod
-    def get_path_segments(url):
+    def get_path_segments(url: str) -> list:
         try:
             path = urlparse(url).path.strip('/')
             return path.split('/') if path else []
-        except Exception:
+        # noinspection PyBroadException
+        except Exception as e:
+            logger.debug("경로 세그먼트 추출 실패 (%s): %s", url, e)
             return []
 
     @staticmethod
-    def extract_domain(url):
+    def extract_domain(url: str) -> str:
         try:
             return urlparse(url).netloc.lower()
-        except Exception:
+        # noinspection PyBroadException
+        except Exception as e:
+            logger.debug("도메인 추출 실패 (%s): %s", url, e)
             return ""
 
-    def is_same_domain(self, url1, url2):
+    def is_same_domain(self, url1: str, url2: str) -> bool:
         return self.extract_domain(url1) == self.extract_domain(url2)
 
     @staticmethod
-    def is_same_origin(url1, url2):
+    def is_same_origin(url1: str, url2: str) -> bool:
         try:
             parsed1 = urlparse(url1)
             parsed2 = urlparse(url2)
             return parsed1.scheme == parsed2.scheme and parsed1.netloc == parsed2.netloc
-        except Exception:
+        # noinspection PyBroadException
+        except Exception as e:
+            logger.debug("동일 출처 확인 실패: %s", e)
             return False
 
-    def add_allowed_domain(self, domain):
+    def add_allowed_domain(self, domain: str):
         self.allowed_domains.add(domain.lower().strip())
 
-    def add_excluded_domain(self, domain):
+    def add_excluded_domain(self, domain: str):
         self.excluded_domains.add(domain.lower().strip())
 
-    def add_excluded_pattern(self, pattern):
+    def add_excluded_pattern(self, pattern: str):
         try:
-            self._excluded_regex.append(re.compile(pattern, re.IGNORECASE))
-        except re.error:
-            pass
+            self._excluded_regex.append(re.compile(str(pattern), re.IGNORECASE))
+        except re.error as e:
+            logger.debug("잘못된 정규식 패턴 추가 시도 (%s): %s", pattern, e)
 
-    def add_api_pattern(self, pattern):
+    def add_api_pattern(self, pattern: str):
         try:
-            self._api_regex.append(re.compile(pattern, re.IGNORECASE))
-        except re.error:
-            pass
+            self._api_regex.append(re.compile(str(pattern), re.IGNORECASE))
+        except re.error as e:
+            logger.debug("잘못된 API 정규식 패턴 추가 시도 (%s): %s", pattern, e)
