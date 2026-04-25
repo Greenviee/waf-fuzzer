@@ -3,7 +3,7 @@
 import asyncio
 import json
 import re
-from typing import Optional
+from typing import Optional, Any
 from urllib.parse import urljoin
 
 import aiohttp
@@ -17,7 +17,6 @@ logger = get_logger(__name__)
 class AuthConfig:
     """인증 설정"""
 
-    # ... (기존 코드와 동일하므로 생략하지 않고 모두 포함합니다) ...
     def __init__(
             self,
             login_url: str,
@@ -46,16 +45,7 @@ class AuthConfig:
 class SessionManager:
     """HTTP 세션 관리자"""
 
-    # ✨ [개선 1 & 2] proxy 외에 verify_ssl, custom_headers 파라미터 추가
     def __init__(self, proxy=None, verify_ssl=False, custom_headers=None):
-        """
-        세션 매니저 초기화
-
-        Args:
-            proxy: 프록시 서버 URL (예: "http://127.0.0.1:8080")
-            verify_ssl: SSL 인증서 검증 여부 (기본값: False)
-            custom_headers: 커스텀 HTTP 헤더 딕셔너리
-        """
         self._session = None
         self._cookies = {}
         self._headers = {
@@ -66,12 +56,11 @@ class SessionManager:
             "Connection": "keep-alive",
         }
 
-        # ✨ [개선 2] 커스텀 헤더가 제공되었다면 기본 헤더에 덮어쓰기 (WAF 우회용)
         if custom_headers:
             self._headers.update(custom_headers)
 
         self.proxy = proxy
-        self.verify_ssl = verify_ssl  # ✨ [개선 1] 인스턴스 변수로 저장
+        self.verify_ssl = verify_ssl
         self._authenticated = False
 
     async def create_session(self):
@@ -80,7 +69,7 @@ class SessionManager:
             connector = aiohttp.TCPConnector(
                 limit=10,
                 limit_per_host=5,
-                ssl=self.verify_ssl  # ✨ [개선 1] 하드코딩 제거 및 변수 적용
+                ssl=self.verify_ssl
             )
             self._session = aiohttp.ClientSession(
                 connector=connector,
@@ -95,29 +84,48 @@ class SessionManager:
             self._authenticated = False
             logger.debug("세션 종료됨")
 
-    # ... (이하 _extract_csrf_token 부터 _request, get, post 등의 메서드는 완벽하므로 기존 코드 그대로 유지) ...
+    # ✨ [수정 1] element의 타입을 Any로 지정하고 hasattr 검증 추가
+    @staticmethod
+    def _get_safe_attr(element: Any, attr_name: str) -> str:
+        """bs4 요소에서 속성값을 안전하게 문자열로 추출 (PyCharm Type Guard)"""
+        # element가 None이거나 .get() 메서드가 없는(NavigableString 등) 경우 방어
+        if element is None or not hasattr(element, 'get'):
+            return ""
+
+        raw_val = element.get(attr_name)
+        if isinstance(raw_val, list):
+            return str(raw_val[0]) if raw_val else ""
+        elif raw_val is not None:
+            return str(raw_val)
+        return ""
+
     @staticmethod
     def _extract_csrf_token(html: str, token_name: str) -> Optional[str]:
         try:
             soup = BeautifulSoup(html, 'html.parser')
             token_input = soup.find('input', {'name': token_name})
-            if token_input and token_input.get('value'):
-                return token_input.get('value')
+
+            val = SessionManager._get_safe_attr(token_input, 'value')
+            if val:
+                return val
+
             common_names = [
                 'user_token', 'csrf_token', '_token', 'token',
                 'csrf', '_csrf_token', 'authenticity_token', '_csrf',
             ]
             for name in common_names:
                 token_input = soup.find('input', {'name': name})
-                if token_input and token_input.get('value'):
-                    return token_input.get('value')
+                val = SessionManager._get_safe_attr(token_input, 'value')
+                if val:
+                    return val
+
             hidden_inputs = soup.find_all('input', {'type': 'hidden'})
             for inp in hidden_inputs:
-                name = inp.get('name', '').lower()
+                name = SessionManager._get_safe_attr(inp, 'name').lower()
                 if 'token' in name or 'csrf' in name:
-                    value = inp.get('value')
-                    if value:
-                        return value
+                    val = SessionManager._get_safe_attr(inp, 'value')
+                    if val:
+                        return val
         except Exception as e:
             logger.warning("CSRF 토큰 추출 실패: %s", e)
         return None
@@ -233,13 +241,16 @@ class SessionManager:
             return False
         api_types = ['application/json', 'application/xml', 'application/x-www-form-urlencoded', 'text/json',
                      'text/xml']
-        content_type = content_type.lower()
-        return any(api_type in content_type for api_type in api_types)
+
+        ct = str(content_type).lower()
+        return any(api_type in ct for api_type in api_types)
 
     async def _request(self, method: str, url: str, timeout: int = 10, allow_redirects: bool = True,
                        max_retries: int = 3, headers: Optional[dict] = None, **kwargs) -> Optional[dict]:
         if self._session is None:
             await self.create_session()
+
+        assert self._session is not None, "Session was not properly initialized"
 
         request_timeout = aiohttp.ClientTimeout(total=timeout)
         request_headers = self._headers.copy()
@@ -270,7 +281,8 @@ class SessionManager:
                             text = await response.text()
                     except UnicodeDecodeError:
                         text = ""
-                    except Exception:
+                    except Exception as e:
+                        logger.debug("응답 데이터 텍스트 변환 실패: %s", e)
                         text = ""
 
                     for cookie in response.cookies.values():
@@ -293,7 +305,8 @@ class SessionManager:
                 pass
             except aiohttp.ClientError:
                 pass
-            except Exception:
+            except Exception as e:
+                logger.debug("요청 처리 중 예기치 않은 오류 발생: %s", e)
                 break
 
             if attempt < max_retries - 1:
@@ -336,8 +349,8 @@ class SessionManager:
                 cors_header = response.get("headers", {}).get("Access-Control-Allow-Methods", "")
                 if cors_header:
                     return [m.strip().upper() for m in cors_header.split(",")]
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("OPTIONS 메서드 확인 실패: %s", e)
 
         test_methods = ["GET", "POST", "PUT", "DELETE", "HEAD"]
         for method in test_methods:
@@ -345,6 +358,7 @@ class SessionManager:
                 response = await self._request(method=method, url=url, max_retries=1, timeout=3, allow_redirects=False)
                 if response and response.get("status", 0) != 405:
                     allowed_methods.append(method)
-            except Exception:
+            except Exception as e:
+                logger.debug("단일 메서드(%s) 테스트 중 오류: %s", method, e)
                 continue
         return allowed_methods if allowed_methods else ["GET"]
