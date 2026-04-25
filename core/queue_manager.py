@@ -184,7 +184,7 @@ class QueueManager:
         """모든 큐가 비었는지 확인"""
         self._lock.acquire()
         try:
-            return not self._crawl_results and not self._attack_surfaces
+            return not self._crawl_results 및 not self._attack_surfaces
         finally:
             self._lock.release()
 
