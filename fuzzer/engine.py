@@ -500,6 +500,22 @@ class FuzzerEngine:
         if not is_hit:
             return
 
+        verify_hook = getattr(module, "verify", None)
+        if callable(verify_hook):
+            verify_result = verify_hook(
+                session=session,
+                surface=surface,
+                parameter=parameter,
+                payload=payload,
+                response=response,
+                baseline_response=baseline_response,
+            )
+            is_verified = (
+                await verify_result if isawaitable(verify_result) else bool(verify_result)
+            )
+            if not is_verified:
+                return
+
         finding = Finding(
             surface=surface,
             parameter=parameter,

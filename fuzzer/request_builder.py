@@ -220,6 +220,19 @@ async def _send_prepared_request(
         )
 
 
+def _resolve_payload_value(payload: Any) -> str:
+    if hasattr(payload, "value"):
+        return str(getattr(payload, "value"))
+    return str(payload)
+
+
+def _is_file_payload(payload: Any) -> bool:
+    return all(
+        hasattr(payload, attr)
+        for attr in ("filename", "content", "content_type")
+    )
+
+
 def _inject_path_payload(url: str, parameter: str, payload: str) -> str:
     """
     Replace a path placeholder with encoded payload.
@@ -240,7 +253,7 @@ async def build_and_send_request(
     session: aiohttp.ClientSession,
     surface: AttackSurface,
     parameter: str,
-    payload: str,
+    payload: Any,
 ) -> FuzzerResponse:
     """
     Clone attack surface data, inject one payload, and send the HTTP request.
@@ -256,26 +269,42 @@ async def build_and_send_request(
         req_params = {str(k): "" for k in req_params}
 
     request_kwargs: dict[str, Any] = {}
+    payload_value = _resolve_payload_value(payload)
+    is_file_payload = _is_file_payload(payload)
 
     if surface.param_location == ParamLocation.QUERY:
-        req_params[parameter] = payload
+        req_params[parameter] = payload_value
         request_kwargs["params"] = req_params
     elif surface.param_location == ParamLocation.BODY_FORM:
-        req_params[parameter] = payload
-        request_kwargs["data"] = req_params
+        if is_file_payload:
+            form = aiohttp.FormData()
+            for key, value in req_params.items():
+                if key == parameter:
+                    continue
+                form.add_field(str(key), str(value))
+            form.add_field(
+                parameter,
+                payload.content,
+                filename=str(payload.filename),
+                content_type=str(payload.content_type),
+            )
+            request_kwargs["data"] = form
+        else:
+            req_params[parameter] = payload_value
+            request_kwargs["data"] = req_params
     elif surface.param_location == ParamLocation.BODY_JSON:
-        req_params[parameter] = payload
+        req_params[parameter] = payload_value
         request_kwargs["json"] = req_params
     elif surface.param_location == ParamLocation.HEADER:
-        headers[parameter] = payload
+        headers[parameter] = payload_value
         if req_params:
             request_kwargs["params"] = req_params
     elif surface.param_location == ParamLocation.COOKIE:
-        cookies[parameter] = payload
+        cookies[parameter] = payload_value
         if req_params:
             request_kwargs["params"] = req_params
     elif surface.param_location == ParamLocation.PATH:
-        url = _inject_path_payload(url=url, parameter=parameter, payload=payload)
+        url = _inject_path_payload(url=url, parameter=parameter, payload=payload_value)
         if req_params:
             request_kwargs["params"] = req_params
     else:
@@ -324,7 +353,21 @@ async def build_and_send_request(
         if surface.param_location == ParamLocation.QUERY and req_params:
             request_kwargs["params"] = req_params
         elif surface.param_location == ParamLocation.BODY_FORM:
-            request_kwargs["data"] = req_params
+            if is_file_payload:
+                form = aiohttp.FormData()
+                for key, value in req_params.items():
+                    if key == parameter:
+                        continue
+                    form.add_field(str(key), str(value))
+                form.add_field(
+                    parameter,
+                    payload.content,
+                    filename=str(payload.filename),
+                    content_type=str(payload.content_type),
+                )
+                request_kwargs["data"] = form
+            else:
+                request_kwargs["data"] = req_params
         elif surface.param_location == ParamLocation.BODY_JSON:
             request_kwargs["json"] = req_params
         elif req_params:
