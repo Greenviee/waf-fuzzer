@@ -19,7 +19,6 @@ from urllib.parse import urlparse
 import aiohttp
 from bs4 import BeautifulSoup, FeatureNotFound
 
-# 로깅 설정: 호출자가 로그 설정을 제어할 수 있도록 NullHandler 사용
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
@@ -32,18 +31,23 @@ ALLOWED_CONTENT_TYPES: frozenset[str] = frozenset({
     "text/xml",
     "application/xml",
 })
-# SSRF 방지를 위해 접속을 차단할 내부 네트워크 대역
-BLOCKED_NETWORKS: tuple = (
+
+# SSRF 방지용 차단 네트워크 (IPv4/IPv6 분리로 TypeError 방지)
+BLOCKED_NETWORKS_V4: tuple = (
     ipaddress.ip_network("127.0.0.0/8"),
     ipaddress.ip_network("10.0.0.0/8"),
     ipaddress.ip_network("172.16.0.0/12"),
     ipaddress.ip_network("192.168.0.0/16"),
     ipaddress.ip_network("169.254.0.0/16"),
     ipaddress.ip_network("224.0.0.0/4"),
+)
+
+BLOCKED_NETWORKS_V6: tuple = (
     ipaddress.ip_network("::1/128"),
     ipaddress.ip_network("fc00::/7"),
     ipaddress.ip_network("fe80::/10"),
 )
+
 DEFAULT_HEADERS: MappingProxyType = MappingProxyType({
     "User-Agent": "AsyncScanner-Bot/1.0",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -74,9 +78,9 @@ class AsyncHTMLParser:
     """SSRF 방어 기능을 갖춘 비동기 HTML 파서 코어 엔진"""
 
     def __init__(
-            self,
-            timeout: int = DEFAULT_TIMEOUT,
-            headers: Optional[dict] = None
+        self,
+        timeout: int = DEFAULT_TIMEOUT,
+        headers: Optional[dict] = None
     ):
         self.timeout = aiohttp.ClientTimeout(total=timeout)
         self.headers = dict(DEFAULT_HEADERS) if headers is None else dict(headers)
@@ -104,7 +108,7 @@ class AsyncHTMLParser:
     async def _is_safe_url(url: str) -> bool:
         """
         URL 안전성 검증: 스킴 확인 + DNS 해석 + 내부 IP 대역 차단
-
+        
         주의: 이 검증은 1차 방어 수준이며, 완전한 DNS Rebinding 방어를 위해서는
         DNS 조회 후 연결 IP를 고정하고 재조회를 차단하는 추가 조치가 필요함
         """
@@ -125,10 +129,16 @@ class AsyncHTMLParser:
                 timeout=DNS_TIMEOUT,
             )
 
-            # 해석된 모든 IP가 차단 대역에 속하는지 검사
             for _, _, _, _, sockaddr in addrinfo:
                 ip = ipaddress.ip_address(sockaddr[0])
-                if any(ip in network for network in BLOCKED_NETWORKS):
+                
+                # IPv4/IPv6에 맞는 네트워크 목록 선택 (TypeError 방지)
+                if ip.version == 4:
+                    blocked_networks = BLOCKED_NETWORKS_V4
+                else:
+                    blocked_networks = BLOCKED_NETWORKS_V6
+                
+                if any(ip in network for network in blocked_networks):
                     return False
 
             return True
@@ -165,18 +175,16 @@ class AsyncHTMLParser:
 
     async def _read_content(self, response: aiohttp.ClientResponse) -> bytes:
         """스트리밍 방식으로 응답을 읽어 메모리 과부하(OOM) 방지"""
-        # Content-Length 헤더를 통한 사전 검사 (버그 수정됨)
         content_length_header = response.headers.get("Content-Length")
         if content_length_header:
             try:
                 content_length = int(content_length_header)
             except (ValueError, TypeError):
                 content_length = None
-
+            
             if content_length is not None and content_length > MAX_CONTENT_LENGTH:
                 raise ValueError(f"컨텐츠 크기 제한 초과: {content_length} bytes")
 
-        # 청크 단위로 읽으며 실제 크기 실시간 감시
         buffer = bytearray()
         async for chunk in response.content.iter_chunked(CHUNK_SIZE):
             buffer.extend(chunk)
@@ -188,10 +196,10 @@ class AsyncHTMLParser:
     async def parse(self, url: str) -> ParseResult:
         """
         URL로부터 HTML을 가져와 파싱
-
-        요청사항 반영: aiohttp 내장 리다이렉트 사용 (allow_redirects=True)
+        
+        aiohttp 내장 리다이렉트 사용 (allow_redirects=True)
         보안: 초기 URL + 최종 URL 검증으로 SSRF 방어
-
+        
         주의: 중간 리다이렉트 경로는 검증하지 않음. 완전한 SSRF 방어가 필요하면
         allow_redirects=False로 수동 추적 방식을 사용해야 함.
         """
@@ -203,7 +211,6 @@ class AsyncHTMLParser:
             }
 
         try:
-            # 1. 초기 URL 안전성 검증
             if not await self._is_safe_url(url):
                 return {
                     "success": False,
@@ -211,15 +218,13 @@ class AsyncHTMLParser:
                     "base_url": url,
                 }
 
-            # 2. aiohttp 내장 리다이렉트 사용 (요청사항 반영)
             async with self.session.get(
-                    url,
-                    allow_redirects=True,
-                    max_redirects=MAX_REDIRECTS
+                url,
+                allow_redirects=True,
+                max_redirects=MAX_REDIRECTS
             ) as response:
                 final_url = str(response.url)
 
-                # 3. 최종 URL 안전성 검증 (리다이렉트 후)
                 if not await self._is_safe_url(final_url):
                     return {
                         "success": False,
@@ -227,7 +232,6 @@ class AsyncHTMLParser:
                         "base_url": final_url,
                     }
 
-                # 4. HTTP 오류 상태 확인
                 if response.status >= 400:
                     return {
                         "success": False,
@@ -236,7 +240,6 @@ class AsyncHTMLParser:
                         "status_code": response.status,
                     }
 
-                # 5. Content-Type 검증
                 content_type = response.headers.get("Content-Type", "")
                 if not self._is_valid_content_type(content_type):
                     return {
@@ -246,17 +249,14 @@ class AsyncHTMLParser:
                         "status_code": response.status,
                     }
 
-                # 6. 데이터 안전하게 읽기 (OOM 방어)
                 raw = await self._read_content(response)
 
-                # 7. 인코딩 처리
                 encoding = response.charset or "utf-8"
                 try:
                     html = raw.decode(encoding)
                 except (UnicodeDecodeError, LookupError):
                     html = raw.decode("utf-8", errors="replace")
 
-                # 8. HTML 파싱
                 soup = self._parse_html(html)
 
                 return {
@@ -295,14 +295,13 @@ class AsyncHTMLParser:
                 "base_url": url,
             }
 
+    @staticmethod
     def parse_html_string(
-            self,
-            html: str,
-            base_url: str = "",
-            max_length: int = MAX_CONTENT_LENGTH
+        html: str,
+        base_url: str = "",
+        max_length: int = MAX_CONTENT_LENGTH
     ) -> ParseResult:
         """HTML 문자열을 직접 파싱 (크기 검사 포함)"""
-        # None 또는 비문자열 입력 방어
         if not isinstance(html, str):
             return {
                 "success": False,
@@ -319,7 +318,7 @@ class AsyncHTMLParser:
                     "base_url": base_url,
                 }
 
-            soup = self._parse_html(html)
+            soup = AsyncHTMLParser._parse_html(html)
             return {
                 "success": True,
                 "soup": soup,
