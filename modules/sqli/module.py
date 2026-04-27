@@ -144,5 +144,3 @@ class SQLiModule(BaseModule):
         len1, len2 = len(text1), len(text2)
         diff = abs(len1 - len2)
         return (diff / max(len1, len2)) < 0.001
-
-        return is_vuln
