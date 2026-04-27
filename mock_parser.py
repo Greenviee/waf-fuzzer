@@ -23,22 +23,6 @@ def get_dvwa_mock_surfaces(
     auth_cookies = cookies or {}
 
     return [
-        AttackSurface(
-            url=f"{root}/vulnerabilities/sqli/",
-            method=HttpMethod.GET,
-            param_location=ParamLocation.QUERY,
-            parameters={"id": "1", "Submit": "Submit"},
-            cookies=auth_cookies,
-            description="DVWA SQLi (GET)",
-        ),
-        AttackSurface(
-            url=f"{root}/vulnerabilities/sqli_blind/",
-            method=HttpMethod.GET,
-            param_location=ParamLocation.QUERY,
-            parameters={"id": "1", "Submit": "Submit"},
-            cookies=auth_cookies,
-            description="DVWA Blind SQLi (GET)",
-        ),
         # AttackSurface(
         #     url=f"{root}/vulnerabilities/xss_r/",
         #     method=HttpMethod.GET,
@@ -83,10 +67,36 @@ def get_dvwa_mock_surfaces(
         #     url=f"{root}/vulnerabilities/brute/",
         #     method=HttpMethod.GET,
         #     param_location=ParamLocation.QUERY,
-        #     parameters={"username": "admin", "password": "password", "Login": "Login"},
+        #     parameters={
+        #         "username": "admin",
+        #         "password": "password",
+        #         "Login": "Login",
+        #         "user_token": "",
+        #     },
         #     cookies=auth_cookies,
-        #     description="DVWA Brute Force (GET)",
+        #     description="DVWA Brute Force (GET, with CSRF token)",
+        #     dynamic_tokens=["user_token"],
         # ),
+        # AttackSurface(
+        #     url=f"{root}/vulnerabilities/brute/",
+        #     method=HttpMethod.GET,
+        #     param_location=ParamLocation.QUERY,
+        #     parameters={
+        #         "username": "admin",
+        #         "password": "password",
+        #         "Login": "Login",
+        #     },
+        #     cookies=auth_cookies,
+        #     description="DVWA Brute Force (GET, no CSRF token)",
+        # ),
+        AttackSurface(
+            url=f"{root}/vulnerabilities/sqli/",
+            method=HttpMethod.GET,
+            param_location=ParamLocation.QUERY,
+            parameters={"id": "1", "Submit": "Submit"},
+            cookies=auth_cookies,
+            description="DVWA SQL Injection (GET)",
+        ),
         # AttackSurface(
         #     url=f"{root}/vulnerabilities/upload/",
         #     method=HttpMethod.POST,

@@ -50,6 +50,7 @@ class AttackSurface:
     parameters: dict[str, Any] = field(default_factory=dict)
     headers: dict[str, str] = field(default_factory=dict)
     cookies: dict[str, str] = field(default_factory=dict)
+    dynamic_tokens: list[str] = field(default_factory=list)
     source_url: str | None = None
     description: str | None = None
     
@@ -73,6 +74,7 @@ class AttackSurface:
             'parameters': self.parameters,
             'headers': self.headers,
             'cookies': self.cookies,
+            'dynamic_tokens': self.dynamic_tokens,
             'source_url': self.source_url,
             'description': self.description,
             'depth': self.depth,
@@ -88,6 +90,7 @@ class AttackSurface:
             parameters=data.get('parameters', {}),
             headers=data.get('headers', {}),
             cookies=data.get('cookies', {}),
+            dynamic_tokens=data.get('dynamic_tokens', []),
             source_url=data.get('source_url'),
             description=data.get('description'),
             depth=data.get('depth', 0),
