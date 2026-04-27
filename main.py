@@ -17,7 +17,7 @@ from fuzzer import FuzzerEngine
 from fuzzer.request_builder import build_and_send_request
 from mock_parser import get_dvwa_mock_surfaces
 from modules.sqli.module import SQLiModule
-from modules.xss.analyzer import XSSModule
+from modules.xss.module import XSSModule
 from reporter import ReportGenerator
 
 

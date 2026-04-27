@@ -2,10 +2,12 @@ import re
 import html
 from urllib.parse import unquote
 
-def detect_sqli(response, payload, elapsed_time, exploit_signatures, syntax_signatures, original_res=None):
-
+def detect_sqli(response, payload, elapsed_time, exploit_signatures, syntax_signatures, original_res=None, requester=None):
     evidences = []
     res_text = response.text
+    current_status = getattr(response, "status", getattr(response, "status_code", None))
+    orig_status = getattr(original_res, "status", getattr(original_res, "status_code", None)) if original_res else None
+
     attack_type = payload.attack_type.lower()
     payload_value = payload.value
     marker = "SVSDAAAAvunVASDAAAA"
@@ -14,7 +16,6 @@ def detect_sqli(response, payload, elapsed_time, exploit_signatures, syntax_sign
     has_syntax_error = False
     scrubbed_text = res_text
     
-    # 문법 에러 메시지 영역 전체를 지워 '단순 반사'된 마커를 제거
     syntax_error_full_patterns = [
         r"you have an error in your sql syntax;.*?near\s+'.+?'\s+at\s+line\s+\d+", 
         r"microsoft\s+ole\s+db\s+provider\s+for\s+sql\s+server.*?'(.+?)'",         
@@ -48,44 +49,55 @@ def detect_sqli(response, payload, elapsed_time, exploit_signatures, syntax_sign
     if is_time_related and elapsed_time >= 4.5:
         evidences.append(f"[Time] Response delayed: {elapsed_time:.2f}s")
 
-    # 2. 실행/런타임 에러 시그니처 매칭
+    # 2. 실행/런타임 에러 시그니처 매칭 및 DBMS 불일치 판별
+    # DBMS 불일치를 나타내는 패턴들
+    mismatch_patterns = [
+        r"FUNCTION\s+.*?\s+does\s+not\s+exist",
+        r"invalid\s+identifier",
+        r"table\s+or\s+view\s+does\s+not\s+exist",
+        r"Could\s+not\s+find\s+stored\s+procedure",
+        r"Invalid\s+object\s+name",
+        r"no\s+such\s+function"
+    ]
+
+    has_execution_error = False
     for pattern in exploit_signatures:
         if re.search(pattern, scrubbed_text, re.I | re.DOTALL):
-            evidences.append(f"[Error] SQL Execution Error matched: {pattern}")
+            # 매칭된 에러가 DBMS 불일치인지 확인
+            is_mismatch = any(re.search(mp, scrubbed_text, re.I) for mp in mismatch_patterns)
+            
+            if is_mismatch:
+                evidences.append(f"[Potential] DBMS Mismatch Error: {pattern}")
+            else:
+                evidences.append(f"[Error] SQL Execution Error: {pattern}")
+                has_execution_error = True # 실제 익스플로잇 성공 에러로 간주
             break
 
-    # 3. 마커 검증 및 분류
-    if marker.lower() in res_text.lower() and marker.lower() in scrubbed_text.lower():
-        if has_syntax_error:
+    # 3. 마커 검증 (가장 확실한 성공 지표)
+    marker_lower = marker.lower()
+    if marker_lower in res_text.lower() and marker_lower in scrubbed_text.lower():
+        if has_syntax_error or has_execution_error:
             evidences.append(f"[Error] SQLi execution marker '{marker}' confirmed in DB output")
         else:
-            evidences.append(f"[Reflection] SQLi marker '{marker}' found in legitimate content")
+            evidences.append(f"[Reflection] SQLi marker found in legitimate content")
 
-    if not is_time_related and not evidences and not has_syntax_error and original_res:
-        # A. HTTP 상태 코드 변화 확인
-        if response.status_code != original_res.status_code:
-            evidences.append(f"[Boolean] Status Code changed: {original_res.status_code} -> {response.status_code}")
-        
-        # B. 본문 길이 변화 분석
-        original_len = len(original_res.text)
-        current_len = len(res_text)
-        
+    # 4. 불리언 기반 탐지
+    if not evidences and not has_syntax_error and original_res:
         orig_text_lower = original_res.text.lower()
         curr_text_lower = scrubbed_text.lower()
 
-        if original_len > 0:
-            diff_ratio = abs(original_len - current_len) / original_len
-            diff_bytes = abs(original_len - current_len)
+        if len(orig_text_lower) > 0:
+            diff_bytes = abs(len(original_res.text) - len(res_text))
             
-            if diff_ratio > 0.1 and diff_bytes > 20:
-                evidences.append(f"[Boolean] Content length changed by {diff_ratio:.1%} ({diff_bytes} bytes)")
+            if diff_bytes > 0:
+                evidences.append(f"[Boolean] Content length changed by {diff_bytes} bytes")
             
-            # C. 특정 키워드 소멸 확인
-            critical_keywords = ["first name", "surname", "id:", "admin", "login", "welcome"]
-            
-            for kw in critical_keywords:
-                if (kw in orig_text_lower) and (kw not in curr_text_lower):
-                    evidences.append(f"[Boolean] Critical keyword '{kw}' disappeared from response")
+            # exists, missing 등이 토글되었는지 확인
+            blind_keywords = ["exists", "missing", "found", "success", "failed", "invalid", "true", "false"]
+            for kw in blind_keywords:
+                # 원본 존재 여부와 현재 존재 여부가 다르면
+                if (kw in orig_text_lower) != (kw in curr_text_lower):
+                    evidences.append(f"[Boolean] Blind keyword '{kw}' state inverted")
                     break
 
     is_vulnerable = len(evidences) > 0

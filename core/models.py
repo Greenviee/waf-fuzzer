@@ -102,6 +102,7 @@ class Payload:
     value: str
     attack_type: str
     risk_level: str
+    last_evidences: list[str] | None = None
 
 
 @dataclass(slots=True, frozen=True)
