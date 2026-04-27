@@ -21,11 +21,11 @@ class ReportGenerator:
         """
         Prints the scan result in a table-like CLI format.
         """
-        table_width = 114
+        table_width = 124
         severity_width = 10
         location_width = 10
         parameter_width = 14
-        type_width = 24
+        type_width = 34
 
         print("\n" + "=" * table_width)
         print("WAF Fuzzer Security Scan Report")

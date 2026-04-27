@@ -40,7 +40,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--type",
         type=str,
         default="all",
-        choices=["sqli", "xss", "bruteforce", "all"],
+        choices=["sqli", "xss", "bruteforce", "lfi", "all"],
         help="Attack category to run (default: all)",
     )
     parser.add_argument(
@@ -217,6 +217,16 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=3,
         help="Number of HTTP sessions to use in parallel (default: 3)",
+    )
+    parser.add_argument(
+        "--lfi-evasion-level",
+        type=int,
+        choices=[0, 1, 2, 3],
+        default=1,
+        help=(
+            "LFI payload mutation level "
+            "(0=raw only, 1=url-encoding, 2=double+null-byte, 3=path/case bypass)"
+        ),
     )
     return parser
 
