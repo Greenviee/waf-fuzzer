@@ -192,7 +192,7 @@ class TokenDetector:
         Returns:
             bool: 토큰 값 여부
         """
-        if not value 또는 len(value) < 16:
+        if not value or len(value) < 16:
             return False
 
         if value.isdigit():
