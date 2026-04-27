@@ -35,7 +35,6 @@ class Finding:
     payload: Any
     response: Any
     module_name: str | None = None
-    evidences: list[str] | None = None
 
 
 @dataclass(slots=True)
@@ -261,14 +260,11 @@ class FuzzerEngine:
         if not is_hit:
             return
 
-        evidences = getattr(job.payload, "last_evidences", None)
-
         finding = Finding(
             surface=job.surface,
             parameter=job.parameter,
             payload=job.payload,
             response=response,
-            evidences=evidences
         )
         self._findings.append(finding)
         async with self._stats_lock:
@@ -366,14 +362,18 @@ class FuzzerEngine:
         if not self._module_runtime_active:
             raise RuntimeError("module mode is not running")
 
-        param_count = len(tuple(self._iter_parameters(surface)))
         for module in self.modules:
             payloads = self._module_payloads.get(module.name, [])
             queue = self._module_queues[module.name]
+            params = tuple(self._iter_parameters(surface))
+            selector = getattr(module, "get_target_parameters", None)
+            if callable(selector):
+                selected = selector(surface, params)
+                params = tuple(selected) if selected is not None else ()
 
             await queue.put(surface)
             async with self._stats_lock:
-                self._stats.queued += param_count * len(payloads)
+                self._stats.queued += len(params) * len(payloads)
 
     async def stop_module_mode(self) -> None:
         """
@@ -415,6 +415,10 @@ class FuzzerEngine:
 
             try:
                 params = tuple(self._iter_parameters(surface))
+                selector = getattr(module, "get_target_parameters", None)
+                if callable(selector):
+                    selected = selector(surface, params)
+                    params = tuple(selected) if selected is not None else ()
                 if not params or not payloads:
                     continue
 
@@ -482,26 +486,12 @@ class FuzzerEngine:
         elapsed_time = float(
             getattr(response, "elapsed_time", getattr(response, "elapsed", 0.0))
         )
-
-        import dataclasses
-        async def module_requester(new_payload_value: str):
-            mutated_payload = dataclasses.replace(payload, value=new_payload_value)
-            async with self._semaphore:
-                return await request_sender(
-                    session=session,
-                    surface=surface,
-                    parameter=parameter,
-                    payload=mutated_payload,
-                )
-
         verdict = module.analyze(
             response=response,
             payload=payload,
             elapsed_time=elapsed_time,
             original_res=baseline_response,
-            requester=module_requester
         )
-        
         is_hit = await verdict if isawaitable(verdict) else verdict
 
         async with self._stats_lock:
@@ -510,17 +500,13 @@ class FuzzerEngine:
         if not is_hit:
             return
 
-        evidences = getattr(payload, "last_evidences", [])
-
         finding = Finding(
             surface=surface,
             parameter=parameter,
             payload=payload,
             response=response,
             module_name=module.name,
-            evidences=evidences
         )
-        
         self._findings.append(finding)
         async with self._stats_lock:
             self._stats.findings += 1
