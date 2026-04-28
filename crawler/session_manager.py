@@ -45,7 +45,8 @@ class AuthConfig:
 class SessionManager:
     """HTTP 세션 관리자"""
 
-    def __init__(self, proxy=None, verify_ssl=False, custom_headers=None):
+    # ✨ [핵심 수정] 의존성 주입: url_filter 파라미터 추가
+    def __init__(self, proxy=None, verify_ssl=False, custom_headers=None, url_filter=None):
         self._session = None
         self._cookies = {}
         self._headers = {
@@ -62,6 +63,9 @@ class SessionManager:
         self.proxy = proxy
         self.verify_ssl = verify_ssl
         self._authenticated = False
+
+        # ✨ [핵심 수정] URLFilter 인스턴스 저장
+        self.url_filter = url_filter
 
     async def create_session(self):
         """세션 생성"""
@@ -84,11 +88,9 @@ class SessionManager:
             self._authenticated = False
             logger.debug("세션 종료됨")
 
-    # ✨ [수정 1] element의 타입을 Any로 지정하고 hasattr 검증 추가
     @staticmethod
     def _get_safe_attr(element: Any, attr_name: str) -> str:
         """bs4 요소에서 속성값을 안전하게 문자열로 추출 (PyCharm Type Guard)"""
-        # element가 None이거나 .get() 메서드가 없는(NavigableString 등) 경우 방어
         if element is None or not hasattr(element, 'get'):
             return ""
 
@@ -247,6 +249,13 @@ class SessionManager:
 
     async def _request(self, method: str, url: str, timeout: int = 10, allow_redirects: bool = True,
                        max_retries: int = 3, headers: Optional[dict] = None, **kwargs) -> Optional[dict]:
+
+        # ✨ [핵심 수정] 1차 방어: HTTP 요청을 보내기 전 목표 URL의 안전성(SSRF) 검사
+        if self.url_filter:
+            if not await self.url_filter.is_safe_url(url):
+                logger.warning(f"SSRF 보안 정책에 의해 사전 차단된 URL 시도: {url}")
+                return None
+
         if self._session is None:
             await self.create_session()
 
@@ -268,6 +277,14 @@ class SessionManager:
                         proxy=self.proxy,
                         **kwargs
                 ) as response:
+
+                    # ✨ [핵심 수정] 2차 방어: Open Redirect를 악용한 SSRF 우회 검사
+                    final_url = str(response.url)
+                    if url != final_url and self.url_filter:
+                        if not await self.url_filter.is_safe_url(final_url):
+                            logger.warning(f"리다이렉트 최종 목적지가 SSRF 정책에 의해 차단됨: {final_url}")
+                            return None
+
                     json_data = None
                     try:
                         content_type = response.content_type
@@ -294,7 +311,7 @@ class SessionManager:
                         "status": response.status,
                         "headers": dict(response.headers),
                         "cookies": response_cookies,
-                        "url": str(response.url),
+                        "url": final_url,  # 리다이렉트가 반영된 최종 URL 전달
                         "text": text,
                         "json": json_data,
                         "content_type": response.content_type,
