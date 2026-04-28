@@ -202,6 +202,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="Enable unicode escape variants",
     )
     parser.add_argument(
+        "--evasion-level",
+        type=int,
+        choices=[0, 1, 2, 3],
+        default=0,
+        help="evasion level: 0 (None), 1 (1 technique), 2 (2 techniques), 3 (3 techniques)"
+    )  
+    parser.add_argument(
         "--include-time-based",
         action="store_true",
         help="Include SQLi time/stacked payloads (much slower)",

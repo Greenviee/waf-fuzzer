@@ -20,6 +20,7 @@ def select_modules(args) -> list:
             enable_unicode_escape=args.evasion_unicode,
             include_time_based=args.include_time_based,
             max_time_payloads=args.max_time_payloads,
+            evasion_level=args.evasion_level,
         )
         selected.append(sqli_module)
 
