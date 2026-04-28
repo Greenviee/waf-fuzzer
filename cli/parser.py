@@ -202,7 +202,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Enable unicode escape variants",
     )
     parser.add_argument(
-        "--evasion-level",
+        "--sqli-evasion-level",
         type=int,
         choices=[0, 1, 2, 3],
         default=0,

