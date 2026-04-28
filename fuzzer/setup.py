@@ -45,13 +45,25 @@ def select_modules(args) -> list:
 
 
 def count_module_payloads(modules: list) -> int:
-    #선택된 모듈들의 페이로드 총합 계산
-    return sum(len(module.get_payloads()) for module in modules)
+    total = 0
+    for module in modules:
+        # get_payload_count 메서드가 있으면 사용, 없으면 len() 시도
+        if hasattr(module, "get_payload_count"):
+            total += module.get_payload_count()
+        else:
+            total += len(module.get_payloads())
+    return total
 
 
 def estimate_total_requests(surfaces: list[AttackSurface], modules: list) -> int:
-    # 각 모듈의 페이로드 개수를 미리 계산하여 반복적인 I/O 및 연산을 방지
-    module_payload_counts = {id(m): len(m.get_payloads()) for m in modules}
+
+    #각 모듈의 페이로드 개수를 미리 계산하여 반복적인 I/O 및 연산을 방지
+    module_payload_counts = {}
+    for m in modules:
+        if hasattr(m, "get_payload_count"):
+            module_payload_counts[id(m)] = m.get_payload_count()
+        else:
+            module_payload_counts[id(m)] = len(m.get_payloads())
     
     total = 0
     for surface in surfaces:
