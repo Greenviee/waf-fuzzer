@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "scan_time": "2026-04-28 18:24:35",
+    "scan_time": "2026-04-28 19:32:14",
     "summary": {
       "queued": 131,
       "completed": 131,
@@ -24,27 +24,8 @@
       },
       "evidence": {
         "status_code": 200,
-        "response_time": 0.011,
+        "response_time": 0.013,
         "error_log": null
-      }
-    },
-    {
-      "target": {
-        "url": "http://3.34.199.255/test_ssrf.php",
-        "method": "GET",
-        "location": "QUERY",
-        "parameter": "url"
-      },
-      "attack_info": {
-        "payload_value": "http://10.255.255.255/",
-        "type": "time_blind",
-        "severity": "high",
-        "description": ""
-      },
-      "evidence": {
-        "status_code": 0,
-        "response_time": 15.8828,
-        "error_log": "TimeoutError"
       }
     },
     {
@@ -62,7 +43,26 @@
       },
       "evidence": {
         "status_code": 0,
-        "response_time": 15.8832,
+        "response_time": 15.8873,
+        "error_log": "TimeoutError"
+      }
+    },
+    {
+      "target": {
+        "url": "http://3.34.199.255/test_ssrf.php",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "url"
+      },
+      "attack_info": {
+        "payload_value": "http://10.255.255.255/",
+        "type": "time_blind",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 0,
+        "response_time": 15.8876,
         "error_log": "TimeoutError"
       }
     }

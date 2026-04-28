@@ -34,6 +34,38 @@ _INTERNAL_NETWORK_ERROR_HINTS = (
     "ssh-2.0",
     "redis_version",
 )
+_LOCALHOST_TARGET_HINTS = (
+    "localhost",
+    "127.0.0.1",
+    "0.0.0.0",
+    "[::1]",
+    "::1",
+)
+_LOGIN_PAGE_HINTS = (
+    "login",
+    "sign in",
+    "username",
+    "password",
+    "remember me",
+)
+_BLIND_PROBE_HINTS = (
+    "localhost",
+    "127.0.0.1",
+    "0.0.0.0",
+    "[::1]",
+    "::1",
+    "10.",
+    "172.16.",
+    "172.17.",
+    "172.18.",
+    "172.19.",
+    "172.2",
+    "172.30.",
+    "172.31.",
+    "192.168.",
+    "169.254.",
+    "file://",
+)
 
 
 def _extract_response_text(response) -> str:
@@ -58,12 +90,23 @@ def _extract_status_code(response) -> int:
     return 0
 
 
+def _status_class(status_code: int) -> int:
+    if status_code <= 0:
+        return 0
+    return status_code // 100
+
+
+def _is_blind_probe_payload(payload_value_lower: str) -> bool:
+    return any(hint in payload_value_lower for hint in _BLIND_PROBE_HINTS)
+
+
 def analyze_ssrf(response, payload, elapsed_time: float, original_res=None) -> bool:
     res_text = _extract_response_text(response)
     res_text_lower = res_text.lower()
     original_text = _extract_response_text(original_res) if original_res is not None else ""
     original_text_lower = original_text.lower()
     status_code = _extract_status_code(response)
+    original_status_code = _extract_status_code(original_res) if original_res is not None else 0
     expected_signature = getattr(payload, "expected_signature", None)
     payload_value = str(getattr(payload, "value", ""))
     payload_value_lower = payload_value.lower()
@@ -100,7 +143,28 @@ def analyze_ssrf(response, payload, elapsed_time: float, original_res=None) -> b
     if any(hint in res_text_lower for hint in _INTERNAL_NETWORK_ERROR_HINTS):
         return True
 
-    # 4) Time-based blind hints for deliberate timeout/port probes
+    # 4) Boolean-blind style delta checks (host discovery, path brute-force, bypasses)
+    is_blind_probe = _is_blind_probe_payload(payload_value_lower)
+    if is_blind_probe and original_res is not None:
+        # 4-1) Status class delta: e.g. baseline 2xx -> probe 4xx/5xx (or inverse)
+        if _status_class(status_code) != _status_class(original_status_code):
+            return True
+
+        # 4-2) Meaningful body length delta (conservative threshold)
+        len_current = len(res_text)
+        len_original = len(original_text)
+        if len_original > 0:
+            diff_ratio = abs(len_current - len_original) / len_original
+            if diff_ratio >= 0.30 and abs(len_current - len_original) >= 200:
+                return True
+
+        # 4-3) New login page hints (internal admin/login panel reachability)
+        has_login_hints = any(hint in res_text_lower for hint in _LOGIN_PAGE_HINTS)
+        had_login_hints = any(hint in original_text_lower for hint in _LOGIN_PAGE_HINTS)
+        if has_login_hints and not had_login_hints:
+            return True
+
+    # 5) Time-based blind hints for deliberate timeout/port probes
     if ("10.255.255.255" in payload_value_lower or ":22" in payload_value_lower) and elapsed_time > 10.0:
         return True
 
