@@ -3,7 +3,7 @@ from __future__ import annotations
 from core import AttackSurface
 from modules.bruteforce.module import BruteforceModule
 from modules.sqli.module import SQLiModule
-from modules.xss.module import XSSModule
+from modules.xss.analyzer import XSSModule
 
 
 def select_modules(args) -> list:
