@@ -22,6 +22,7 @@ class SurfaceBuilder:
     - 동적 토큰(CSRF 등) 자동 병합
     - URL 쿼리스트링 중복 제거 및 파라미터 타입 평탄화 (Fuzzer 호환성)
     - 퍼저 콜백 직송
+    ✨ [핵심 수정] CPU 집약적 추출 작업을 스레드 풀(Executor)로 위임하여 루프 블로킹 방지
     """
 
     def __init__(self, fuzzer_callback: SurfaceCallback):
@@ -54,8 +55,11 @@ class SurfaceBuilder:
                 normalized[key] = str(value)
         return normalized
 
-    async def process_page(self, page_data: PageData) -> None:
-        """PageData를 분석하여 AttackSurface를 추출하고 퍼저로 직배송"""
+    def _extract_surfaces_sync(self, page_data: PageData) -> List[AttackSurface]:
+        """
+        ✨ [핵심 수정] CPU를 집중적으로 사용하는 동기식 데이터 추출 및 정제 로직
+        이 메서드는 메인 이벤트 루프를 막지 않기 위해 별도의 스레드에서 실행됩니다.
+        """
         surfaces: List[AttackSurface] = []
 
         # CrawlerEngine에서 만든 soup이 있으면 재사용, 없으면 1회만 파싱
@@ -134,8 +138,22 @@ class SurfaceBuilder:
                 description="Link Query Params"
             ))
 
+        return surfaces
+
+    async def process_page(self, page_data: PageData) -> None:
+        """
+        PageData를 분석하여 AttackSurface를 추출하고 퍼저로 직배송
+        ✨ [핵심 수정] run_in_executor를 통한 비동기 논블로킹(Non-blocking) 호출 적용
+        """
+        loop = asyncio.get_running_loop()
+
+        # CPU 연산이 많은 DOM 순회 및 파싱 로직을 스레드 풀로 넘겨 크롤러 통신 지연 방지
+        surfaces = await loop.run_in_executor(
+            None, self._extract_surfaces_sync, page_data
+        )
+
         # ==========================================
-        # 3. 중복 검증 및 퍼저 콜백 호출
+        # 3. 중복 검증 및 퍼저 콜백 호출 (이벤트 루프에서 가볍게 처리)
         # ==========================================
         for surface in surfaces:
             if not surface.url: continue
@@ -147,6 +165,7 @@ class SurfaceBuilder:
 
             logger.debug(f"[SurfaceBuilder] 퍼저로 전송: {surface.url}")
 
+            # 콜백 실행 (퍼저로 전달)
             result = self.fuzzer_callback(surface)
             if asyncio.iscoroutine(result):
                 await result
