@@ -1,0 +1,327 @@
+"""
+핵심 데이터 모델 (Unified Core Models)
+Team A (Crawler/Parser) + Team B (Fuzzer) 통합 운영 버전
+"""
+
+from __future__ import annotations
+import re
+import hashlib
+import logging
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any, Callable, Awaitable, Dict
+
+logger = logging.getLogger(__name__)
+
+
+class HttpMethod(str, Enum):
+    GET = "GET"
+    POST = "POST"
+    PUT = "PUT"
+    PATCH = "PATCH"
+    DELETE = "DELETE"
+    OPTIONS = "OPTIONS"
+    HEAD = "HEAD"
+
+
+class ParamLocation(str, Enum):
+    QUERY = "query"
+    BODY_FORM = "body_form"
+    BODY_JSON = "body_json"
+    HEADER = "header"
+    COOKIE = "cookie"
+    PATH = "path"
+
+
+class CrawlStatus(str, Enum):
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    SKIPPED = "skipped"
+
+
+# ============================================================
+# 핵심 서비스 DTO (AttackSurface & TokenDetector & PageData)
+# ============================================================
+
+class TokenDetector:
+    """동적 토큰(CSRF, Nonce 등) 감지기"""
+    TOKEN_KEYWORDS = [
+        'csrf', 'xsrf', 'token', 'nonce', 'auth', '_token', 'authenticity',
+        'verification', 'user_token', 'form_token', 'request_token', 'anti_csrf', '_csrf'
+    ]
+
+    HASH_PATTERNS = [
+        r'^[a-fA-F0-9]{32}$', r'^[a-fA-F0-9]{40}$', r'^[a-fA-F0-9]{64}$',
+        r'^[A-Za-z0-9+/]{20,}={0,2}$', r'^[a-fA-F0-9-]{36}$', r'^[a-zA-Z0-9_-]{16,}$'
+    ]
+
+    COMMON_WORDS = ['submit', 'login', 'search', 'password', 'username', 'button', 'reset', 'cancel']
+
+    @classmethod
+    def is_token_name(cls, name: str) -> bool:
+        if not name: return False
+        return any(keyword in name.lower() for keyword in cls.TOKEN_KEYWORDS)
+
+    @classmethod
+    def is_token_value(cls, value: str) -> bool:
+        if not value or len(value) < 16: return False
+        if value.isdigit(): return False
+        if value.lower() in cls.COMMON_WORDS: return False
+        return any(re.match(pattern, value) for pattern in cls.HASH_PATTERNS)
+
+    @classmethod
+    def detect(cls, name: str, value: str, input_type: str = None) -> bool:
+        if cls.is_token_name(name): return True
+        if input_type == 'hidden' and cls.is_token_value(value): return True
+        if cls.is_token_value(value):
+            name_lower = name.lower() if name else ""
+            weak_keywords = ['key', 'hash', 'secret', 'verify', 'check', 'valid']
+            if any(kw in name_lower for kw in weak_keywords):
+                return True
+        return False
+
+
+class PageData:
+    """파싱을 위해 정제된 페이지 데이터 (헤더/쿠키 포함)"""
+    def __init__(
+            self,
+            url: str,
+            html: str,
+            depth: int = 0,
+            headers: Dict[str, str] = None,   # ✨ 추가됨
+            cookies: Dict[str, str] = None,   # ✨ 추가됨
+            dynamic_tokens: Dict[str, str] = None  # ✨ 토큰을 담을 딕셔너리 추가
+    ):
+        self.url = url
+        self.html = html
+        self.depth = depth
+        self.headers = headers if headers is not None else {}  # ✨ 추가됨
+        self.cookies = cookies if cookies is not None else {}  # ✨ 추가됨
+        self.dynamic_tokens = dynamic_tokens if dynamic_tokens is not None else {}  # ✨ 추가됨
+
+    def __repr__(self) -> str:
+        # ✨ 모든 메타데이터의 상태를 한눈에 파악할 수 있도록 구성
+        return (f"PageData(url='{self.url}', "
+                f"depth={self.depth}, "
+                f"headers={len(self.headers)}, "
+                f"cookies={len(self.cookies)}, "
+                f"tokens={len(self.dynamic_tokens)})")
+
+
+@dataclass(slots=True)
+class AttackSurface:
+    """
+    크롤러/파서 → 퍼저 전달용 공격 표면 DTO
+    """
+    url: str
+    method: HttpMethod = HttpMethod.GET
+    param_location: ParamLocation = ParamLocation.QUERY
+    parameters: dict[str, Any] = field(default_factory=dict)
+    headers: dict[str, str] = field(default_factory=dict)
+    cookies: dict[str, str] = field(default_factory=dict)
+    dynamic_tokens: list[str] = field(default_factory=list)
+    source_url: str | None = None
+    description: str | None = None
+    depth: int = 0
+    content_type: str | None = None
+
+    def get_id(self) -> str:
+        """고유 식별자 생성"""
+        params_str = str(sorted(self.parameters.keys()))
+        raw = f"{self.url}:{self.method.value}:{self.param_location.value}:{params_str}"
+        return hashlib.md5(raw.encode()).hexdigest()[:16]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            'id': self.get_id(),
+            'url': self.url,
+            'method': self.method.value,
+            'param_location': self.param_location.value,
+            'parameters': self.parameters,
+            'headers': self.headers,
+            'cookies': self.cookies,
+            'dynamic_tokens': self.dynamic_tokens,
+            'source_url': self.source_url,
+            'description': self.description,
+            'depth': self.depth,
+            'content_type': self.content_type,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> AttackSurface:
+        return cls(
+            url=data['url'],
+            method=HttpMethod(data.get('method', 'GET')),
+            param_location=ParamLocation(data.get('param_location', 'query')),
+            parameters=data.get('parameters', {}),
+            headers=data.get('headers', {}),
+            cookies=data.get('cookies', {}),
+            dynamic_tokens=data.get('dynamic_tokens', []),
+            source_url=data.get('source_url'),
+            description=data.get('description'),
+            depth=data.get('depth', 0),
+            content_type=data.get('content_type'),
+        )
+
+
+# ============================================================
+# Team B - Fuzzer 전용 데이터 모델 (누락되었던 부분 복구)
+# ============================================================
+
+@dataclass(slots=True, frozen=True)
+class Payload:
+    """Structured payload metadata used by payload provider/reporter."""
+    value: str
+    attack_type: str
+    risk_level: str
+
+
+@dataclass(slots=True, frozen=True)
+class FuzzingTask:
+    """One concrete fuzzing unit generated from a surface."""
+    surface: AttackSurface
+    target_param: str
+    payload: Payload
+
+
+# ============================================================
+# Team A - Crawler / Parser 전용 데이터 모델
+# ============================================================
+
+@dataclass(slots=True)
+class CrawlTask:
+    """크롤링 작업 단위"""
+    url: str
+    depth: int = 0
+    parent_url: str | None = None
+    retry_count: int = 0
+    priority: int = 0  # 높을수록 우선
+    created_at: datetime = field(default_factory=datetime.now)
+
+    def __lt__(self, other: CrawlTask) -> bool:
+        return self.priority > other.priority
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            'url': self.url, 'depth': self.depth, 'parent_url': self.parent_url,
+            'retry_count': self.retry_count, 'priority': self.priority,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> CrawlTask:
+        return cls(
+            url=data['url'],
+            depth=data.get('depth', 0),
+            parent_url=data.get('parent_url'),
+            retry_count=data.get('retry_count', 0),
+            priority=data.get('priority', 0),
+        )
+
+
+@dataclass(slots=True)
+class CrawlResult:
+    """크롤러 → 파서 전달 데이터"""
+    url: str
+    final_url: str
+    status_code: int
+    headers: dict[str, str]
+    body: str
+    content_type: str
+    response_time: float
+    depth: int
+    parent_url: str | None = None
+    timestamp: datetime = field(default_factory=datetime.now)
+    cookies: dict[str, str] = field(default_factory=dict)
+    content_length: int = 0
+    is_dynamic: bool = False
+    redirect_chain: list[str] = field(default_factory=list)
+
+    def get_hash(self) -> str:
+        return hashlib.md5(self.body.encode()).hexdigest()
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            'url': self.url,
+            'final_url': self.final_url,
+            'status_code': self.status_code,
+            'content_type': self.content_type,
+            'response_time': self.response_time,
+            'depth': self.depth,
+            'parent_url': self.parent_url,
+            'timestamp': self.timestamp.isoformat(),
+            'content_length': self.content_length,
+            'is_dynamic': self.is_dynamic,
+            'body_hash': self.get_hash(),
+        }
+
+
+@dataclass
+class CrawlStats:
+    """크롤링 통계 관리 (누락된 메서드 복구)"""
+    total_requests: int = 0
+    successful_requests: int = 0
+    failed_requests: int = 0
+    skipped_requests: int = 0
+
+    total_forms_found: int = 0
+    total_links_found: int = 0
+    total_apis_found: int = 0
+    total_attack_surfaces: int = 0
+
+    bytes_downloaded: int = 0
+
+    start_time: datetime | None = None
+    end_time: datetime | None = None
+
+    errors_by_type: dict[str, int] = field(default_factory=dict)
+    status_codes: dict[int, int] = field(default_factory=dict)
+
+    @property
+    def duration(self) -> float:
+        if self.start_time and self.end_time:
+            return (self.end_time - self.start_time).total_seconds()
+        elif self.start_time:
+            return (datetime.now() - self.start_time).total_seconds()
+        return 0.0
+
+    @property
+    def requests_per_second(self) -> float:
+        return self.total_requests / self.duration if self.duration > 0 else 0.0
+
+    @property
+    def success_rate(self) -> float:
+        return (self.successful_requests / self.total_requests * 100) if self.total_requests > 0 else 0.0
+
+    def record_error(self, error_type: str) -> None:
+        self.errors_by_type[error_type] = self.errors_by_type.get(error_type, 0) + 1
+
+    def record_status(self, status_code: int) -> None:
+        self.status_codes[status_code] = self.status_codes.get(status_code, 0) + 1
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            'total_requests': self.total_requests,
+            'successful_requests': self.successful_requests,
+            'failed_requests': self.failed_requests,
+            'skipped_requests': self.skipped_requests,
+            'success_rate': f"{self.success_rate:.2f}%",
+            'duration': f"{self.duration:.2f}s",
+            'requests_per_second': f"{self.requests_per_second:.2f}",
+            'bytes_downloaded': self.bytes_downloaded,
+            'forms_found': self.total_forms_found,
+            'links_found': self.total_links_found,
+            'attack_surfaces': self.total_attack_surfaces,
+            'errors_by_type': self.errors_by_type,
+            'status_codes': self.status_codes,
+        }
+
+
+# ============================================================
+# 팀 A → 팀 B 전달용 콜백 타입
+# ============================================================
+
+# AttackSurface를 받는 콜백 타입
+SurfaceCallback = Callable[[AttackSurface], Awaitable[None] | None]
