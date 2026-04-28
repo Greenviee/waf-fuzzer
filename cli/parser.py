@@ -40,7 +40,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--type",
         type=str,
         default="all",
-        choices=["sqli", "xss", "bruteforce", "all"],
+        choices=["sqli", "xss", "bruteforce", "ssrf", "all"],
         help="Attack category to run (default: all)",
     )
     parser.add_argument(

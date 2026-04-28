@@ -3,6 +3,7 @@ from __future__ import annotations
 from core import AttackSurface
 from modules.bruteforce.module import BruteforceModule
 from modules.sqli.module import SQLiModule
+from modules.ssrf.module import SSRFModule
 from modules.xss.analyzer import XSSModule
 
 
@@ -17,6 +18,7 @@ def select_modules(args) -> list:
         max_time_payloads=args.max_time_payloads,
     )
     xss_module = XSSModule()
+    ssrf_module = SSRFModule()
     bruteforce_module = BruteforceModule(
         wordlist_path=args.bf_wordlist,
         enable_mutation=not args.bf_disable_mutation,
@@ -35,8 +37,10 @@ def select_modules(args) -> list:
         return [xss_module]
     if args.type == "bruteforce":
         return [bruteforce_module]
+    if args.type == "ssrf":
+        return [ssrf_module]
     if args.type == "all":
-        return [sqli_module, xss_module, bruteforce_module]
+        return [sqli_module, xss_module, bruteforce_module, ssrf_module]
     return []
 
 
