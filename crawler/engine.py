@@ -4,14 +4,10 @@ import asyncio
 from urllib.parse import urljoin, urlparse
 from datetime import datetime
 from contextlib import asynccontextmanager
-
-from core.models import (
-    PageData,
-    TokenDetector
-)
-from parser.html_parser import AsyncHTMLParser  #
-from crawler.session_manager import SessionManager  #
-from crawler.url_filter import URLFilter  #
+from core.models import (PageData,TokenDetector)
+from parser.html_parser import AsyncHTMLParser
+from crawler.session_manager import SessionManager
+from crawler.url_filter import URLFilter
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -58,18 +54,14 @@ class CrawlerEngine:
     """개선된 웹 크롤러 엔진"""
 
     def __init__(self, queue_manager, config=None):
-        self.queue_manager = queue_manager  #
+        self.queue_manager = queue_manager
         self.config = config or CrawlConfig()
-
-        self.session_manager = SessionManager()  #
-        self.url_filter = URLFilter()  #
-
+        self.session_manager = SessionManager()
+        self.url_filter = URLFilter()
         self._visited = set()
         self._queue = asyncio.Queue()
         self._stats = CrawlStats()
-        self._workers = []
         self._shutdown = asyncio.Event()
-        self._external_session = False
 
     @staticmethod
     def _get_safe_attr(element, attr_name: str) -> str:
@@ -186,32 +178,33 @@ class CrawlerEngine:
         headers = response.get("headers", {})
         cookies = response.get("cookies", {})
 
-        # 1. PageData 객체 생성 및 큐 매니저로 전달
-        page = PageData(
-            url=final_url,
-            html=html,
-            depth=depth,
-            headers=headers,
-            cookies=cookies
-        )
-        self.queue_manager.add_page(page)
-
-        # 2. 전용 파서를 이용한 안전한 HTML 분석
+        # 1. 전용 파서를 이용한 HTML 분석 (여기서 soup 생성)
         parse_result = AsyncHTMLParser.parse_html_string(html, base_url=final_url)
         if not parse_result.get("success"):
             logger.warning("파싱 건너뜀 (%s): %s", final_url, parse_result.get("error"))
             return
 
         soup = parse_result["soup"]
-
-        # ✨ [수정된 부분] 타입 검사기(PyCharm 등) 에러 해결을 위한 명시적 None 체크
         if soup is None:
             return
 
-        # 3. 폼 및 동적 토큰 감지 수행 (파싱된 soup 객체 재사용)
+        # 2. PageData 객체 생성 (이미 생성된 soup을 포함하여 중복 파싱 방지)
+        page = PageData(
+            url=final_url,
+            html=html,
+            depth=depth,
+            headers=headers,
+            cookies=cookies,
+            soup=soup  # ✨ soup 객체 전달
+        )
+
+        # 3. 폼 및 동적 토큰 감지 수행 (기존 로직 유지)
         await self._process_forms_and_tokens(soup, page)
 
-        # 4. 다음 크롤링 대상 URL 추출
+        # 4. 비동기 큐 매니저로 전달 (await 필수)
+        await self.queue_manager.add_page(page)
+
+        # 5. 다음 크롤링 대상 URL 추출
         if depth < self.config.max_depth:
             await self._queue_next_urls(soup, final_url, depth)
 
@@ -220,18 +213,14 @@ class CrawlerEngine:
         for form in soup.find_all("form"):
             self._stats.forms_found += 1
             for input_field in form.find_all(["input", "textarea", "select"]):
-                name = self._get_safe_attr(input_field, "name")
+                name = input_field.get("name", "").strip()
                 if not name: continue
 
-                value = self._get_safe_attr(input_field, "value")
-                input_type = self._get_safe_attr(input_field, "type") or "text"
+                value = input_field.get("value", "")
+                input_type = input_field.get("type", "text")
 
-                # TokenDetector를 통한 실시간 보안 토큰 감지
                 if TokenDetector.detect(name, value, input_type):
                     self._stats.dynamic_tokens_found += 1
-                    logger.info("🔑 동적 토큰 감지: name=%s, type=%s", name, input_type)
-
-                    # ✨ 토큰의 이름과 값을 PageData에 딕셔너리 형태로 저장
                     page_data.dynamic_tokens[name] = value
 
     async def _queue_next_urls(self, soup, base_url: str, depth):
