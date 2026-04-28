@@ -10,7 +10,7 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Awaitable, Dict
 
 logger = logging.getLogger(__name__)
 
@@ -43,14 +43,11 @@ class CrawlStatus(str, Enum):
 
 
 # ============================================================
-# 핵심 서비스 DTO (AttackSurface & TokenDetector)
+# 핵심 서비스 DTO (AttackSurface & TokenDetector & PageData)
 # ============================================================
 
 class TokenDetector:
-    """
-    동적 토큰(CSRF, Nonce 등) 감지기
-    파서가 추출한 파라미터 중 조작하면 안 되는 토큰을 자동으로 찾아냅니다.
-    """
+    """동적 토큰(CSRF, Nonce 등) 감지기"""
     TOKEN_KEYWORDS = [
         'csrf', 'xsrf', 'token', 'nonce', 'auth', '_token', 'authenticity',
         'verification', 'user_token', 'form_token', 'request_token', 'anti_csrf', '_csrf'
@@ -66,8 +63,7 @@ class TokenDetector:
     @classmethod
     def is_token_name(cls, name: str) -> bool:
         if not name: return False
-        name_lower = name.lower()
-        return any(keyword in name_lower for keyword in cls.TOKEN_KEYWORDS)
+        return any(keyword in name.lower() for keyword in cls.TOKEN_KEYWORDS)
 
     @classmethod
     def is_token_value(cls, value: str) -> bool:
@@ -78,7 +74,6 @@ class TokenDetector:
 
     @classmethod
     def detect(cls, name: str, value: str, input_type: str = None) -> bool:
-        """동적 토큰 여부 종합 판단"""
         if cls.is_token_name(name): return True
         if input_type == 'hidden' and cls.is_token_value(value): return True
         if cls.is_token_value(value):
@@ -89,49 +84,57 @@ class TokenDetector:
         return False
 
 
+class PageData:
+    """파싱을 위해 정제된 페이지 데이터 (헤더/쿠키 포함)"""
+    def __init__(
+            self,
+            url: str,
+            html: str,
+            depth: int = 0,
+            headers: Dict[str, str] = None,   # ✨ 추가됨
+            cookies: Dict[str, str] = None,   # ✨ 추가됨
+            dynamic_tokens: Dict[str, str] = None  # ✨ 토큰을 담을 딕셔너리 추가
+    ):
+        self.url = url
+        self.html = html
+        self.depth = depth
+        self.headers = headers if headers is not None else {}  # ✨ 추가됨
+        self.cookies = cookies if cookies is not None else {}  # ✨ 추가됨
+        self.dynamic_tokens = dynamic_tokens if dynamic_tokens is not None else {}  # ✨ 추가됨
+
+    def __repr__(self) -> str:
+        # ✨ 모든 메타데이터의 상태를 한눈에 파악할 수 있도록 구성
+        return (f"PageData(url='{self.url}', "
+                f"depth={self.depth}, "
+                f"headers={len(self.headers)}, "
+                f"cookies={len(self.cookies)}, "
+                f"tokens={len(self.dynamic_tokens)})")
+
+
+@dataclass(slots=True)
 class AttackSurface:
     """
     크롤러/파서 → 퍼저 전달용 공격 표면 DTO
     """
-    def __init__(
-            self,
-            url: str,
-            method: HttpMethod = HttpMethod.GET,
-            param_location: ParamLocation = ParamLocation.QUERY,
-            parameters: Dict[str, Any] = None,
-            headers: Dict[str, str] = None,
-            cookies: Dict[str, str] = None,
-            dynamic_tokens: List[str] = None,
-            source_url: str = None,
-            description: str = None,
-            depth: int = 0,
-            content_type: str = None
-    ):
-        self.url = url
-        self.method = method
-        self.param_location = param_location
-        self.parameters = parameters if parameters is not None else {}
-        self.headers = headers if headers is not None else {}
-        self.cookies = cookies if cookies is not None else {}
-        self.dynamic_tokens = dynamic_tokens if dynamic_tokens is not None else []
-        self.source_url = source_url
-        self.description = description
-        self.depth = depth
-        self.content_type = content_type
+    url: str
+    method: HttpMethod = HttpMethod.GET
+    param_location: ParamLocation = ParamLocation.QUERY
+    parameters: dict[str, Any] = field(default_factory=dict)
+    headers: dict[str, str] = field(default_factory=dict)
+    cookies: dict[str, str] = field(default_factory=dict)
+    dynamic_tokens: list[str] = field(default_factory=list)
+    source_url: str | None = None
+    description: str | None = None
+    depth: int = 0
+    content_type: str | None = None
 
     def get_id(self) -> str:
-        """고유 ID 생성 (URL + Method + Location + 파라미터 키 조합 해시)"""
-        param_keys = sorted(self.parameters.keys())
-        unique_str = (
-            f"{self.url}|"
-            f"{self.method.value}|"
-            f"{self.param_location.value}|"
-            f"{','.join(param_keys)}"
-        )
-        return hashlib.md5(unique_str.encode()).hexdigest()
+        """고유 식별자 생성"""
+        params_str = str(sorted(self.parameters.keys()))
+        raw = f"{self.url}:{self.method.value}:{self.param_location.value}:{params_str}"
+        return hashlib.md5(raw.encode()).hexdigest()[:16]
 
-    def to_dict(self) -> Dict[str, Any]:
-        """JSON 직렬화용"""
+    def to_dict(self) -> dict[str, Any]:
         return {
             'id': self.get_id(),
             'url': self.url,
@@ -144,11 +147,11 @@ class AttackSurface:
             'source_url': self.source_url,
             'description': self.description,
             'depth': self.depth,
+            'content_type': self.content_type,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> AttackSurface:
-        """JSON 역직렬화용"""
+    def from_dict(cls, data: dict[str, Any]) -> AttackSurface:
         return cls(
             url=data['url'],
             method=HttpMethod(data.get('method', 'GET')),
@@ -160,11 +163,28 @@ class AttackSurface:
             source_url=data.get('source_url'),
             description=data.get('description'),
             depth=data.get('depth', 0),
+            content_type=data.get('content_type'),
         )
 
-    def __repr__(self) -> str:
-        return (f"AttackSurface(url='{self.url}', method={self.method.value}, "
-                f"params={list(self.parameters.keys())}, dynamic_tokens={self.dynamic_tokens})")
+
+# ============================================================
+# Team B - Fuzzer 전용 데이터 모델 (누락되었던 부분 복구)
+# ============================================================
+
+@dataclass(slots=True, frozen=True)
+class Payload:
+    """Structured payload metadata used by payload provider/reporter."""
+    value: str
+    attack_type: str
+    risk_level: str
+
+
+@dataclass(slots=True, frozen=True)
+class FuzzingTask:
+    """One concrete fuzzing unit generated from a surface."""
+    surface: AttackSurface
+    target_param: str
+    payload: Payload
 
 
 # ============================================================
@@ -178,7 +198,7 @@ class CrawlTask:
     depth: int = 0
     parent_url: str | None = None
     retry_count: int = 0
-    priority: int = 0
+    priority: int = 0  # 높을수록 우선
     created_at: datetime = field(default_factory=datetime.now)
 
     def __lt__(self, other: CrawlTask) -> bool:
@@ -189,6 +209,17 @@ class CrawlTask:
             'url': self.url, 'depth': self.depth, 'parent_url': self.parent_url,
             'retry_count': self.retry_count, 'priority': self.priority,
         }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> CrawlTask:
+        return cls(
+            url=data['url'],
+            depth=data.get('depth', 0),
+            parent_url=data.get('parent_url'),
+            retry_count=data.get('retry_count', 0),
+            priority=data.get('priority', 0),
+        )
+
 
 @dataclass(slots=True)
 class CrawlResult:
@@ -211,52 +242,86 @@ class CrawlResult:
     def get_hash(self) -> str:
         return hashlib.md5(self.body.encode()).hexdigest()
 
-class PageData:
-    """파싱을 위해 정제된 페이지 데이터"""
-    def __init__(self, url: str, html: str, depth: int = 0):
-        self.url = url
-        self.html = html
-        self.depth = depth
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            'url': self.url,
+            'final_url': self.final_url,
+            'status_code': self.status_code,
+            'content_type': self.content_type,
+            'response_time': self.response_time,
+            'depth': self.depth,
+            'parent_url': self.parent_url,
+            'timestamp': self.timestamp.isoformat(),
+            'content_length': self.content_length,
+            'is_dynamic': self.is_dynamic,
+            'body_hash': self.get_hash(),
+        }
 
-    def __repr__(self) -> str:
-        return f"PageData(url='{self.url}', depth={self.depth})"
 
 @dataclass
 class CrawlStats:
-    """크롤링 통계 관리"""
+    """크롤링 통계 관리 (누락된 메서드 복구)"""
     total_requests: int = 0
     successful_requests: int = 0
     failed_requests: int = 0
     skipped_requests: int = 0
+
     total_forms_found: int = 0
     total_links_found: int = 0
+    total_apis_found: int = 0
     total_attack_surfaces: int = 0
+
     bytes_downloaded: int = 0
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
-    errors_by_type: Dict[str, int] = field(default_factory=dict)
-    status_codes: Dict[int, int] = field(default_factory=dict)
+
+    start_time: datetime | None = None
+    end_time: datetime | None = None
+
+    errors_by_type: dict[str, int] = field(default_factory=dict)
+    status_codes: dict[int, int] = field(default_factory=dict)
 
     @property
     def duration(self) -> float:
-        curr_end = self.end_time or datetime.now()
-        return (curr_end - self.start_time).total_seconds() if self.start_time else 0.0
+        if self.start_time and self.end_time:
+            return (self.end_time - self.start_time).total_seconds()
+        elif self.start_time:
+            return (datetime.now() - self.start_time).total_seconds()
+        return 0.0
+
+    @property
+    def requests_per_second(self) -> float:
+        return self.total_requests / self.duration if self.duration > 0 else 0.0
+
+    @property
+    def success_rate(self) -> float:
+        return (self.successful_requests / self.total_requests * 100) if self.total_requests > 0 else 0.0
+
+    def record_error(self, error_type: str) -> None:
+        self.errors_by_type[error_type] = self.errors_by_type.get(error_type, 0) + 1
+
+    def record_status(self, status_code: int) -> None:
+        self.status_codes[status_code] = self.status_codes.get(status_code, 0) + 1
 
     def to_dict(self) -> dict[str, Any]:
         return {
             'total_requests': self.total_requests,
-            'success_rate': f"{(self.successful_requests/self.total_requests*100 if self.total_requests else 0):.2f}%",
+            'successful_requests': self.successful_requests,
+            'failed_requests': self.failed_requests,
+            'skipped_requests': self.skipped_requests,
+            'success_rate': f"{self.success_rate:.2f}%",
             'duration': f"{self.duration:.2f}s",
+            'requests_per_second': f"{self.requests_per_second:.2f}",
+            'bytes_downloaded': self.bytes_downloaded,
+            'forms_found': self.total_forms_found,
+            'links_found': self.total_links_found,
             'attack_surfaces': self.total_attack_surfaces,
-            'errors': self.errors_by_type
+            'errors_by_type': self.errors_by_type,
+            'status_codes': self.status_codes,
         }
 
 
 # ============================================================
 # 팀 A → 팀 B 전달용 콜백 타입
 # ============================================================
-
-from typing import Callable, Awaitable
 
 # AttackSurface를 받는 콜백 타입
 SurfaceCallback = Callable[[AttackSurface], Awaitable[None] | None]
