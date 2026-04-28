@@ -4,7 +4,7 @@ import asyncio
 from urllib.parse import urljoin, urlparse
 from datetime import datetime
 from contextlib import asynccontextmanager
-from core.models import (PageData,TokenDetector)
+from core.models import (PageData, TokenDetector)
 from parser.html_parser import AsyncHTMLParser
 from crawler.session_manager import SessionManager
 from crawler.url_filter import URLFilter
@@ -56,8 +56,12 @@ class CrawlerEngine:
     def __init__(self, queue_manager, config=None):
         self.queue_manager = queue_manager
         self.config = config or CrawlConfig()
-        self.session_manager = SessionManager()
         self.url_filter = URLFilter()
+
+        # ✨ [핵심 수정] SessionManager 생성 시 url_filter를 주입하여 SSRF 방어벽을 네트워크망에 연결
+        self.session_manager = SessionManager(url_filter=self.url_filter)
+        self._external_session = False
+
         self._visited = set()
         self._queue = asyncio.Queue()
         self._stats = CrawlStats()
@@ -73,6 +77,8 @@ class CrawlerEngine:
 
     def set_session(self, session_manager):
         self.session_manager = session_manager
+        # ✨ [핵심 수정] 외부 세션이 주입될 때도 url_filter를 강제로 연결하여 보안 유지
+        self.session_manager.url_filter = self.url_filter
         self._external_session = True
         logger.info("외부 세션 연결됨")
 
@@ -169,7 +175,7 @@ class CrawlerEngine:
             self._stats.errors += 1
 
     async def _fetch_url(self, url):
-        # session_manager를 통해 안전한 요청 수행
+        # session_manager를 통해 안전한 요청 수행 (내부에서 SSRF 검증 진행됨)
         return await self.session_manager.get(url, timeout=self.config.timeout)
 
     async def _process_response(self, response, url, depth):
@@ -178,13 +184,18 @@ class CrawlerEngine:
         headers = response.get("headers", {})
         cookies = response.get("cookies", {})
 
-        # 1. 전용 파서를 이용한 HTML 분석 (여기서 soup 생성)
-        parse_result = AsyncHTMLParser.parse_html_string(html, base_url=final_url)
+        # ✨ [핵심 수정] CPU를 무겁게 쓰는 HTML 파싱 작업을 이벤트 루프에서 분리 (스레드 풀 실행)
+        # 이를 통해 크롤러 워커들이 네트워크 요청을 주고받는 흐름이 멈추지 않도록 보장합니다.
+        loop = asyncio.get_running_loop()
+        parse_result = await loop.run_in_executor(
+            None, AsyncHTMLParser.parse_html_string, html, final_url
+        )
+
         if not parse_result.get("success"):
             logger.warning("파싱 건너뜀 (%s): %s", final_url, parse_result.get("error"))
             return
 
-        soup = parse_result["soup"]
+        soup = parse_result.get("soup")
         if soup is None:
             return
 

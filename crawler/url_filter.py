@@ -2,10 +2,13 @@
 
 """
 URL 필터
-크롤링 대상 URL을 필터링하고 정규화
+크롤링 대상 URL을 필터링하고 정규화 + SSRF 네트워크 보안 검증 수행
 """
 
 import re
+# ✨ [핵심 수정] SSRF 방어를 위한 IP 및 비동기 모듈 추가
+import ipaddress
+import asyncio
 from urllib.parse import urlparse, urlunparse, parse_qs, urlencode, unquote
 
 from utils.logger import get_logger
@@ -42,6 +45,22 @@ class URLFilter:
         r'/add', r'/submit', r'/process', r'/callback', r'/webhook', r'/redirect',
     ]
 
+    # ✨ [핵심 수정] SSRF 방어용 차단 네트워크 정의 (파서에서 이동)
+    BLOCKED_NETWORKS_V4 = (
+        ipaddress.ip_network("127.0.0.0/8"),
+        ipaddress.ip_network("10.0.0.0/8"),
+        ipaddress.ip_network("172.16.0.0/12"),
+        ipaddress.ip_network("192.168.0.0/16"),
+        ipaddress.ip_network("169.254.0.0/16"),
+        ipaddress.ip_network("224.0.0.0/4"),
+    )
+
+    BLOCKED_NETWORKS_V6 = (
+        ipaddress.ip_network("::1/128"),
+        ipaddress.ip_network("fc00::/7"),
+        ipaddress.ip_network("fe80::/10"),
+    )
+
     def __init__(
             self,
             allowed_domains=None,
@@ -71,8 +90,60 @@ class URLFilter:
 
         logger.debug("URL 필터 초기화: 허용 도메인=%s", self.allowed_domains)
 
+    # ✨ [핵심 수정] 네트워크 요청 전 대상 서버 IP 안전성 검증
+    async def is_safe_url(self, url: str) -> bool:
+        """
+        URL 안전성 검증: 스킴 확인 + DNS 해석 + 내부 IP 대역 차단
+        SessionManager에서 요청을 보내기 직전에 호출되어 SSRF 공격을 방어합니다.
+        """
+        try:
+            parsed = urlparse(url)
+            if parsed.scheme not in self.allowed_schemes:
+                return False
+
+            hostname = parsed.hostname
+            if not hostname:
+                return False
+
+            port = parsed.port or (443 if parsed.scheme == "https" else 80)
+            loop = asyncio.get_running_loop()
+
+            # 타임아웃을 걸어 DNS 해석 무한 대기 방지
+            addrinfo = await asyncio.wait_for(
+                loop.getaddrinfo(hostname, port),
+                timeout=3.0,
+            )
+
+            for _, _, _, _, sockaddr in addrinfo:
+                ip = ipaddress.ip_address(sockaddr[0])
+
+                # IPv4/IPv6에 맞는 네트워크 목록 선택 (TypeError 방지)
+                if ip.version == 4:
+                    blocked_networks = self.BLOCKED_NETWORKS_V4
+                else:
+                    blocked_networks = self.BLOCKED_NETWORKS_V6
+
+                if any(ip in network for network in blocked_networks):
+                    logger.warning(f"보안 경고: 내부망 IP 접근 시도 차단됨 -> {url} (IP: {ip})")
+                    return False
+
+            return True
+
+        except asyncio.TimeoutError:
+            logger.debug(f"DNS 조회 타임아웃: {url}")
+            return False
+        except OSError as e:
+            logger.debug(f"DNS 조회 실패: {url} - {e}")
+            return False
+        except (ValueError, TypeError) as e:
+            logger.debug(f"URL 파싱 오류: {url} - {e}")
+            return False
+        except Exception as e:
+            logger.debug(f"안전성 검증 실패 ({url}): {e}")
+            return False
+
     def should_crawl(self, url: str) -> bool:
-        """URL을 크롤링해야 하는지 결정"""
+        """URL을 크롤링해야 하는지 결정 (구조, 확장자 등 일반 필터링)"""
         try:
             parsed = urlparse(url)
 
