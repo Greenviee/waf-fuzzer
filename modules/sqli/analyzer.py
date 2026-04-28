@@ -12,27 +12,16 @@ def detect_sqli(response, payload, elapsed_time, exploit_signatures, syntax_sign
     payload_value = payload.value
     marker = "SVSDAAAAvunVASDAAAA"
 
-    # [1] 단순 문법 오류(Syntax Error) 식별 및 영역 제거
+    # [1] 문법 오류(Syntax Error) 식별 및 영역 제거
     has_syntax_error = False
     scrubbed_text = res_text
     
-    syntax_error_full_patterns = [
-        r"you have an error in your sql syntax;.*?near\s+'.+?'\s+at\s+line\s+\d+", 
-        r"microsoft\s+ole\s+db\s+provider\s+for\s+sql\s+server.*?'(.+?)'",         
-        r"postgresql\s+query\s+failed:.*?at\s+or\s+near\s+\".+?\"",               
-        r"syntax\s+error\s+near\s+'.+?'",
-    ]
-
-    for p in syntax_error_full_patterns:
-        if re.search(p, scrubbed_text, re.I | re.DOTALL):
+    for pattern in syntax_signatures:
+        if re.search(pattern, scrubbed_text, re.I | re.DOTALL):
             has_syntax_error = True
-            scrubbed_text = re.sub(p, "[FULL_SYNTAX_ERROR_REMOVED]", scrubbed_text, flags=re.I | re.DOTALL)
-
-    if not has_syntax_error:
-        for pattern in syntax_signatures:
-            if re.search(pattern, scrubbed_text, re.I | re.DOTALL):
-                has_syntax_error = True
-                break
+            
+            # 발견된 문법 에러 영역 전체를 [FULL_SYNTAX_ERROR_REMOVED]로 치환
+            scrubbed_text = re.sub(pattern, "[FULL_SYNTAX_ERROR_REMOVED]", scrubbed_text, flags=re.I | re.DOTALL)
 
     # [2] 직접 반사 제거
     payload_variants = [payload_value, unquote(payload_value), html.escape(payload_value)]
