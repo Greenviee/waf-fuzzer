@@ -222,7 +222,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--ssrf-bypass-level",
         type=int,
         choices=[0, 1, 2],
-        default=0,
+        default=1,
         help="SSRF bypass mutation level (0=off, 1=path encode, 2=path+ip obfuscation)",
     )
     parser.add_argument(
