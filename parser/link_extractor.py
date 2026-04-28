@@ -68,7 +68,6 @@ def normalize_url(url: str, base_url: str) -> Optional[str]:
         absolute = urljoin(base_url, url)
         parsed = urlparse(absolute)
         
-        # 상대 경로 내 콜론(:) 오인 방지 로직 (original_parsed 활용)
         original_parsed = urlparse(url)
         if original_parsed.scheme and original_parsed.scheme.lower() in IGNORED_SCHEMES:
             return None
@@ -152,46 +151,6 @@ def extract_link_tags(soup: BeautifulSoup, base_url: str, seen: Set[str]) -> Lis
     return links
 
 
-def extract_form_links(soup: BeautifulSoup, base_url: str, seen: Set[str]) -> List[dict]:
-    links = []
-    for form in soup.find_all('form'):
-        method = get_attr(form, 'method', 'GET').upper()
-        if method not in ('GET', 'POST'): method = 'GET'
-        
-        action = get_attr(form, 'action') or base_url
-        url = normalize_url(action, base_url)
-        if not url: continue
-        
-        key = make_seen_key(url, method)
-        if key in seen: continue
-        seen.add(key)
-        
-        # _extract_form_params 기능 통합 연동
-        params = _extract_form_params(form)
-        links.append({
-            'url': url, 'method': method, 'params': params, 'source': 'form'
-        })
-    return links
-
-
-def _extract_form_params(form: Tag) -> Dict[str, List[str]]:
-    params: Dict[str, List[str]] = {}
-    for inp in form.find_all(['input', 'select', 'textarea']):
-        name = get_attr(inp, 'name')
-        if not name: continue
-        
-        inp_type = get_attr(inp, 'type', 'text').lower()
-        if inp_type in ('submit', 'button', 'reset', 'image'): continue
-        
-        value = get_attr(inp, 'value')
-        if inp.name == 'select':
-            opt = inp.find('option', selected=True) or inp.find('option')
-            if opt: value = get_attr(opt, 'value')
-        
-        params.setdefault(name, []).append(value)
-    return params
-
-
 def extract_js_links(soup: BeautifulSoup, base_url: str, seen: Set[str]) -> List[dict]:
     links = []
     for script in soup.find_all('script'):
@@ -206,7 +165,6 @@ def extract_js_links(soup: BeautifulSoup, base_url: str, seen: Set[str]) -> List
             if handler:
                 links.extend(_extract_urls_from_js(handler, base_url, seen, f'event_{attr}'))
     
-    # 현대적인 data- 속성 대응
     for attr in ('data-url', 'data-href', 'data-src', 'data-link'):
         for tag in soup.find_all(attrs={attr: True}):
             val = get_attr(tag, attr)
@@ -225,7 +183,7 @@ def extract_js_links(soup: BeautifulSoup, base_url: str, seen: Set[str]) -> List
 
 def _extract_urls_from_js(content: str, base_url: str, seen: Set[str], source: str) -> List[dict]:
     links = []
-    content = content[:50000] # ReDoS 보호용 크기 제한
+    content = content[:50000]
     for pattern in JS_URL_PATTERNS:
         try:
             for match in pattern.findall(content):
@@ -255,7 +213,6 @@ def extract_meta_refresh(soup: BeautifulSoup, base_url: str, seen: Set[str]) -> 
         match = META_REFRESH_PATTERN.search(content)
         if not match: continue
         
-        # 정규식 캡처 그룹(match.group(1)) 활용
         url = normalize_url(match.group(1), base_url)
         if not url: continue
         
@@ -316,18 +273,16 @@ def extract_links(
     html_or_soup: Union[str, BeautifulSoup],  
     base_url: str,
     include_external: bool = False,
-    include_forms: bool = True,
     include_js: bool = True,
     include_media: bool = True,
     include_meta: bool = True,
 ) -> List[dict]:
     """
-    HTML 소스 또는 파싱된 객체로부터 공격 가능한 모든 경로 추출
-    - AsyncHTMLParser 및 form_extractor와 타입 호환성 보장
+    HTML 소스 또는 파싱된 객체로부터 링크 추출
+    (폼 추출은 form_extractor 모듈에서 전담)
     """
     if not html_or_soup or not base_url: return []
     
-    # 지적사항 반영: 타입별 안전한 soup 객체 확보
     if isinstance(html_or_soup, str):
         try:
             soup = BeautifulSoup(html_or_soup, 'html.parser')
@@ -344,19 +299,18 @@ def extract_links(
     seen: Set[str] = set()
     links: List[dict] = []
     
-    # 링크 수집 단계
     links.extend(extract_anchor_links(soup, base_url, seen))
+    
     if include_meta:
         links.extend(extract_link_tags(soup, base_url, seen))
         links.extend(extract_meta_refresh(soup, base_url, seen))
-    if include_forms:
-        links.extend(extract_form_links(soup, base_url, seen))
+    
     if include_js:
         links.extend(extract_js_links(soup, base_url, seen))
+    
     if include_media:
         links.extend(extract_media_links(soup, base_url, seen))
     
-    # 외부 도메인 필터링 및 보안 분석
     if not include_external:
         links = [l for l in links if is_same_domain(l['url'], base_domain)]
     
