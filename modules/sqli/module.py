@@ -25,6 +25,7 @@ class SQLiModule(BaseModule):
         super().__init__("SQL Injection")
         self.exploit_signatures = self._load_json("exploit_errors.json")
         self.syntax_signatures = self._load_json("syntax_errors.json")
+        self.mismatch_signatures = self._load_json("mismatch_errors.json")
         
         self.enable_case_bypass = enable_case_bypass
         self.enable_null_byte_bypass = enable_null_byte_bypass
@@ -91,20 +92,19 @@ class SQLiModule(BaseModule):
         return value
 
     def _mutate_to_false(self, value: str) -> str:
-        """논리 반전: 참(1=1)을 거짓(1=2)으로 변경"""
+        # 참(1=1)을 거짓(1=2)으로 변경
         return value.replace("1=1", "1=2").replace("4231=4231", "4231=4232")
 
     async def analyze(self, response, payload, elapsed_time, original_res=None, requester=None):
-        """
-        Triangle Comparison (원본-참-거짓 대조) 정밀 분석 로직.
-        """
-        # 1차 분석 (detect_sqli)
+        
+        #원본-참-거짓 삼각 대조 
         is_vuln, evidences = detect_sqli(
             response=response, 
             payload=payload, 
             elapsed_time=elapsed_time, 
             exploit_signatures=self.exploit_signatures, 
             syntax_signatures=self.syntax_signatures,
+            mismatch_signatures=self.mismatch_signatures,
             original_res=original_res
         )
         
@@ -131,7 +131,6 @@ class SQLiModule(BaseModule):
                 if re.search(logic_pattern, val):
                     false_payload = re.sub(logic_pattern, "1=2", val)
                     false_res = await requester(false_payload)
-                    # 참(현재 응답)과 거짓(방금 온 응답)이 확실히 다를 때
                     if not self._is_similar(false_res.text, response.text):
                         object.__setattr__(payload, 'last_evidences', evidences + ["[Verified] Logic Swapping (True!=False)"])
                         return True
@@ -142,7 +141,6 @@ class SQLiModule(BaseModule):
                 val = payload.value
                 logic_pattern = r"(['\"]?\w+['\"]?)\s*=\s*\1"
                 
-                # 페이로드에 논리 참 패턴이 존재하는 경우에만 거짓 테스트 수행
                 if re.search(logic_pattern, val) or "1=1" in val:
                     if re.search(logic_pattern, val):
                         false_payload = re.sub(logic_pattern, "1=2", val)
@@ -151,7 +149,6 @@ class SQLiModule(BaseModule):
                     
                     if false_payload != val:
                         false_res = await requester(false_payload)
-                        # 원본(참)과는 똑같고, 거짓과는 확연히 다를 때 (Blind SQLi의 정석)
                         if self._is_similar(response.text, original_res.text) and not self._is_similar(response.text, false_res.text):
                             object.__setattr__(payload, 'last_evidences', ["[Verified] Blind SQLi (Baseline==True and True!=False)"])
                             return True
