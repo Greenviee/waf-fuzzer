@@ -50,9 +50,18 @@ class SSRFModule(BaseModule):
         re.IGNORECASE,
     )
 
-    def __init__(self, name: str = "Server-Side Request Forgery"):
+    def __init__(
+        self,
+        name: str = "Server-Side Request Forgery",
+        *,
+        include_oob_templates: bool = False,
+        bypass_level: int = 0,
+    ):
         super().__init__(name)
-        self._payloads: list[SSRFPayload] = get_ssrf_payloads()
+        self._payloads: list[SSRFPayload] = get_ssrf_payloads(
+            include_oob_templates=include_oob_templates,
+            bypass_level=bypass_level,
+        )
 
     def get_payloads(self) -> list[Payload]:
         return self._payloads

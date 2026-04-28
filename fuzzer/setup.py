@@ -18,7 +18,10 @@ def select_modules(args) -> list:
         max_time_payloads=args.max_time_payloads,
     )
     xss_module = XSSModule()
-    ssrf_module = SSRFModule()
+    ssrf_module = SSRFModule(
+        include_oob_templates=args.ssrf_include_oob,
+        bypass_level=args.ssrf_bypass_level,
+    )
     bruteforce_module = BruteforceModule(
         wordlist_path=args.bf_wordlist,
         enable_mutation=not args.bf_disable_mutation,

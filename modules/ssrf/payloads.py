@@ -1,6 +1,8 @@
 ﻿from __future__ import annotations
 
+import ipaddress
 import os
+from urllib.parse import quote, urlparse, urlunparse
 from dataclasses import dataclass
 
 
@@ -45,7 +47,99 @@ def _load_ssrf_payload_file(file_path: str) -> list[SSRFPayload]:
     return payloads
 
 
-def get_ssrf_payloads(include_oob_templates: bool = False) -> list[SSRFPayload]:
+def _split_host_port(netloc: str) -> tuple[str, str]:
+    if not netloc:
+        return "", ""
+    if netloc.startswith("["):
+        end = netloc.find("]")
+        if end == -1:
+            return netloc, ""
+        host = netloc[: end + 1]
+        port = netloc[end + 1 :]
+        return host, port
+    if ":" in netloc:
+        host, port = netloc.rsplit(":", 1)
+        if port.isdigit():
+            return host, f":{port}"
+    return netloc, ""
+
+
+def _apply_ssrf_bypass(payload: SSRFPayload, bypass_level: int) -> list[SSRFPayload]:
+    normalized_level = max(0, min(int(bypass_level), 2))
+    if normalized_level <= 0:
+        return [payload]
+
+    mutated: list[SSRFPayload] = [payload]
+    value = payload.value
+    try:
+        parsed = urlparse(value)
+    except ValueError:
+        # Keep malformed/template payloads as-is (e.g., placeholders in OOB set).
+        return mutated
+    if not parsed.scheme or not parsed.netloc:
+        return mutated
+
+    # Level 1: encode only path/query to preserve URL structure.
+    if normalized_level >= 1:
+        encoded_path = quote(parsed.path or "", safe="/%")
+        encoded_query = quote(parsed.query or "", safe="=&%")
+        if encoded_path != parsed.path or encoded_query != parsed.query:
+            mutated.append(
+                SSRFPayload(
+                    value=urlunparse(
+                        (
+                            parsed.scheme,
+                            parsed.netloc,
+                            encoded_path,
+                            parsed.params,
+                            encoded_query,
+                            parsed.fragment,
+                        )
+                    ),
+                    attack_type=f"{payload.attack_type}_path_encode",
+                    risk_level=payload.risk_level,
+                    expected_signature=payload.expected_signature,
+                )
+            )
+
+    # Level 2: host obfuscation for IPv4 targets (decimal/hex).
+    if normalized_level >= 2:
+        host, port = _split_host_port(parsed.netloc)
+        normalized_host = host.strip("[]")
+        try:
+            ip_obj = ipaddress.ip_address(normalized_host)
+            if isinstance(ip_obj, ipaddress.IPv4Address):
+                numeric = int(ip_obj)
+                decimal_host = str(numeric)
+                hex_host = hex(numeric)
+                for obf_host, suffix in ((decimal_host, "ip_decimal"), (hex_host, "ip_hex")):
+                    mutated.append(
+                        SSRFPayload(
+                            value=urlunparse(
+                                (
+                                    parsed.scheme,
+                                    f"{obf_host}{port}",
+                                    parsed.path,
+                                    parsed.params,
+                                    parsed.query,
+                                    parsed.fragment,
+                                )
+                            ),
+                            attack_type=f"{payload.attack_type}_{suffix}",
+                            risk_level=payload.risk_level,
+                            expected_signature=payload.expected_signature,
+                        )
+                    )
+        except ValueError:
+            pass
+
+    return mutated
+
+
+def get_ssrf_payloads(
+    include_oob_templates: bool = False,
+    bypass_level: int = 0,
+) -> list[SSRFPayload]:
     inband_path = os.path.join("config", "payloads", "ssrf_inband.txt")
     oob_path = os.path.join("config", "payloads", "ssrf_oob_template.txt")
     fallback_path = os.path.join("config", "payloads", "ssrf.txt")
@@ -57,5 +151,12 @@ def get_ssrf_payloads(include_oob_templates: bool = False) -> list[SSRFPayload]:
 
     if include_oob_templates:
         payloads.extend(_load_ssrf_payload_file(oob_path))
-
-    return payloads
+    seen: set[str] = set()
+    expanded: list[SSRFPayload] = []
+    for payload in payloads:
+        for candidate in _apply_ssrf_bypass(payload, bypass_level=bypass_level):
+            if candidate.value in seen:
+                continue
+            seen.add(candidate.value)
+            expanded.append(candidate)
+    return expanded

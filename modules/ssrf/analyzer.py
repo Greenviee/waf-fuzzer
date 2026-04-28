@@ -145,7 +145,11 @@ def analyze_ssrf(response, payload, elapsed_time: float, original_res=None) -> b
 
     # 4) Boolean-blind style delta checks (host discovery, path brute-force, bypasses)
     is_blind_probe = _is_blind_probe_payload(payload_value_lower)
-    if is_blind_probe and original_res is not None:
+    is_cloud_payload = any(hint in payload_value_lower for hint in _CLOUD_TARGET_HINTS)
+
+    # Cloud-target payloads are intentionally excluded from generic blind length deltas.
+    # Cloud success should be confirmed by explicit cloud hints (step 2).
+    if is_blind_probe and original_res is not None and not is_cloud_payload:
         # 4-1) Status class delta: e.g. baseline 2xx -> probe 4xx/5xx (or inverse)
         if _status_class(status_code) != _status_class(original_status_code):
             return True
@@ -156,7 +160,9 @@ def analyze_ssrf(response, payload, elapsed_time: float, original_res=None) -> b
         if len_original > 0:
             diff_ratio = abs(len_current - len_original) / len_original
             if diff_ratio >= 0.30 and abs(len_current - len_original) >= 200:
-                return True
+                # Drop "empty 200 OK" style responses often caused by silent blocks/failures.
+                if not (status_code == 200 and len_current < 10):
+                    return True
 
         # 4-3) New login page hints (internal admin/login panel reachability)
         has_login_hints = any(hint in res_text_lower for hint in _LOGIN_PAGE_HINTS)
