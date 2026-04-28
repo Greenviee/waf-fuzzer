@@ -85,22 +85,23 @@ class TokenDetector:
 
 
 class PageData:
-    """파싱을 위해 정제된 페이지 데이터 (헤더/쿠키 포함)"""
     def __init__(
             self,
             url: str,
             html: str,
             depth: int = 0,
-            headers: Dict[str, str] = None,   # ✨ 추가됨
-            cookies: Dict[str, str] = None,   # ✨ 추가됨
-            dynamic_tokens: Dict[str, str] = None  # ✨ 토큰을 담을 딕셔너리 추가
+            headers: Dict[str, str] = None,
+            cookies: Dict[str, str] = None,
+            dynamic_tokens: Dict[str, str] = None,
+            soup: Any = None  # ✨ [추가] 파싱된 BeautifulSoup 객체를 담을 필드
     ):
         self.url = url
         self.html = html
         self.depth = depth
-        self.headers = headers if headers is not None else {}  # ✨ 추가됨
-        self.cookies = cookies if cookies is not None else {}  # ✨ 추가됨
-        self.dynamic_tokens = dynamic_tokens if dynamic_tokens is not None else {}  # ✨ 추가됨
+        self.headers = headers if headers is not None else {}
+        self.cookies = cookies if cookies is not None else {}
+        self.dynamic_tokens = dynamic_tokens if dynamic_tokens is not None else {}
+        self.soup = soup  # ✨ [추가] 파서로부터 전달받은 soup 저장
 
     def __repr__(self) -> str:
         # ✨ 모든 메타데이터의 상태를 한눈에 파악할 수 있도록 구성
