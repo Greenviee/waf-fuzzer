@@ -143,4 +143,4 @@ class SQLiModule(BaseModule):
         if not text1 or not text2: return False
         len1, len2 = len(text1), len(text2)
         diff = abs(len1 - len2)
-        return (diff / max(len1, len2)) < 0.001
+        return (diff / max(len1, len2)) < 0.015
