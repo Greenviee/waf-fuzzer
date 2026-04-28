@@ -45,38 +45,40 @@ def get_sqli_payloads() -> list[Payload]:
     if not file_path:
         return []
 
-    # 고정형 구분자 정의
     DELIM_START = "SVSDAAAA"
     DELIM_STOP = "VASDAAAA"
+    
+    # 구조: { "MySQL": (start_m, stop_m, vun_m), "Oracle": (...) }
+    marker_cache = {}
 
     with open(file_path, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
-            # ::: 구분자로 파싱 (Payload ::: Type ::: Risk ::: DBMS)
             if not line or ":::" not in line:
                 continue
 
             parts = [p.strip() for p in line.split(":::")]
 
             if len(parts) >= 4:
-                raw_value = parts[0].strip()
-                attack_type = parts[1].strip()
-                risk_level = parts[2].strip()
-                dbms = parts[3].strip()
+                raw_value = parts[0]
+                attack_type = parts[1]
+                risk_level = parts[2]
+                dbms = parts[3]
 
-                # DBMS별 우회용 마커 생성
-                start_marker = get_dbms_specific_marker(DELIM_START, dbms)
-                stop_marker = get_dbms_specific_marker(DELIM_STOP, dbms)
-                vun_marker = get_dbms_specific_marker("vun", dbms)
+                # 해당 DBMS에 대한 마커가 이미 계산되어 캐시된 값 있는지 확인하고 없는 경우에만 계산
+                if dbms not in marker_cache:
+                    marker_cache[dbms] = (
+                        get_dbms_specific_marker(DELIM_START, dbms),
+                        get_dbms_specific_marker(DELIM_STOP, dbms),
+                        get_dbms_specific_marker("vun", dbms)
+                    )
+                
+                start_marker, stop_marker, vun_marker = marker_cache[dbms]
 
                 # 1. 플레이스홀더 및 마커 치환
                 final_value = raw_value
-                
-                # [START_M], [STOP_M] 치환 시 따옴표가 포함된 '[START_M]' 형식을 먼저 치환하여 쿼리 문법 오류 방지
                 final_value = final_value.replace("'[START_M]'", start_marker).replace("[START_M]", start_marker)
                 final_value = final_value.replace("'[STOP_M]'", stop_marker).replace("[STOP_M]", stop_marker)
-                
-                # 고정 마커 'vun' 치환
                 final_value = final_value.replace("'vun'", vun_marker).replace('"vun"', vun_marker)
 
                 # 2. 기타 플레이스홀더 처리
@@ -86,7 +88,6 @@ def get_sqli_payloads() -> list[Payload]:
                 final_value = final_value.replace("[ORIGVALUE]", "1")
                 final_value = final_value.replace("[SLEEPTIME]", "5")
 
-                # Payload 객체 생성
                 payloads.append(Payload(
                     value=final_value,
                     attack_type=attack_type,
