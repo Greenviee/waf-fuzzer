@@ -3,7 +3,8 @@ import json
 import urllib.parse
 import re
 import dataclasses
-
+import random
+from typing import List, Any
 from modules.base_module import BaseModule
 from modules.sqli.payloads import get_sqli_payloads
 from modules.sqli.analyzer import detect_sqli 
@@ -19,6 +20,7 @@ class SQLiModule(BaseModule):
         enable_unicode_escape: bool = False,
         include_time_based: bool = False,
         max_time_payloads: int = 0,
+        random_seed: int = 37
     ):
         super().__init__("SQL Injection")
         self.exploit_signatures = self._load_json("exploit_errors.json")
@@ -31,6 +33,7 @@ class SQLiModule(BaseModule):
         self.enable_unicode_escape = enable_unicode_escape
         self.include_time_based = include_time_based
         self.max_time_payloads = max_time_payloads
+        self.random_seed = random_seed
 
     def _load_json(self, filename):
         file_path = os.path.join("config", "payloads", filename)
@@ -42,16 +45,41 @@ class SQLiModule(BaseModule):
                 print(f"[-] [{self.name}] {filename} load failed: {e}")
         return []
 
+    def _is_time_payload(self, payload) -> bool:
+        attack_type = str(getattr(payload, "attack_type", "")).lower()
+        return "time" in attack_type or "stacked" in attack_type
+
     def get_payloads(self):
-        base_payloads = get_sqli_payloads()
-        filtered_payloads = self._filter_slow_payloads(base_payloads)
+        all_raw = get_sqli_payloads()
         
-        final_payloads = []
-        for p in filtered_payloads:
+        fast_payloads = []
+        time_pool = []
+
+        include_time = self.include_time_based
+        for p in all_raw:
+            if self._is_time_payload(p):
+                if include_time:
+                    time_pool.append(p)
+            else:
+                fast_payloads.append(p)
+                
+        print(f"[*] SQLi Payloads: Total={len(all_raw)}, Fast={len(fast_payloads)}, TimePool={len(time_pool)}")
+
+        if include_time and time_pool:
+            random.seed(self.random_seed)
+            random.shuffle(time_pool)
+            
+            limit = self.max_time_payloads if self.max_time_payloads > 0 else len(time_pool)
+            fast_payloads.extend(time_pool[:limit])
+            
+            del time_pool
+
+        processed_payloads = []
+        for p in fast_payloads:
             new_value = self._apply_bypass_techniques(p.value)
-            new_payload = dataclasses.replace(p, value=new_value)
-            final_payloads.append(new_payload)
-        return final_payloads
+            processed_payloads.append(dataclasses.replace(p, value=new_value))
+            
+        return processed_payloads
 
     def _apply_bypass_techniques(self, value: str) -> str:
         if self.enable_case_bypass:
@@ -62,29 +90,15 @@ class SQLiModule(BaseModule):
             value = urllib.parse.quote(urllib.parse.quote(value))
         return value
 
-    def _filter_slow_payloads(self, payloads):
-        if self.include_time_based:
-            if self.max_time_payloads <= 0: return payloads
-            time_payloads = []
-            fast_payloads = []
-            for payload in payloads:
-                attack_type = str(getattr(payload, "attack_type", "")).lower()
-                if "time" in attack_type or "stacked" in attack_type:
-                    time_payloads.append(payload)
-                else:
-                    fast_payloads.append(payload)
-            return fast_payloads + time_payloads[: self.max_time_payloads]
-
-        return [p for p in payloads if "time" not in str(getattr(p, "attack_type", "")).lower() and "stacked" not in str(getattr(p, "attack_type", "")).lower()]
-
-    
     def _mutate_to_false(self, value: str) -> str:
-        # 참에서 거짓으로 치환
-        false_value = value.replace("1=1", "1=2")
-        return false_value
-    
-    async def analyze(self, response, payload, elapsed_time, original_res=None, requester=None):
+        """논리 반전: 참(1=1)을 거짓(1=2)으로 변경"""
+        return value.replace("1=1", "1=2").replace("4231=4231", "4231=4232")
 
+    async def analyze(self, response, payload, elapsed_time, original_res=None, requester=None):
+        """
+        Triangle Comparison (원본-참-거짓 대조) 정밀 분석 로직.
+        """
+        # 1차 분석 (detect_sqli)
         is_vuln, evidences = detect_sqli(
             response=response, 
             payload=payload, 
@@ -94,45 +108,50 @@ class SQLiModule(BaseModule):
             original_res=original_res
         )
         
-        # [A] 변화가 감지된 경우
+        # [A] 변화 감지 시 (강한 증거 우선 처리)
         if is_vuln:
-            # 1. 강한 증거(에러, 마커, 시간)
             has_strong_evidence = any(tag in str(evidences) for tag in ["[Error]", "[Time]", "[Reflection]"])
             if has_strong_evidence:
                 object.__setattr__(payload, 'last_evidences', evidences)
                 return True
 
-            # 2. 약한 증거(Boolean)가 감지된 경우 (Fix Test/Safe Test 등 수행)
+            # 약한 증거(Boolean)만 있다면 추가 검증 수행
             if requester and original_res:
                 val = payload.value
                 
-                # 1: 구문 복구 테스트 (Quote 하나로 깨진 경우)
+                # 전략 1: 구문 복구 (id=1' -> id=1' -- )
                 if val.strip().endswith("'") or val.strip().endswith('"'):
-                    fix_payload = val + " -- "
-                    res = await requester(fix_payload)
-                    if self._is_similar(res.text, original_res.text):
+                    fix_res = await requester(val + " -- ")
+                    if self._is_similar(fix_res.text, original_res.text):
                         object.__setattr__(payload, 'last_evidences', evidences + ["[Verified] Syntax Fix Test"])
                         return True
 
-                # 2: 논리 패턴 반전 검색 (Regex Swap)
+                # 전략 2: 논리 반전 (X=X -> 1=2)
                 logic_pattern = r"(['\"]?\w+['\"]?)\s*=\s*\1"
                 if re.search(logic_pattern, val):
                     false_payload = re.sub(logic_pattern, "1=2", val)
-                    res = await requester(false_payload)
-                    if not self._is_similar(res.text, response.text): # 참 응답과 달라야 함
+                    false_res = await requester(false_payload)
+                    # 참(현재 응답)과 거짓(방금 온 응답)이 확실히 다를 때
+                    if not self._is_similar(false_res.text, response.text):
                         object.__setattr__(payload, 'last_evidences', evidences + ["[Verified] Logic Swapping (True!=False)"])
                         return True
 
-        # [B] 변화가 감지되지 않은 경우 (Blind SQLi의 '참' 페이로드일 확률)
+        # [B] 변화 미감지 시 (Blind SQLi '참' 조건 가능성 확인)
         else:
             if requester and original_res:
                 val = payload.value
                 logic_pattern = r"(['\"]?\w+['\"]?)\s*=\s*\1"
+                
+                # 페이로드에 논리 참 패턴이 존재하는 경우에만 거짓 테스트 수행
                 if re.search(logic_pattern, val) or "1=1" in val:
-                    false_payload = re.sub(logic_pattern, "1=2", val) if re.search(logic_pattern, val) else val.replace("1=1", "1=2")
+                    if re.search(logic_pattern, val):
+                        false_payload = re.sub(logic_pattern, "1=2", val)
+                    else:
+                        false_payload = val.replace("1=1", "1=2")
                     
                     if false_payload != val:
                         false_res = await requester(false_payload)
+                        # 원본(참)과는 똑같고, 거짓과는 확연히 다를 때 (Blind SQLi의 정석)
                         if self._is_similar(response.text, original_res.text) and not self._is_similar(response.text, false_res.text):
                             object.__setattr__(payload, 'last_evidences', ["[Verified] Blind SQLi (Baseline==True and True!=False)"])
                             return True
@@ -140,7 +159,8 @@ class SQLiModule(BaseModule):
         return False
 
     def _is_similar(self, text1: str, text2: str) -> bool:
+        """미세한 차이를 잡기 위한 엄격한 유사도 판정 (1.5%)"""
         if not text1 or not text2: return False
-        len1, len2 = len(text1), len(text2)
-        diff = abs(len1 - len2)
-        return (diff / max(len1, len2)) < 0.015
+        l1, l2 = len(text1), len(text2)
+        diff = abs(l1 - l2)
+        return (diff / max(l1, l2)) < 0.015

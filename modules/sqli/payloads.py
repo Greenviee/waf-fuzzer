@@ -12,10 +12,7 @@ def _resolve_payload_file() -> str | None:
     return None
 
 def get_dbms_specific_marker(text: str, dbms: str) -> str:
-    """
-    DBMS별로 최적의 문자열 생성 방식을 선택하여 
-    엔진의 직접 반사 제거(scrubbed_text) 로직을 우회함.
-    """
+
     if not text:
         return "''"
     
@@ -58,8 +55,9 @@ def get_sqli_payloads() -> list[Payload]:
             # ::: 구분자로 파싱 (Payload ::: Type ::: Risk ::: DBMS)
             if not line or ":::" not in line:
                 continue
-            
-            parts = line.split("::: ")
+
+            parts = [p.strip() for p in line.split(":::")]
+
             if len(parts) >= 4:
                 raw_value = parts[0].strip()
                 attack_type = parts[1].strip()
