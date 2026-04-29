@@ -112,6 +112,7 @@ class FuzzerEngine:
         self._queue: asyncio.Queue[AttackJob | None] = asyncio.Queue(maxsize=queue_maxsize)
         self._module_queues: dict[str, asyncio.Queue[AttackSurface | None]] = {}
         self._module_payloads: dict[str, list[Any]] = {}
+        self._module_stop_events: dict[str, asyncio.Event] = {}
         self._module_workers: list[asyncio.Task[None]] = []
         self._module_runtime_active = False
         self._stats = EngineStats()
@@ -340,6 +341,10 @@ class FuzzerEngine:
             module.name: list(module.get_payloads())
             for module in self.modules
         }
+        self._module_stop_events = {
+            module.name: asyncio.Event()
+            for module in self.modules
+        }
         self._module_workers = []
 
         for module in self.modules:
@@ -369,6 +374,9 @@ class FuzzerEngine:
             raise RuntimeError("module mode is not running")
 
         for module in self.modules:
+            stop_event = self._module_stop_events[module.name]
+            if stop_event.is_set():
+                continue
             payloads = self._module_payloads.get(module.name, [])
             queue = self._module_queues[module.name]
             params = tuple(self._iter_parameters(surface))
@@ -400,6 +408,7 @@ class FuzzerEngine:
         self._module_workers.clear()
         self._module_queues.clear()
         self._module_payloads.clear()
+        self._module_stop_events.clear()
         self._module_runtime_active = False
 
     async def _module_worker(
@@ -420,6 +429,9 @@ class FuzzerEngine:
                 return
 
             try:
+                stop_event = self._module_stop_events.get(module.name)
+                if stop_event is not None and stop_event.is_set():
+                    continue
                 params = tuple(self._iter_parameters(surface))
                 selector = getattr(module, "get_target_parameters", None)
                 if callable(selector):
@@ -436,6 +448,8 @@ class FuzzerEngine:
                 ]
                 batch_size = max(1, self.max_concurrent_requests)
                 for batch in self._chunked(attack_units, batch_size):
+                    if stop_event is not None and stop_event.is_set():
+                        break
                     tasks = [
                         asyncio.create_task(
                             self._process_module_attack(
@@ -469,6 +483,10 @@ class FuzzerEngine:
         request_sender: AsyncRequestSender,
         on_finding: ResultCallback | None,
     ) -> None:
+        stop_event = self._module_stop_events.get(module.name)
+        if stop_event is not None and stop_event.is_set():
+            return
+
         response: Any
         try:
             async with self._semaphore:
@@ -552,6 +570,11 @@ class FuzzerEngine:
             callback_result = on_finding(finding)
             if isawaitable(callback_result):
                 await callback_result
+
+        stop_on_first_hit = bool(getattr(module, "stop_on_first_hit", False))
+        if stop_on_first_hit and stop_event is not None and not stop_event.is_set():
+            stop_event.set()
+            print(f"[*] [{module.name}] stop-on-first-hit triggered; skipping remaining payloads.")
 
     @staticmethod
     def _iter_parameters(surface: AttackSurface) -> Iterable[str]:

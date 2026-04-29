@@ -1,0 +1,146 @@
+{
+  "metadata": {
+    "scan_time": "2026-04-29 16:09:59",
+    "summary": {
+      "queued": 7613,
+      "completed": 10,
+      "failures": 0,
+      "findings": 7
+    }
+  },
+  "vulnerabilities": [
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/brute/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "password"
+      },
+      "attack_info": {
+        "payload_value": "123456",
+        "type": "BF-dictionary",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0412,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/brute/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "password"
+      },
+      "attack_info": {
+        "payload_value": "1234561",
+        "type": "BF-dictionary",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0421,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/brute/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "password"
+      },
+      "attack_info": {
+        "payload_value": "123456@123",
+        "type": "BF-dictionary",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0565,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/brute/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "password"
+      },
+      "attack_info": {
+        "payload_value": "12345612",
+        "type": "BF-dictionary",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0582,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/brute/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "password"
+      },
+      "attack_info": {
+        "payload_value": "123456789123",
+        "type": "BF-dictionary",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0711,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/brute/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "password"
+      },
+      "attack_info": {
+        "payload_value": "12345678912",
+        "type": "BF-dictionary",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0719,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/brute/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "password"
+      },
+      "attack_info": {
+        "payload_value": "123456123",
+        "type": "BF-dictionary",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.9023,
+        "error_log": null
+      }
+    }
+  ]
+}

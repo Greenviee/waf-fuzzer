@@ -6,7 +6,6 @@ from modules.lfi.module import LFIModule
 from modules.file_upload.module import FileUploadModule
 from modules.sqli.module import SQLiModule
 from modules.ssrf.module import SSRFModule
-from modules.xss.analyzer import XSSModule
 
 
 def select_modules(args) -> list:
@@ -25,9 +24,6 @@ def select_modules(args) -> list:
         )
         selected.append(sqli_module)
 
-    if args.type in ("xss", "all"):
-        selected.append(XSSModule())
-
     if args.type in ("bruteforce", "all"):
         bruteforce_module = BruteforceModule(
             wordlist_path=args.bf_wordlist,
@@ -39,6 +35,7 @@ def select_modules(args) -> list:
             bf_max_length=args.bf_max_length,
             max_dictionary_candidates=args.bf_max_dictionary,
             max_true_bf_candidates=args.bf_max_true_random,
+            stop_on_first_hit=args.bf_stop_on_first_hit,
         )
         selected.append(bruteforce_module)
 

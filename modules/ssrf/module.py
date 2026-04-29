@@ -66,7 +66,14 @@ class SSRFModule(BaseModule):
     def get_payloads(self) -> list[Payload]:
         return self._payloads
 
-    def analyze(self, response, payload: Payload, elapsed_time: float, original_res=None) -> bool:
+    def analyze(
+        self,
+        response,
+        payload: Payload,
+        elapsed_time: float,
+        original_res=None,
+        requester=None,
+    ) -> bool:
         return analyze_ssrf(
             response=response,
             payload=payload,

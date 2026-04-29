@@ -28,7 +28,7 @@ class FileUploadModule(BaseModule):
             return ["uploaded"]
         return parameter_list
 
-    def analyze(self, response, payload, elapsed_time, original_res=None) -> bool:
+    def analyze(self, response, payload, elapsed_time, original_res=None, requester=None) -> bool:
         is_vuln, evidences = detect_file_upload(response=response, payload=payload)
         if is_vuln:
             for evidence in evidences:

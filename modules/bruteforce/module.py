@@ -26,6 +26,7 @@ class BruteforceModule(BaseModule):
         bf_max_length: int = 3,
         max_dictionary_candidates: int = 0,
         max_true_bf_candidates: int = 0,
+        stop_on_first_hit: bool = True,
         success_keywords: list[str] | None = None,
         fail_keywords: list[str] | None = None,
     ):
@@ -39,6 +40,7 @@ class BruteforceModule(BaseModule):
         self.bf_max_length = bf_max_length
         self.max_dictionary_candidates = max_dictionary_candidates
         self.max_true_bf_candidates = max_true_bf_candidates
+        self.stop_on_first_hit = stop_on_first_hit
         self.success_keywords = success_keywords or [
             "welcome",
             "dashboard",
@@ -88,7 +90,7 @@ class BruteforceModule(BaseModule):
         surface_params: dict = getattr(surface, "parameters", {}) or {}
         return [p for p in parameters if surface_params.get(p) == _FUZZ]
 
-    def analyze(self, response, payload, elapsed_time, original_res=None) -> bool:
+    def analyze(self, response, payload, elapsed_time, original_res=None, requester=None) -> bool:
         print(f"[*] [{self.name}] Trying payload: {payload.value}")
         is_success, evidences = detect_login_success(
             response=response,

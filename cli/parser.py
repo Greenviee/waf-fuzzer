@@ -40,7 +40,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--type",
         type=str,
         default="all",
-        choices=["sqli", "xss", "bruteforce", "lfi", "file_upload", "ssrf", "all"],
+        choices=["sqli", "bruteforce", "lfi", "file_upload", "ssrf", "all"],
         help="Attack category to run (default: all)",
     )
     parser.add_argument(
@@ -108,6 +108,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=0,
         help="Cap true random payload count (0=all)",
+    )
+    parser.add_argument(
+        "--bf-stop-on-first-hit",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Stop bruteforce module after first verified credential hit (default: enabled)",
     )
     parser.add_argument(
         "--bf-request-file",
