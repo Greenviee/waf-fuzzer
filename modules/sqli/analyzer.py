@@ -100,6 +100,7 @@ async def verify_sqli_logic(response, payload, original_res, requester, is_vuln_
         if is_true_legit:
             # 전략 1: 구문 복구 테스트 (Quote 복구)
             if val.strip().endswith("'") or val.strip().endswith('"'):
+                fix_res = await requester(val + " -- ")
                 if is_similar_pure(fix_res.text, orig_text):
                     return True, evidences + ["[Verified] Syntax Fix Test"]
 
