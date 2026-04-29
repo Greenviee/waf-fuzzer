@@ -134,6 +134,19 @@ def get_dvwa_mock_surfaces(
         #     cookies=auth_cookies,
         #     description="DVWA DOM XSS (GET)",
         # ),
+        AttackSurface(
+            url="http://3.34.199.255/test_ssrf.php",
+            method=HttpMethod.GET,
+            param_location=ParamLocation.QUERY,
+            headers={
+                "User-Agent": "Mozilla/5.0",
+            },
+            cookies=auth_cookies,
+            parameters={
+                "url": "http://example.com",
+            },
+            description="Pure cURL SSRF Test Target",
+        ),
     ]
 
 

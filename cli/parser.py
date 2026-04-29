@@ -40,7 +40,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--type",
         type=str,
         default="all",
-        choices=["sqli", "xss", "bruteforce", "lfi", "file_upload", "all"],
+        choices=["sqli", "xss", "bruteforce", "lfi", "file_upload", "ssrf", "all"],
         help="Attack category to run (default: all)",
     )
     parser.add_argument(
@@ -240,6 +240,18 @@ def build_parser() -> argparse.ArgumentParser:
             "LFI payload mutation level "
             "(0=raw only, 1=url-encoding, 2=double+null-byte, 3=path/case bypass)"
         ),
+    )
+    parser.add_argument(
+        "--ssrf-bypass-level",
+        type=int,
+        choices=[0, 1, 2],
+        default=1,
+        help="SSRF bypass mutation level (0=off, 1=path encode, 2=path+ip obfuscation)",
+    )
+    parser.add_argument(
+        "--ssrf-include-oob",
+        action="store_true",
+        help="Include OOB/template SSRF payloads in runtime payload set",
     )
     return parser
 

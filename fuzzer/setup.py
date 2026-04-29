@@ -5,6 +5,7 @@ from modules.bruteforce.module import BruteforceModule
 from modules.lfi.module import LFIModule
 from modules.file_upload.module import FileUploadModule
 from modules.sqli.module import SQLiModule
+from modules.ssrf.module import SSRFModule
 from modules.xss.analyzer import XSSModule
 
 
@@ -46,6 +47,14 @@ def select_modules(args) -> list:
 
     if args.type in ("file_upload", "all"):
         selected.append(FileUploadModule())
+
+    if args.type in ("ssrf", "all"):
+        selected.append(
+            SSRFModule(
+                include_oob_templates=args.ssrf_include_oob,
+                bypass_level=args.ssrf_bypass_level,
+            )
+        )
 
     return selected
 
