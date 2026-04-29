@@ -77,18 +77,18 @@ def get_dvwa_mock_surfaces(
         #     description="DVWA Brute Force (GET, with CSRF token)",
         #     dynamic_tokens=["user_token"],
         # ),
-        AttackSurface(
-            url=f"{root}/vulnerabilities/brute/",
-            method=HttpMethod.GET,
-            param_location=ParamLocation.QUERY,
-            parameters={
-                "username": "admin",
-                "password": "password",
-                "Login": "Login",
-            },
-            cookies=auth_cookies,
-            description="DVWA Brute Force (GET, no CSRF token)",
-        ),
+        # AttackSurface(
+        #     url=f"{root}/vulnerabilities/brute/",
+        #     method=HttpMethod.GET,
+        #     param_location=ParamLocation.QUERY,
+        #     parameters={
+        #         "username": "admin",
+        #         "password": "password",
+        #         "Login": "Login",
+        #     },
+        #     cookies=auth_cookies,
+        #     description="DVWA Brute Force (GET, no CSRF token)",
+        # ),
         # AttackSurface(
         #     url=f"{root}/vulnerabilities/sqli/",
         #     method=HttpMethod.GET,
@@ -97,19 +97,19 @@ def get_dvwa_mock_surfaces(
         #     cookies=auth_cookies,
         #     description="DVWA SQL Injection (GET)",
         # ),
-        # AttackSurface(
-        #     url=f"{root}/vulnerabilities/upload/",
-        #     method=HttpMethod.POST,
-        #     # Multipart is represented as form data in current request builder.
-        #     param_location=ParamLocation.BODY_FORM,
-        #     parameters={
-        #         "MAX_FILE_SIZE": "100000",
-        #         "uploaded": "",
-        #         "Upload": "Upload",
-        #     },
-        #     cookies=auth_cookies,
-        #     description="DVWA File Upload (POST)",
-        # ),
+        AttackSurface(
+            url=f"{root}/vulnerabilities/upload/",
+            method=HttpMethod.POST,
+            # Multipart is represented as form data in current request builder.
+            param_location=ParamLocation.BODY_FORM,
+            parameters={
+                "MAX_FILE_SIZE": "100000",
+                "uploaded": "",
+                "Upload": "Upload",
+            },
+            cookies=auth_cookies,
+            description="DVWA File Upload (POST)",
+        ),
         # AttackSurface(
         #     url=f"{root}/vulnerabilities/sqli_blind/",
         #     param_location=ParamLocation.QUERY,

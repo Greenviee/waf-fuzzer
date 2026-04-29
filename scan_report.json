@@ -1,0 +1,469 @@
+{
+  "metadata": {
+    "scan_time": "2026-04-29 16:27:44",
+    "summary": {
+      "queued": 59,
+      "completed": 59,
+      "failures": 0,
+      "findings": 24
+    }
+  },
+  "vulnerabilities": [
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='document_vfinal_d52b36.php', content=b\"<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='application/x-php', attack_type='Bypass_php_CT_x-php')",
+        "type": "Bypass_php_CT_x-php",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0151,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='receipt_2026_555ae7.php', content=b\"<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='image/jpeg', attack_type='Bypass_php_CT_jpeg')",
+        "type": "Bypass_php_CT_jpeg",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0284,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='document_vfinal_2c45d6.php3', content=b\"<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='image/jpeg', attack_type='Bypass_php3_CT_jpeg')",
+        "type": "Bypass_php3_CT_jpeg",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0297,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='upload_51f907.php', content=b\"<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='text/plain', attack_type='Bypass_php_CT_plain')",
+        "type": "Bypass_php_CT_plain",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0357,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='profile_pic_35837e.php3', content=b\"<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='application/x-php', attack_type='Bypass_php3_CT_x-php')",
+        "type": "Bypass_php3_CT_x-php",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0283,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='avatar_286879.php3', content=b\"<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='image/gif', attack_type='Bypass_php3_CT_gif')",
+        "type": "Bypass_php3_CT_gif",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0322,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='document_vfinal_b15589.php', content=b\"<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='image/gif', attack_type='Bypass_php_CT_gif')",
+        "type": "Bypass_php_CT_gif",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.034,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='upload_ff862d.php3', content=b\"<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='text/plain', attack_type='Bypass_php3_CT_plain')",
+        "type": "Bypass_php3_CT_plain",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0352,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='upload_e1d42a.php4', content=b\"<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='application/x-php', attack_type='Bypass_php4_CT_x-php')",
+        "type": "Bypass_php4_CT_x-php",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0394,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='profile_pic_7ee7a6.php4', content=b\"<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='image/jpeg', attack_type='Bypass_php4_CT_jpeg')",
+        "type": "Bypass_php4_CT_jpeg",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0401,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='document_vfinal_4d9a35.php4', content=b\"<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='text/plain', attack_type='Bypass_php4_CT_plain')",
+        "type": "Bypass_php4_CT_plain",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0175,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='profile_pic_d2b9f3.phtml', content=b\"<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='application/x-php', attack_type='Bypass_phtml_CT_x-php')",
+        "type": "Bypass_phtml_CT_x-php",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0179,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='img_2d3fba.php4', content=b\"<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='image/gif', attack_type='Bypass_php4_CT_gif')",
+        "type": "Bypass_php4_CT_gif",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0147,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='upload_e5d465.php5', content=b\"<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='image/jpeg', attack_type='Bypass_php5_CT_jpeg')",
+        "type": "Bypass_php5_CT_jpeg",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0148,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='img_269256.phtml', content=b\"<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='image/jpeg', attack_type='Bypass_phtml_CT_jpeg')",
+        "type": "Bypass_phtml_CT_jpeg",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0227,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='document_vfinal_4881a2.php5', content=b\"<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='image/gif', attack_type='Bypass_php5_CT_gif')",
+        "type": "Bypass_php5_CT_gif",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0167,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='profile_pic_c90d4b.php5', content=b\"<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='application/x-php', attack_type='Bypass_php5_CT_x-php')",
+        "type": "Bypass_php5_CT_x-php",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0176,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='document_vfinal_beb6fa.php5', content=b\"<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='text/plain', attack_type='Bypass_php5_CT_plain')",
+        "type": "Bypass_php5_CT_plain",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0176,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='profile_pic_6af31e.phtml', content=b\"<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='image/gif', attack_type='Bypass_phtml_CT_gif')",
+        "type": "Bypass_phtml_CT_gif",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0257,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='img_cd6d16.phtml', content=b\"<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='text/plain', attack_type='Bypass_phtml_CT_plain')",
+        "type": "Bypass_phtml_CT_plain",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0253,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='avatar_6fbcf4.php', content=b\"GIF89a;\\n<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='image/gif', attack_type='Magic_Byte_GIF')",
+        "type": "Magic_Byte_GIF",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0164,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='image_6e14a1.php5', content=b\"GIF89a;\\n<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='image/gif', attack_type='Magic_Byte_GIF_php5')",
+        "type": "Magic_Byte_GIF_php5",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0187,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='image_a2a00e.phtml', content=b\"GIF89a;\\n<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='image/gif', attack_type='Magic_Byte_GIF_phtml')",
+        "type": "Magic_Byte_GIF_phtml",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0192,
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/upload/",
+        "method": "POST",
+        "location": "BODY_FORM",
+        "parameter": "uploaded"
+      },
+      "attack_info": {
+        "payload_value": "FilePayload(filename='receipt_8ac35b.php', content=b\"\\x89PNG\\r\\n\\x1a\\n\\x00\\x00\\x00\\rIHDR<?php echo 'WAF_UPLOAD_VULN_DETECTED'; unlink(__FILE__); ?>\", content_type='image/png', attack_type='Magic_Byte_PNG')",
+        "type": "Magic_Byte_PNG",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0175,
+        "error_log": null
+      }
+    }
+  ]
+}
