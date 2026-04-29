@@ -6,7 +6,6 @@ from modules.lfi.module import LFIModule
 from modules.file_upload.module import FileUploadModule
 from modules.sqli.module import SQLiModule
 from modules.ssrf.module import SSRFModule
-from modules.xss.analyzer import XSSModule
 
 
 def select_modules(args) -> list:
@@ -24,9 +23,6 @@ def select_modules(args) -> list:
             evasion_level=args.sqli_evasion_level,
         )
         selected.append(sqli_module)
-
-    if args.type in ("xss", "all"):
-        selected.append(XSSModule())
 
     if args.type in ("bruteforce", "all"):
         bruteforce_module = BruteforceModule(

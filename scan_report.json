@@ -1,0 +1,32 @@
+{
+  "metadata": {
+    "scan_time": "2026-04-29 15:56:18",
+    "summary": {
+      "queued": 7613,
+      "completed": 7613,
+      "failures": 0,
+      "findings": 1
+    }
+  },
+  "vulnerabilities": [
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/brute/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "password"
+      },
+      "attack_info": {
+        "payload_value": "password",
+        "type": "BF-dictionary",
+        "severity": "high",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0318,
+        "error_log": null
+      }
+    }
+  ]
+}

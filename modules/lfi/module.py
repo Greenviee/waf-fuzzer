@@ -13,7 +13,7 @@ class LFIModule(BaseModule):
     def get_payloads(self):
         return self.payloads
 
-    def analyze(self, response, payload, elapsed_time, original_res=None) -> bool:
+    def analyze(self, response, payload, elapsed_time, original_res=None, requester=None) -> bool:
         is_vuln, evidences = detect_lfi(
             response=response,
             payload=payload,

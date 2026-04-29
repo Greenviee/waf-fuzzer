@@ -88,7 +88,7 @@ class BruteforceModule(BaseModule):
         surface_params: dict = getattr(surface, "parameters", {}) or {}
         return [p for p in parameters if surface_params.get(p) == _FUZZ]
 
-    def analyze(self, response, payload, elapsed_time, original_res=None) -> bool:
+    def analyze(self, response, payload, elapsed_time, original_res=None, requester=None) -> bool:
         print(f"[*] [{self.name}] Trying payload: {payload.value}")
         is_success, evidences = detect_login_success(
             response=response,

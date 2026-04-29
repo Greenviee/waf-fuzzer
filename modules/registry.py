@@ -6,7 +6,6 @@ from modules.lfi.module import LFIModule
 from modules.file_upload.module import FileUploadModule
 from modules.sqli.module import SQLiModule
 from modules.ssrf.module import SSRFModule
-from modules.xss.analyzer import XSSModule
 
 
 def get_attack_modules(attack_type: str) -> list[BaseModule]:
@@ -16,7 +15,6 @@ def get_attack_modules(attack_type: str) -> list[BaseModule]:
     """
     factories: dict[str, type[BaseModule]] = {
         "sqli": SQLiModule,
-        "xss": XSSModule,
         "bruteforce": BruteforceModule,
         "ssrf": SSRFModule,
         "lfi": LFIModule,
