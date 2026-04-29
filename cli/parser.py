@@ -110,6 +110,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Cap true random payload count (0=all)",
     )
     parser.add_argument(
+        "--bf-stop-on-first-hit",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Stop bruteforce module after first verified credential hit (default: enabled)",
+    )
+    parser.add_argument(
         "--bf-request-file",
         type=str,
         default="",
