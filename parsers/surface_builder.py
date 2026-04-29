@@ -22,12 +22,30 @@ class SurfaceBuilder:
     - 동적 토큰(CSRF 등) 자동 병합
     - URL 쿼리스트링 중복 제거 및 파라미터 타입 평탄화 (Fuzzer 호환성)
     - 퍼저 콜백 직송
-    ✨ [핵심 수정] CPU 집약적 추출 작업을 스레드 풀(Executor)로 위임하여 루프 블로킹 방지
+    - [추가] 큐 소비(Consumer) 로직 통합
     """
 
     def __init__(self, fuzzer_callback: SurfaceCallback):
         self.fuzzer_callback = fuzzer_callback
         self._seen_signatures: Set[str] = set()
+
+    async def consume_from_queue(self, queue_manager):
+        """
+        ✨ [신규] 큐에서 데이터를 직접 꺼내서 처리하는 Consumer 역할 수행
+        Sentinel(None) 신호를 받으면 큐에 남은 데이터를 모두 처리하고 안전하게 종료됩니다.
+        """
+        logger.info("[SurfaceBuilder] 큐 데이터 소비 루프를 시작합니다.")
+        while True:
+            # 큐에서 데이터를 가져옴 (데이터가 올 때까지 비동기 대기)
+            page_data = await queue_manager.get_page()
+
+            # 엔진이 보낸 종료 신호(None) 확인
+            if page_data is None:
+                logger.info("[SurfaceBuilder] 모든 데이터 처리가 완료되어 컨슈머를 종료합니다.")
+                break
+
+            # 페이지 분석 및 AttackSurface 추출 실행
+            await self.process_page(page_data)
 
     @staticmethod
     def _generate_signature(surface: AttackSurface) -> str:

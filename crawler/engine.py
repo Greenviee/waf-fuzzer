@@ -4,8 +4,6 @@ import asyncio
 from urllib.parse import urljoin, urlparse
 from datetime import datetime
 from contextlib import asynccontextmanager
-
-# ✨ [수정] 통합된 models.py에서 PageData, TokenDetector, CrawlStats를 가져옴
 from core.models import PageData, TokenDetector, CrawlStats
 from parsers.html_parser import AsyncHTMLParser
 from crawler.session_manager import SessionManager
@@ -71,6 +69,11 @@ class CrawlerEngine:
 
         async with self._session_context():
             await self._run_workers()
+
+        # ✨ [핵심 수정] 모든 워커가 종료된 후, 파서 컨슈머에게 종료 신호 전송
+        # QueueManager를 통해 큐에 None을 전달하여 파서(SurfaceBuilder)가 남은 데이터를 처리하고 종료되게 합니다.
+        await self.queue_manager.add_page(None)
+        logger.info("[Engine] 파서 종료 신호(Sentinel) 전송 완료")
 
         self._stats.end_time = datetime.now()
         self._log_summary()
@@ -196,7 +199,7 @@ class CrawlerEngine:
             forms_found = 0
             links_found = 0
 
-            # 폼 & 동적 토  큰 추출
+            # 폼 & 동적 토큰 추출
             for form in soup_obj.find_all("form"):
                 forms_found += 1
                 for input_field in form.find_all(["input", "textarea", "select"]):
