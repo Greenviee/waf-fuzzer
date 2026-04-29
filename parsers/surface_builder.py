@@ -66,7 +66,7 @@ class SurfaceBuilder:
         if isinstance(page_data.soup, BeautifulSoup):
             source_soup = page_data.soup
         else:
-            source_soup = BeautifulSoup(page_data.html, 'html.parsers')
+            source_soup = BeautifulSoup(page_data.html, 'html.parser')
 
         # ==========================================
         # 1. HTML Form 기반 AttackSurface 추출
