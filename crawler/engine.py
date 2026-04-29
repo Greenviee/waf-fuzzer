@@ -182,7 +182,7 @@ class CrawlerEngine:
         html = response.get("text", "")
         final_url = str(response.get("url", url))
         headers = response.get("headers", {})
-        cookies = response.get("cookies", {})
+        cookies = self.session_manager.get_cookies()
 
         # ✨ [핵심 수정] CPU를 무겁게 쓰는 HTML 파싱 작업을 이벤트 루프에서 분리 (스레드 풀 실행)
         # 이를 통해 크롤러 워커들이 네트워크 요청을 주고받는 흐름이 멈추지 않도록 보장합니다.
