@@ -220,6 +220,19 @@ async def _send_prepared_request(
         )
 
 
+def _resolve_payload_value(payload: Any) -> str:
+    if hasattr(payload, "value"):
+        return str(getattr(payload, "value"))
+    return str(payload)
+
+
+def _is_file_payload(payload: Any) -> bool:
+    return all(
+        hasattr(payload, attr)
+        for attr in ("filename", "content", "content_type")
+    )
+
+
 def _inject_path_payload(url: str, parameter: str, payload: str) -> str:
     """
     Replace a path placeholder with encoded payload.
@@ -279,30 +292,44 @@ async def build_and_send_request(
         request_kwargs.pop("params", None)
 
     request_kwargs: dict[str, Any] = {}
-    payload_type = type(payload).__name__
-    is_lfi_payload = payload_type == "LFIPayload"
-    actual_payload = getattr(payload, "value", payload)
+    payload_value = _resolve_payload_value(payload)
+    is_file_payload = _is_file_payload(payload)
+    is_lfi_payload = type(payload).__name__ == "LFIPayload"
 
     if surface.param_location == ParamLocation.QUERY:
-        req_params[parameter] = actual_payload
+        req_params[parameter] = payload_value
         if not is_lfi_payload:
             request_kwargs["params"] = req_params
     elif surface.param_location == ParamLocation.BODY_FORM:
-        req_params[parameter] = actual_payload
-        request_kwargs["data"] = req_params
+        if is_file_payload:
+            form = aiohttp.FormData()
+            for key, value in req_params.items():
+                if key == parameter:
+                    continue
+                form.add_field(str(key), str(value))
+            form.add_field(
+                parameter,
+                payload.content,
+                filename=str(payload.filename),
+                content_type=str(payload.content_type),
+            )
+            request_kwargs["data"] = form
+        else:
+            req_params[parameter] = payload_value
+            request_kwargs["data"] = req_params
     elif surface.param_location == ParamLocation.BODY_JSON:
-        req_params[parameter] = actual_payload
+        req_params[parameter] = payload_value
         request_kwargs["json"] = req_params
     elif surface.param_location == ParamLocation.HEADER:
-        headers[parameter] = str(actual_payload)
+        headers[parameter] = payload_value
         if req_params:
             request_kwargs["params"] = req_params
     elif surface.param_location == ParamLocation.COOKIE:
-        cookies[parameter] = str(actual_payload)
+        cookies[parameter] = payload_value
         if req_params:
             request_kwargs["params"] = req_params
     elif surface.param_location == ParamLocation.PATH:
-        url = _inject_path_payload(url=url, parameter=parameter, payload=str(actual_payload))
+        url = _inject_path_payload(url=url, parameter=parameter, payload=payload_value)
         if req_params:
             request_kwargs["params"] = req_params
     else:
@@ -353,7 +380,21 @@ async def build_and_send_request(
             if not is_lfi_payload:
                 request_kwargs["params"] = req_params
         elif surface.param_location == ParamLocation.BODY_FORM:
-            request_kwargs["data"] = req_params
+            if is_file_payload:
+                form = aiohttp.FormData()
+                for key, value in req_params.items():
+                    if key == parameter:
+                        continue
+                    form.add_field(str(key), str(value))
+                form.add_field(
+                    parameter,
+                    payload.content,
+                    filename=str(payload.filename),
+                    content_type=str(payload.content_type),
+                )
+                request_kwargs["data"] = form
+            else:
+                request_kwargs["data"] = req_params
         elif surface.param_location == ParamLocation.BODY_JSON:
             request_kwargs["json"] = req_params
         elif req_params:

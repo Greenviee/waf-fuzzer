@@ -40,7 +40,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--type",
         type=str,
         default="all",
-        choices=["sqli", "xss", "bruteforce", "lfi", "all"],
+        choices=["sqli", "xss", "bruteforce", "lfi", "file_upload", "all"],
         help="Attack category to run (default: all)",
     )
     parser.add_argument(
@@ -80,6 +80,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=3,
         help="Maximum length for true random bruteforce mode",
+    )
+    parser.add_argument(
+        "--bf-min-length",
+        type=int,
+        default=1,
+        help="Minimum length for true random bruteforce mode",
     )
     parser.add_argument(
         "--bf-length",
@@ -201,6 +207,13 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Enable unicode escape variants",
     )
+    parser.add_argument(
+        "--sqli-evasion-level",
+        type=int,
+        choices=[0, 1, 2, 3],
+        default=0,
+        help="evasion level: 0 (None), 1 (1 technique), 2 (2 techniques), 3 (3 techniques)"
+    )  
     parser.add_argument(
         "--include-time-based",
         action="store_true",
