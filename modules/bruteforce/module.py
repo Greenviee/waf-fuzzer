@@ -91,16 +91,11 @@ class BruteforceModule(BaseModule):
         return [p for p in parameters if surface_params.get(p) == _FUZZ]
 
     def analyze(self, response, payload, elapsed_time, original_res=None, requester=None) -> bool:
-        print(f"[*] [{self.name}] Trying payload: {payload.value}")
-        is_success, evidences = detect_login_success(
+        is_success, _ = detect_login_success(
             response=response,
             payload=payload,
             original_res=original_res,
             success_keywords=self.success_keywords,
             fail_keywords=self.fail_keywords,
         )
-        if is_success:
-            print(f"[+] [{self.name}] Valid credential candidate: {payload.value}")
-            for evidence in evidences:
-                print(f"    -> {evidence}")
         return is_success
