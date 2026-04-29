@@ -5,7 +5,7 @@ from urllib.parse import urljoin, urlparse
 from datetime import datetime
 from contextlib import asynccontextmanager
 from core.models import (PageData, TokenDetector)
-from parser.html_parser import AsyncHTMLParser
+from parsers.html_parsers import AsyncHTMLParser
 from crawler.session_manager import SessionManager
 from crawler.url_filter import URLFilter
 from utils.logger import get_logger

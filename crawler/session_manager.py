@@ -104,7 +104,7 @@ class SessionManager:
     @staticmethod
     def _extract_csrf_token(html: str, token_name: str) -> Optional[str]:
         try:
-            soup = BeautifulSoup(html, 'html.parser')
+            soup = BeautifulSoup(html, 'html.parsers')
             token_input = soup.find('input', {'name': token_name})
 
             val = SessionManager._get_safe_attr(token_input, 'value')
