@@ -123,7 +123,7 @@ class AttackSurface:
     parameters: dict[str, Any] = field(default_factory=dict)
     headers: dict[str, str] = field(default_factory=dict)
     cookies: dict[str, str] = field(default_factory=dict)
-    dynamic_tokens: list[str] = field(default_factory=list)
+    dynamic_tokens: dict[str, str] = field(default_factory=dict)
     source_url: str | None = None
     description: str | None = None
     depth: int = 0
@@ -160,7 +160,7 @@ class AttackSurface:
             parameters=data.get('parameters', {}),
             headers=data.get('headers', {}),
             cookies=data.get('cookies', {}),
-            dynamic_tokens=data.get('dynamic_tokens', []),
+            dynamic_tokens=data.get('dynamic_tokens', {}),
             source_url=data.get('source_url'),
             description=data.get('description'),
             depth=data.get('depth', 0),
