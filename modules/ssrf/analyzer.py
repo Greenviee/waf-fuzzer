@@ -146,10 +146,12 @@ def analyze_ssrf(response, payload, elapsed_time: float, original_res=None) -> b
     # 4) Boolean-blind style delta checks (host discovery, path brute-force, bypasses)
     is_blind_probe = _is_blind_probe_payload(payload_value_lower)
     is_cloud_payload = any(hint in payload_value_lower for hint in _CLOUD_TARGET_HINTS)
+    attack_type = str(getattr(payload, "attack_type", "")).lower()
+    is_bypass_or_basic = ("bypass" in attack_type) or ("basic" in attack_type)
 
     # Cloud-target payloads are intentionally excluded from generic blind length deltas.
     # Cloud success should be confirmed by explicit cloud hints (step 2).
-    if is_blind_probe and original_res is not None and not is_cloud_payload:
+    if (is_blind_probe or is_bypass_or_basic) and original_res is not None and not is_cloud_payload:
         # 4-1) Status class delta: e.g. baseline 2xx -> probe 4xx/5xx (or inverse)
         if _status_class(status_code) != _status_class(original_status_code):
             return True
