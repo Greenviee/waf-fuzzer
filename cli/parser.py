@@ -40,7 +40,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--type",
         type=str,
         default="all",
-        choices=["sqli", "xss", "bruteforce", "ssrf", "all"],
+        choices=["sqli", "xss", "bruteforce", "lfi", "file_upload", "ssrf", "all"],
         help="Attack category to run (default: all)",
     )
     parser.add_argument(
@@ -80,6 +80,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=3,
         help="Maximum length for true random bruteforce mode",
+    )
+    parser.add_argument(
+        "--bf-min-length",
+        type=int,
+        default=1,
+        help="Minimum length for true random bruteforce mode",
     )
     parser.add_argument(
         "--bf-length",
@@ -202,6 +208,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="Enable unicode escape variants",
     )
     parser.add_argument(
+        "--sqli-evasion-level",
+        type=int,
+        choices=[0, 1, 2, 3],
+        default=0,
+        help="evasion level: 0 (None), 1 (1 technique), 2 (2 techniques), 3 (3 techniques)"
+    )  
+    parser.add_argument(
         "--include-time-based",
         action="store_true",
         help="Include SQLi time/stacked payloads (much slower)",
@@ -217,6 +230,16 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=3,
         help="Number of HTTP sessions to use in parallel (default: 3)",
+    )
+    parser.add_argument(
+        "--lfi-evasion-level",
+        type=int,
+        choices=[0, 1, 2, 3],
+        default=1,
+        help=(
+            "LFI payload mutation level "
+            "(0=raw only, 1=url-encoding, 2=double+null-byte, 3=path/case bypass)"
+        ),
     )
     parser.add_argument(
         "--ssrf-bypass-level",

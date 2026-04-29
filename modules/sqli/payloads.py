@@ -1,10 +1,9 @@
 import os
+import random
 from core.models import Payload
-
 
 def _resolve_payload_file() -> str | None:
     candidates = [
-        os.path.join("config", "payloads", "sqli_final.txt"),
         os.path.join("config", "payloads", "sqli.txt"),
     ]
     for candidate in candidates:
@@ -12,6 +11,33 @@ def _resolve_payload_file() -> str | None:
             return candidate
     return None
 
+def get_dbms_specific_marker(text: str, dbms: str) -> str:
+
+    if not text:
+        return "''"
+    
+    # 1. Hex 리터럴 지원 (MySQL, MSSQL, Spanner 등)
+    if dbms in ["MySQL", "Microsoft SQL Server", "Spanner"]:
+        return f"0x{text.encode().hex()}"
+    
+    # 2. SQLite 전용 Hex 방식
+    elif dbms == "SQLite":
+        return f"x'{text.encode().hex()}'"
+
+    # 3. CHR 함수 결합 방식 (Oracle, PostgreSQL)
+    elif dbms in ["Oracle", "PostgreSQL"]:
+        chars = [f"CHR({ord(c)})" for c in text]
+        return "||".join(chars)
+    
+    # 4. MS Access 결합 방식
+    elif dbms == "MS Access":
+        chars = [f"CHR({ord(c)})" for c in text]
+        return "&".join(chars)
+
+    # 5. 기타/Generic: 문자열 쪼개기 시도
+    else:
+        # 'v' + 'un' 형태로 쪼개서 반사 제거 우회
+        return " + ".join([f"'{c}'" for c in text])
 
 def get_sqli_payloads() -> list[Payload]:
     payloads = []
@@ -19,31 +45,49 @@ def get_sqli_payloads() -> list[Payload]:
     if not file_path:
         return []
 
+    DELIM_START = "SVSDAAAA"
+    DELIM_STOP = "VASDAAAA"
+    
+    # 구조: { "MySQL": (start_m, stop_m, vun_m), "Oracle": (...) }
+    marker_cache = {}
+
     with open(file_path, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
-            if not line or "||" not in line:
+            if not line or ":::" not in line:
                 continue
-            
-            # 1. 파싱: 값 || 타입 || 위험도
-            # value 내부에 "||"가 있을 수 있으므로 뒤에서 2번만 분리
-            parts = line.rsplit("||", 2)
-            if len(parts) == 3:
-                raw_value = parts[0].strip()
-                attack_type = parts[1].strip()
-                risk_level = parts[2].strip()
 
-                # 2. 미처 치환되지 않은 플레이스홀더 최종 처리
-                # SQLmap 데이터에 남아있는 [RANDNUM1], [RANDNUM2] 등을 실제 숫자로 변경
+            parts = [p.strip() for p in line.split(":::")]
+
+            if len(parts) >= 4:
+                raw_value = parts[0]
+                attack_type = parts[1]
+                risk_level = parts[2]
+                dbms = parts[3]
+
+                # 해당 DBMS에 대한 마커가 이미 계산되어 캐시된 값 있는지 확인하고 없는 경우에만 계산
+                if dbms not in marker_cache:
+                    marker_cache[dbms] = (
+                        get_dbms_specific_marker(DELIM_START, dbms),
+                        get_dbms_specific_marker(DELIM_STOP, dbms),
+                        get_dbms_specific_marker("vun", dbms)
+                    )
+                
+                start_marker, stop_marker, vun_marker = marker_cache[dbms]
+
+                # 1. 플레이스홀더 및 마커 치환
                 final_value = raw_value
+                final_value = final_value.replace("'[START_M]'", start_marker).replace("[START_M]", start_marker)
+                final_value = final_value.replace("'[STOP_M]'", stop_marker).replace("[STOP_M]", stop_marker)
+                final_value = final_value.replace("'vun'", vun_marker).replace('"vun"', vun_marker)
+
+                # 2. 기타 플레이스홀더 처리
                 for i in range(1, 10):
                     final_value = final_value.replace(f"[RANDNUM{i}]", str(i))
-                
-                # 혹시 남아있을 수 있는 기타 마커들 처리
                 final_value = final_value.replace("[RANDNUM]", "1")
                 final_value = final_value.replace("[ORIGVALUE]", "1")
+                final_value = final_value.replace("[SLEEPTIME]", "5")
 
-                # 3. Payload 객체 생성 및 리스트 추가
                 payloads.append(Payload(
                     value=final_value,
                     attack_type=attack_type,
