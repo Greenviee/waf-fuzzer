@@ -44,13 +44,13 @@ class SurfaceBuilder:
         return urlunparse((parsed.scheme, parsed.netloc, parsed.path, parsed.params, '', parsed.fragment))
 
     @staticmethod
-    def _normalize_parameters(raw_params: Dict[str, Any]) -> Dict[str, str]:
-        """✅ [수정] Fuzzer에서 TypeError가 발생하지 않도록 모든 값을 단일 문자열로 평탄화"""
+    def _normalize_parameters(raw_params: Dict[str, Any]) -> Dict[str, Union[str, List[str]]]:
+        """✅ [보안 수정 2] 배열 기반 페이로드(SQLi 등) 대응을 위해 리스트 형태 유지"""
         normalized = {}
         for key, value in raw_params.items():
             if isinstance(value, list):
-                # 리스트인 경우 첫 번째 값만 취하거나 빈 문자열 처리
-                normalized[key] = str(value[0]) if value else ""
+                # 리스트 내부 요소만 문자열로 안전하게 치환하며 배열 구조 보존
+                normalized[key] = [str(v) for v in value]
             else:
                 normalized[key] = str(value)
         return normalized
@@ -155,7 +155,7 @@ class SurfaceBuilder:
         )
 
         # ==========================================
-        # 3. 중복 검증 및 퍼저 콜백 호출 (이벤트 루프에서 가볍게 처리)
+        # 4.. 중복 검증 및 퍼저 콜백 호출 (이벤트 루프에서 가볍게 처리)
         # ==========================================
         for surface in surfaces:
             if not surface.url: continue
