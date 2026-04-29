@@ -58,7 +58,7 @@ def extract_forms(
     """
     HTML에서 폼 정보를 추출하여 정형화된 데이터로 반환
     """
-    soup = BeautifulSoup(html, 'html.parsers') if isinstance(html, str) else html
+    soup = BeautifulSoup(html, 'html.parser') if isinstance(html, str) else html
     extracted_forms: List[FormInfo] = []
 
     for i, form in enumerate(soup.find_all('form')):
