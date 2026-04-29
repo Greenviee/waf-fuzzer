@@ -21,6 +21,10 @@ def get_attack_modules(attack_type: str) -> list[BaseModule]:
         "file_upload": FileUploadModule,
     }
     if attack_type == "all":
-        return [factory() for factory in factories.values()]
+        return [
+            factory()
+            for name, factory in factories.items()
+            if name != "bruteforce"
+        ]
     factory = factories.get(attack_type)
     return [factory()] if factory else []

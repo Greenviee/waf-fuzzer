@@ -41,7 +41,7 @@ def build_parser() -> argparse.ArgumentParser:
         type=str,
         default="all",
         choices=["sqli", "bruteforce", "lfi", "file_upload", "ssrf", "all"],
-        help="Attack category to run (default: all)",
+        help="Attack category to run (default: all, excludes bruteforce)",
     )
     parser.add_argument(
         "--bf-wordlist",
