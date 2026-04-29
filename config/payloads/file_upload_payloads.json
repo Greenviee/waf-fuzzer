@@ -1,0 +1,50 @@
+{
+  "extensions": [
+    "php",
+    "php3",
+    "php4",
+    "php5",
+    "phtml",
+    "phar",
+    "inc",
+    "PhP",
+    "pHP",
+    "Php",
+    "php ",
+    "php.",
+    "php/."
+  ],
+  "content_types": [
+    "application/x-php",
+    "image/jpeg",
+    "image/gif",
+    "text/plain"
+  ],
+  "base_names": [
+    "profile_pic",
+    "avatar",
+    "receipt_2026",
+    "document_vfinal",
+    "upload",
+    "img"
+  ],
+  "magic_byte_extensions": [
+    "php5",
+    "phtml",
+    "PhP"
+  ],
+  "classic_payloads": [
+    {
+      "extension": "php%00.jpg",
+      "prefix": "upload",
+      "content_type": "image/jpeg",
+      "attack_type": "Null_Byte_Injection"
+    },
+    {
+      "extension": "php.jpg",
+      "prefix": "document",
+      "content_type": "image/jpeg",
+      "attack_type": "Double_Extension"
+    }
+  ]
+}
