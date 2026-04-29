@@ -29,10 +29,7 @@ class FileUploadModule(BaseModule):
         return parameter_list
 
     def analyze(self, response, payload, elapsed_time, original_res=None, requester=None) -> bool:
-        is_vuln, evidences = detect_file_upload(response=response, payload=payload)
-        if is_vuln:
-            for evidence in evidences:
-                print(f"[+] [{self.name}] {evidence}")
+        is_vuln, _ = detect_file_upload(response=response, payload=payload)
         return is_vuln
 
     async def verify(
@@ -68,7 +65,6 @@ class FileUploadModule(BaseModule):
             verify_urls.append(dynamic_url)
 
         if not verify_urls:
-            print(f"[-] [{self.name}] [Verify] no dynamic upload path found in response")
             return False
 
         request_kwargs = {}
@@ -91,8 +87,6 @@ class FileUploadModule(BaseModule):
             if "<?php" in body.lower() or "&lt;?php" in body.lower():
                 continue
 
-            print(f"[+] [{self.name}] [Verify] executable upload confirmed: {verify_url}")
             return True
 
-        print(f"[-] [{self.name}] [Verify] upload success but execution not confirmed")
         return False
