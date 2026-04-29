@@ -87,6 +87,5 @@ async def run_scan(args, *, base_url: str, surfaces) -> None:
 
 
 async def _request_sender(session, surface, parameter, payload):
-    payload_value = getattr(payload, "value", str(payload))
-    return await build_and_send_request(session, surface, parameter, payload_value)
+    return await build_and_send_request(session, surface, parameter, payload)
 
