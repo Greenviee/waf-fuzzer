@@ -82,12 +82,12 @@ def normalize_url(url: str, base_url: str) -> Optional[str]:
         return None
 
 
-# 기존 Dict[str, str] 에서 Dict[str, Union[str, List[str]]] 로 타입 변경
-def parse_params(url: str) -> Dict[str, Union[str, List[str]]]:
+def parse_params(url: str) -> Dict[str, str]: # ✨ [수정] 반환 타입을 Dict[str, str]로 고정
     try:
+        # parse_qs의 결과: {'id': ['admin']}
         qs = parse_qs(urlparse(url).query, keep_blank_values=True)
-        # ✨ [보안 수정 2] 리스트 값이 여러 개면 리스트를 유지하고, 하나면 문자열로 변환
-        return {k: v if len(v) > 1 else (v[0] if v else "") for k, v in qs.items()}
+        # ✨ [정규화] 리스트의 첫 번째 값만 취하여 문자열로 변환
+        return {k: v[0] if v else "" for k, v in qs.items()}
     except Exception as e:
         logger.debug("파라미터 파싱 실패: %s", e)
         return {}
