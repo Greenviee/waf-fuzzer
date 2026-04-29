@@ -2,7 +2,7 @@
 ## 🛠️ 주요 변경 사항 (How)
 - 
 - 
-
+## 🧪 테스트 결과 (Testing & Verification)
 ## 💡 리뷰어 참고 사항
 ## ✅ 다음 작업 (Next Step)
 - [ ]
