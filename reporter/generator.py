@@ -19,7 +19,7 @@ class ReportGenerator:
 
     def print_cli_report(self) -> None:
         """
-        Prints the scan result in a table-like CLI format.
+        Prints the scan result in a table-like CLI format with analysis evidences.
         """
         table_width = 114
         severity_width = 10
@@ -63,11 +63,19 @@ class ReportGenerator:
             display_payload = (
                 payload_value[:37] + "..." if len(payload_value) > 40 else payload_value
             )
+            
+            # 메인 탐지 정보 출력
             print(
                 f"{severity:<{severity_width}} | {location_text:<{location_width}} | "
                 f"{finding.parameter:<{parameter_width}} | {attack_type:<{type_width}} | "
                 f"{display_payload}"
             )
+            
+            # 상세 증거(Evidences)가 있다면 아래에 인덴트하여 출력
+            evidences = getattr(finding, "evidences", []) or []
+            if evidences:
+                for ev in evidences:
+                    print(f"{' ': <12} └─ Analysis: {ev}")
 
         print("-" * table_width)
         print(f"Total findings: {len(self.findings)}")
@@ -75,7 +83,7 @@ class ReportGenerator:
 
     def export_to_json(self, filepath: str = "scan_result.json") -> None:
         """
-        Exports the scan result to a JSON file.
+        Exports the scan result to a JSON file including evidence analysis.
         """
         report_data: dict[str, Any] = {
             "metadata": {
@@ -98,7 +106,8 @@ class ReportGenerator:
             description = getattr(payload_obj, "description", "")
 
             response = finding.response
-            status_code = getattr(response, "status", 0)
+            # status_code 처리 (엔진 에러 방지 위해 getattr 사용)
+            status_code = getattr(response, "status", getattr(response, "status_code", 0))
             response_time = getattr(response, "elapsed_time", getattr(response, "elapsed", 0.0))
             error_log = getattr(response, "error", None)
 
@@ -108,6 +117,9 @@ class ReportGenerator:
                 "name",
                 str(getattr(finding.surface, "param_location", "unknown")),
             )
+
+            # [추가] 분석 증거 데이터 가져오기
+            evidences = getattr(finding, "evidences", [])
 
             report_data["vulnerabilities"].append(
                 {
@@ -126,6 +138,7 @@ class ReportGenerator:
                     "evidence": {
                         "status_code": status_code,
                         "response_time": round(float(response_time), 4),
+                        "analysis_details": evidences,  # <--- 상세 증거 배열 추가
                         "error_log": error_log,
                     },
                 }

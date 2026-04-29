@@ -97,6 +97,13 @@ def get_dvwa_mock_surfaces(
             cookies=auth_cookies,
             description="DVWA SQL Injection (GET)",
         ),
+        AttackSurface(
+            url=f"{root}/vulnerabilities/sqli_blind/",
+            param_location=ParamLocation.QUERY,
+            parameters={"id": "1", "Submit": "Submit"},
+            cookies=auth_cookies,
+            description="DVWA Blind SQLi (GET)",
+        ),
         # AttackSurface(
         #     url=f"{root}/vulnerabilities/upload/",
         #     method=HttpMethod.POST,
