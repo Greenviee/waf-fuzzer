@@ -6,7 +6,7 @@ import time
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from typing import Any
-from urllib.parse import quote
+from urllib.parse import parse_qsl, quote, urlencode, urlsplit, urlunsplit
 
 import aiohttp
 
@@ -268,13 +268,38 @@ async def build_and_send_request(
     if isinstance(req_params, list):
         req_params = {str(k): "" for k in req_params}
 
+    def _apply_lfi_query_url() -> None:
+        nonlocal url
+        if not (
+            is_lfi_payload
+            and surface.param_location == ParamLocation.QUERY
+            and req_params
+        ):
+            return
+        split_url = urlsplit(url)
+        merged_params = dict(parse_qsl(split_url.query, keep_blank_values=True))
+        merged_params.update(req_params)
+        query_string = urlencode(merged_params, safe="../%:")
+        url = urlunsplit(
+            (
+                split_url.scheme,
+                split_url.netloc,
+                split_url.path,
+                query_string,
+                split_url.fragment,
+            )
+        )
+        request_kwargs.pop("params", None)
+
     request_kwargs: dict[str, Any] = {}
     payload_value = _resolve_payload_value(payload)
     is_file_payload = _is_file_payload(payload)
+    is_lfi_payload = type(payload).__name__ == "LFIPayload"
 
     if surface.param_location == ParamLocation.QUERY:
         req_params[parameter] = payload_value
-        request_kwargs["params"] = req_params
+        if not is_lfi_payload:
+            request_kwargs["params"] = req_params
     elif surface.param_location == ParamLocation.BODY_FORM:
         if is_file_payload:
             form = aiohttp.FormData()
@@ -315,6 +340,7 @@ async def build_and_send_request(
         request_kwargs["headers"] = headers
     if cookies:
         request_kwargs["cookies"] = cookies
+    _apply_lfi_query_url()
     dynamic_tokens = getattr(surface, "dynamic_tokens", None) or []
     if not dynamic_tokens:
         return await _send_prepared_request(
@@ -351,7 +377,8 @@ async def build_and_send_request(
             )
 
         if surface.param_location == ParamLocation.QUERY and req_params:
-            request_kwargs["params"] = req_params
+            if not is_lfi_payload:
+                request_kwargs["params"] = req_params
         elif surface.param_location == ParamLocation.BODY_FORM:
             if is_file_payload:
                 form = aiohttp.FormData()
@@ -372,6 +399,7 @@ async def build_and_send_request(
             request_kwargs["json"] = req_params
         elif req_params:
             request_kwargs["params"] = req_params
+        _apply_lfi_query_url()
         if headers:
             request_kwargs["headers"] = headers
         if cookies:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from core import AttackSurface
 from modules.bruteforce.module import BruteforceModule
+from modules.lfi.module import LFIModule
 from modules.file_upload.module import FileUploadModule
 from modules.sqli.module import SQLiModule
 from modules.xss.analyzer import XSSModule
@@ -39,6 +40,9 @@ def select_modules(args) -> list:
             max_true_bf_candidates=args.bf_max_true_random,
         )
         selected.append(bruteforce_module)
+
+    if args.type in ("lfi", "all"):
+        selected.append(LFIModule(evasion_level=args.lfi_evasion_level))
 
     if args.type in ("file_upload", "all"):
         selected.append(FileUploadModule())

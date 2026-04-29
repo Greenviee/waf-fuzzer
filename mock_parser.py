@@ -55,14 +55,14 @@ def get_dvwa_mock_surfaces(
         #     cookies=auth_cookies,
         #     description="DVWA CSRF (GET)",
         # ),
-        # AttackSurface(
-        #     url=f"{root}/vulnerabilities/fi/",
-        #     method=HttpMethod.GET,
-        #     param_location=ParamLocation.QUERY,
-        #     parameters={"page": "include.php"},
-        #     cookies=auth_cookies,
-        #     description="DVWA File Inclusion (GET)",
-        # ),
+        AttackSurface(
+            url=f"{root}/vulnerabilities/fi/",
+            method=HttpMethod.GET,
+            param_location=ParamLocation.QUERY,
+            parameters={"page": "include.php"},
+            cookies=auth_cookies,
+            description="DVWA File Inclusion (GET)",
+        ),
         # AttackSurface(
         #     url=f"{root}/vulnerabilities/brute/",
         #     method=HttpMethod.GET,
@@ -108,7 +108,7 @@ def get_dvwa_mock_surfaces(
                 "Upload": "Upload",
             },
             cookies=auth_cookies,
-            description="DVWA SQL Injection (GET)",
+            description="DVWA File Upload (POST)",
         ),
         AttackSurface(
             url=f"{root}/vulnerabilities/sqli_blind/",
