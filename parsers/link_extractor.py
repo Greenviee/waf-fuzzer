@@ -291,7 +291,7 @@ def extract_links(
 
     if isinstance(html_or_soup, str):
         try:
-            soup = BeautifulSoup(html_or_soup, 'html.parsers')
+            soup = BeautifulSoup(html_or_soup, 'html.parser')
         except Exception as e:
             logger.error("HTML 파싱 실패: %s", e)
             return []

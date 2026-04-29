@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 # ===== 불변 설정 상수 (Immutable Constants) =====
-PARSERS: tuple[str, ...] = ("lxml", "html.parsers", "html5lib")
+PARSERS: tuple[str, ...] = ("lxml", "html.parser", "html5lib")
 MAX_CONTENT_LENGTH: int = 50 * 1024 * 1024  # 50MB
 
 
@@ -44,7 +44,7 @@ class AsyncHTMLParser:
             except (TypeError, ValueError):
                 continue
         # 모든 시도 실패 시 파이썬 내장 기본 파서 사용
-        return BeautifulSoup(html, "html.parsers")
+        return BeautifulSoup(html, "html.parser")
 
     @staticmethod
     def parse_html_string(
