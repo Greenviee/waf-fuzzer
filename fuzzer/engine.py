@@ -577,10 +577,29 @@ class FuzzerEngine:
             print(f"[*] [{module.name}] stop-on-first-hit triggered; skipping remaining payloads.")
 
     @staticmethod
-    def _iter_parameters(surface: AttackSurface) -> Iterable[str]:
+    def _dynamic_token_names(surface: AttackSurface) -> set[str]:
+        raw_tokens = getattr(surface, "dynamic_tokens", None)
+        if not raw_tokens:
+            return set()
+        if isinstance(raw_tokens, dict):
+            return {str(name) for name in raw_tokens.keys() if str(name)}
+        if isinstance(raw_tokens, (list, tuple, set)):
+            return {str(name) for name in raw_tokens if str(name)}
+        token_name = str(raw_tokens).strip()
+        return {token_name} if token_name else set()
+
+    @classmethod
+    def _iter_parameters(cls, surface: AttackSurface) -> Iterable[str]:
         params = getattr(surface, "parameters", None)
+        dynamic_token_names = cls._dynamic_token_names(surface)
         if params is None:
             return ()
         if isinstance(params, dict):
-            return params.keys()
-        return tuple(str(p) for p in params)
+            return tuple(
+                key for key in params.keys()
+                if str(key) not in dynamic_token_names
+            )
+        return tuple(
+            str(p) for p in params
+            if str(p) not in dynamic_token_names
+        )
