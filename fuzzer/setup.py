@@ -24,7 +24,7 @@ def select_modules(args) -> list:
         )
         selected.append(sqli_module)
 
-    if args.type in ("bruteforce", "all"):
+    if args.type == "bruteforce":
         bruteforce_module = BruteforceModule(
             wordlist_path=args.bf_wordlist,
             enable_mutation=not args.bf_disable_mutation,

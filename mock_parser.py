@@ -77,18 +77,18 @@ def get_dvwa_mock_surfaces(
         #     description="DVWA Brute Force (GET, with CSRF token)",
         #     dynamic_tokens=["user_token"],
         # ),
-        # AttackSurface(
-        #     url=f"{root}/vulnerabilities/brute/",
-        #     method=HttpMethod.GET,
-        #     param_location=ParamLocation.QUERY,
-        #     parameters={
-        #         "username": "admin",
-        #         "password": "password",
-        #         "Login": "Login",
-        #     },
-        #     cookies=auth_cookies,
-        #     description="DVWA Brute Force (GET, no CSRF token)",
-        # ),
+        AttackSurface(
+            url=f"{root}/vulnerabilities/brute/",
+            method=HttpMethod.GET,
+            param_location=ParamLocation.QUERY,
+            parameters={
+                "username": "admin",
+                "password": "password",
+                "Login": "Login",
+            },
+            cookies=auth_cookies,
+            description="DVWA Brute Force (GET, no CSRF token)",
+        ),
         # AttackSurface(
         #     url=f"{root}/vulnerabilities/sqli/",
         #     method=HttpMethod.GET,
@@ -134,14 +134,14 @@ def get_dvwa_mock_surfaces(
         #     cookies=auth_cookies,
         #     description="DVWA DOM XSS (GET)",
         # ),
-        AttackSurface(
-            url=f"{root}/test_ssrf.php/",
-            method=HttpMethod.GET,
-            param_location=ParamLocation.QUERY,
-            parameters={"url": "http://example.com"},
-            cookies=auth_cookies,
-            description="DVWA SSRF(GET)",
-        ),
+        # AttackSurface(
+        #     url=f"{root}/test_ssrf.php/",
+        #     method=HttpMethod.GET,
+        #     param_location=ParamLocation.QUERY,
+        #     parameters={"url": "http://example.com"},
+        #     cookies=auth_cookies,
+        #     description="DVWA SSRF(GET)",
+        # ),
     ]
 
 
