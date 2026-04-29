@@ -43,14 +43,14 @@ class SurfaceBuilder:
         # scheme, netloc, path, params, query(제거), fragment
         return urlunparse((parsed.scheme, parsed.netloc, parsed.path, parsed.params, '', parsed.fragment))
 
-    @staticmethod
-    def _normalize_parameters(raw_params: Dict[str, Any]) -> Dict[str, Union[str, List[str]]]:
-        """✅ [보안 수정 2] 배열 기반 페이로드(SQLi 등) 대응을 위해 리스트 형태 유지"""
+    @staticmethod  # ✨ [수정] 중복 데코레이터 제거
+    def _normalize_parameters(raw_params: Dict[str, Any]) -> Dict[str, str]:
+        """✨ [원복] 모든 파라미터를 단일 문자열로 평탄화 (리스트는 첫 번째 값만 유지)"""
         normalized = {}
         for key, value in raw_params.items():
             if isinstance(value, list):
-                # 리스트 내부 요소만 문자열로 안전하게 치환하며 배열 구조 보존
-                normalized[key] = [str(v) for v in value]
+                # 리스트인 경우 첫 번째 값만 취함
+                normalized[key] = str(value[0]) if value else ""
             else:
                 normalized[key] = str(value)
         return normalized

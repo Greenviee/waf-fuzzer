@@ -120,7 +120,7 @@ class AttackSurface:
     url: str
     method: HttpMethod = HttpMethod.GET
     param_location: ParamLocation = ParamLocation.QUERY
-    parameters: dict[str, Any] = field(default_factory=dict)
+    parameters: dict[str, str] = field(default_factory=dict)
     headers: dict[str, str] = field(default_factory=dict)
     cookies: dict[str, str] = field(default_factory=dict)
     dynamic_tokens: dict[str, str] = field(default_factory=dict)
