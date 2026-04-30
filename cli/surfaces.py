@@ -6,6 +6,7 @@ import os
 from core import AttackSurface
 from core.queue_manager import QueueManager
 from crawler.engine import CrawlConfig, CrawlerEngine
+from crawler.session_manager import AuthConfig
 from modules.bruteforce.request_parser import parse_raw_request
 from modules.bruteforce.target_prep import (
     build_targeted_bruteforce_surface,
@@ -18,7 +19,11 @@ async def resolve_surfaces(args, base_url: str, cookies: dict[str, str]) -> list
     if args.type == "bruteforce":
         return await _resolve_bruteforce_surfaces(args, base_url, cookies)
 
-    surfaces = await _resolve_crawled_surfaces(start_url=base_url, cookies=cookies)
+    surfaces = await _resolve_crawled_surfaces(
+        args=args,
+        start_url=base_url,
+        cookies=cookies,
+    )
     if not surfaces:
         print("Crawler returned no attack surfaces. Exiting.")
         return []
@@ -26,6 +31,7 @@ async def resolve_surfaces(args, base_url: str, cookies: dict[str, str]) -> list
 
 
 async def _resolve_crawled_surfaces(
+    args,
     start_url: str,
     cookies: dict[str, str] | None = None,
 ) -> list[AttackSurface]:
@@ -50,6 +56,10 @@ async def _resolve_crawled_surfaces(
         crawler.session_manager.set_cookies(cookies)
 
     try:
+        login_ready = await _login_if_configured(args, crawler)
+        if not login_ready:
+            return []
+
         # 크롤러(생산자)와 파서(소비자)를 동시에 실행
         # crawler.start()가 종료 신호(sentinel=None)를 큐에 넣으면
         # surface_builder.consume_from_queue()가 루프를 빠져나와 완료
@@ -63,6 +73,36 @@ async def _resolve_crawled_surfaces(
 
     print(f"[*] Crawler mode: discovered {len(surfaces)} attack surface(s).")
     return surfaces
+
+
+async def _login_if_configured(args, crawler: CrawlerEngine) -> bool:
+    username = (args.username or "").strip()
+    password = (args.password or "").strip()
+    login_url = (args.login_url or "").strip()
+
+    if not username and not password and not login_url:
+        return True
+
+    if not (username and password and login_url):
+        print("Login requires --login-url, --username, and --password together.")
+        return False
+
+    auth_config = AuthConfig(
+        login_url=login_url,
+        username=username,
+        password=password,
+        username_field=args.username_field,
+        password_field=args.password_field,
+        csrf_token_name=args.csrf_field or None,
+        submit_field=args.submit_field or None,
+    )
+
+    if not await crawler.session_manager.login(auth_config):
+        print(f"Login failed: {login_url}")
+        return False
+
+    print(f"[*] Login succeeded: {login_url}")
+    return True
 
 
 async def _resolve_bruteforce_surfaces(
@@ -79,7 +119,11 @@ async def _resolve_bruteforce_surfaces(
         return [build_targeted_bruteforce_surface(args, cookies)]
 
     # 실제 크롤러로 표면을 수집한 뒤 bruteforce용으로 가공
-    surfaces = await _resolve_crawled_surfaces(start_url=base_url, cookies=cookies)
+    surfaces = await _resolve_crawled_surfaces(
+        args=args,
+        start_url=base_url,
+        cookies=cookies,
+    )
     surfaces = prepare_bruteforce_surfaces(surfaces, args)
     if not surfaces:
         print(
