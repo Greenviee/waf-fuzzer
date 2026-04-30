@@ -10,7 +10,7 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Awaitable, Dict
+from typing import Any, Callable, Awaitable
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,7 @@ class CrawlStatus(str, Enum):
 
 
 # ============================================================
-# 핵심 서비스 DTO (AttackSurface & TokenDetector & PageData)
+# 핵심 서비스 DTO (추가된 TokenDetector & PageData)
 # ============================================================
 
 class TokenDetector:
@@ -90,21 +90,20 @@ class PageData:
             url: str,
             html: str,
             depth: int = 0,
-            headers: Dict[str, str] = None,
-            cookies: Dict[str, str] = None,
-            dynamic_tokens: Dict[str, str] = None,
-            soup: Any = None  # ✨ [추가] 파싱된 BeautifulSoup 객체를 담을 필드
+            headers: dict[str, str] | None = None,
+            cookies: dict[str, str] | None = None,
+            dynamic_tokens: list[str] | None = None,
+            soup: Any = None
     ):
         self.url = url
         self.html = html
         self.depth = depth
         self.headers = headers if headers is not None else {}
         self.cookies = cookies if cookies is not None else {}
-        self.dynamic_tokens = dynamic_tokens if dynamic_tokens is not None else {}
-        self.soup = soup  # ✨ [추가] 파서로부터 전달받은 soup 저장
+        self.dynamic_tokens = dynamic_tokens if dynamic_tokens is not None else []
+        self.soup = soup  # 파서로부터 전달받은 soup 저장
 
     def __repr__(self) -> str:
-        # ✨ 모든 메타데이터의 상태를 한눈에 파악할 수 있도록 구성
         return (f"PageData(url='{self.url}', "
                 f"depth={self.depth}, "
                 f"headers={len(self.headers)}, "
@@ -120,10 +119,10 @@ class AttackSurface:
     url: str
     method: HttpMethod = HttpMethod.GET
     param_location: ParamLocation = ParamLocation.QUERY
-    parameters: dict[str, str] = field(default_factory=dict)
+    parameters: dict[str, Any] = field(default_factory=dict)
     headers: dict[str, str] = field(default_factory=dict)
     cookies: dict[str, str] = field(default_factory=dict)
-    dynamic_tokens: dict[str, str] = field(default_factory=dict)
+    dynamic_tokens: list[str] = field(default_factory=list)
     source_url: str | None = None
     description: str | None = None
     depth: int = 0
@@ -160,7 +159,7 @@ class AttackSurface:
             parameters=data.get('parameters', {}),
             headers=data.get('headers', {}),
             cookies=data.get('cookies', {}),
-            dynamic_tokens=data.get('dynamic_tokens', {}),
+            dynamic_tokens=data.get('dynamic_tokens', []),
             source_url=data.get('source_url'),
             description=data.get('description'),
             depth=data.get('depth', 0),
