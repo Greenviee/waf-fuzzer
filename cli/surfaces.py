@@ -1,24 +1,53 @@
 from __future__ import annotations
 
+import asyncio
 import os
 
 from core import AttackSurface
-from mock_parser import get_dvwa_mock_surfaces
+from core.queue_manager import QueueManager
+from crawler.engine import CrawlConfig, CrawlerEngine
 from modules.bruteforce.request_parser import parse_raw_request
 from modules.bruteforce.target_prep import (
     build_targeted_bruteforce_surface,
     prepare_bruteforce_surfaces,
 )
+from parsers.surface_builder import SurfaceBuilder
 
 
-def resolve_surfaces(args, base_url: str, cookies: dict[str, str]) -> list[AttackSurface]:
+async def resolve_surfaces(args, base_url: str, cookies: dict[str, str]) -> list[AttackSurface]:
     if args.type == "bruteforce":
         return _resolve_bruteforce_surfaces(args, base_url, cookies)
 
-    surfaces = get_dvwa_mock_surfaces(base_url=base_url, cookies=cookies)
+    surfaces = await _resolve_crawled_surfaces(start_url=base_url)
     if not surfaces:
-        print("Mock parser returned no attack surfaces. Exiting.")
+        print("Crawler returned no attack surfaces. Exiting.")
         return []
+    return surfaces
+
+
+async def _resolve_crawled_surfaces(start_url: str) -> list[AttackSurface]:
+    queue_manager = QueueManager()
+    surfaces: list[AttackSurface] = []
+
+    async def _collect(surface: AttackSurface) -> None:
+        surfaces.append(surface)
+
+    surface_builder = SurfaceBuilder(fuzzer_callback=_collect)
+    crawler = CrawlerEngine(
+        queue_manager=queue_manager,
+        config=CrawlConfig(),
+    )
+
+    try:
+        await asyncio.gather(
+            surface_builder.consume_from_queue(queue_manager),
+            crawler.start(start_url),
+        )
+    except Exception as exc:
+        print(f"Failed to crawl target URL {start_url}: {exc}")
+        return []
+
+    print(f"[*] Crawler mode: discovered {len(surfaces)} attack surface(s).")
     return surfaces
 
 
