@@ -88,8 +88,8 @@ async def fetch_dynamic_tokens(
     headers_override: dict[str, Any] | None = None,
     cookies_override: dict[str, Any] | None = None,
 ) -> dict[str, str]:
-    dynamic_tokens = getattr(surface, "dynamic_tokens", None) or []
-    token_targets = {str(token) for token in dynamic_tokens if str(token)}
+    dynamic_tokens = getattr(surface, "dynamic_tokens", None) or {}
+    token_targets = {str(token) for token in dynamic_tokens.keys() if str(token)}
     if not token_targets:
         return {}
 
@@ -341,7 +341,7 @@ async def build_and_send_request(
     if cookies:
         request_kwargs["cookies"] = cookies
     _apply_lfi_query_url()
-    dynamic_tokens = getattr(surface, "dynamic_tokens", None) or []
+    dynamic_tokens = getattr(surface, "dynamic_tokens", None) or {}
     if not dynamic_tokens:
         return await _send_prepared_request(
             session,
@@ -437,7 +437,7 @@ async def send_baseline_request(
         request_kwargs["headers"] = headers
     if cookies:
         request_kwargs["cookies"] = cookies
-    dynamic_tokens = getattr(surface, "dynamic_tokens", None) or []
+    dynamic_tokens = getattr(surface, "dynamic_tokens", None) or {}
     if not dynamic_tokens:
         return await _send_prepared_request(
             session,
