@@ -110,11 +110,7 @@ class SurfaceBuilder:
             parameters: dict[str, Any] = dict(normalized_params)
 
             if page_data.dynamic_tokens:
-                for token_str in page_data.dynamic_tokens:
-                    if "=" in token_str:
-                        parts = token_str.split("=", 1)
-                        if len(parts) == 2:
-                            parameters[parts[0]] = parts[1]
+                parameters.update(page_data.dynamic_tokens)
 
             surfaces.append(AttackSurface(
                 url=safe_url,
@@ -150,12 +146,7 @@ class SurfaceBuilder:
             # ✨ 타입 충돌 방지용 새 딕셔너리
             parameters: dict[str, Any] = dict(normalized_params)
             if page_data.dynamic_tokens:
-                # ✨ 리스트 안의 "이름=값" 문자열을 쪼개서 parameters 딕셔너리에 삽입
-                for token_str in page_data.dynamic_tokens:
-                    if "=" in token_str:
-                        parts = token_str.split("=", 1)
-                        if len(parts) == 2:
-                            parameters[parts[0]] = parts[1]
+                parameters.update(page_data.dynamic_tokens)
 
             surfaces.append(AttackSurface(
                 url=clean_url,

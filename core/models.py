@@ -10,7 +10,7 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Awaitable
+from typing import Any, Awaitable, Callable, Dict
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +92,7 @@ class PageData:
             depth: int = 0,
             headers: dict[str, str] | None = None,
             cookies: dict[str, str] | None = None,
-            dynamic_tokens: list[str] | None = None,
+            dynamic_tokens: Dict[str, str] | None = None,
             soup: Any = None
     ):
         self.url = url
@@ -100,7 +100,7 @@ class PageData:
         self.depth = depth
         self.headers = headers if headers is not None else {}
         self.cookies = cookies if cookies is not None else {}
-        self.dynamic_tokens = dynamic_tokens if dynamic_tokens is not None else []
+        self.dynamic_tokens = dynamic_tokens if dynamic_tokens is not None else {}
         self.soup = soup  # 파서로부터 전달받은 soup 저장
 
     def __repr__(self) -> str:
@@ -122,7 +122,7 @@ class AttackSurface:
     parameters: dict[str, Any] = field(default_factory=dict)
     headers: dict[str, str] = field(default_factory=dict)
     cookies: dict[str, str] = field(default_factory=dict)
-    dynamic_tokens: list[str] = field(default_factory=list)
+    dynamic_tokens: Dict[str, str] = field(default_factory=dict)
     source_url: str | None = None
     description: str | None = None
     depth: int = 0
@@ -159,7 +159,7 @@ class AttackSurface:
             parameters=data.get('parameters', {}),
             headers=data.get('headers', {}),
             cookies=data.get('cookies', {}),
-            dynamic_tokens=data.get('dynamic_tokens', []),
+            dynamic_tokens=_normalize_dynamic_tokens(data.get('dynamic_tokens', {})),
             source_url=data.get('source_url'),
             description=data.get('description'),
             depth=data.get('depth', 0),
@@ -325,3 +325,17 @@ class CrawlStats:
 
 # AttackSurface를 받는 콜백 타입
 SurfaceCallback = Callable[[AttackSurface], Awaitable[None] | None]
+
+
+def _normalize_dynamic_tokens(raw_tokens: Any) -> Dict[str, str]:
+    if isinstance(raw_tokens, dict):
+        return {str(k): str(v) for k, v in raw_tokens.items()}
+    if isinstance(raw_tokens, list):
+        normalized: Dict[str, str] = {}
+        for token in raw_tokens:
+            token_str = str(token)
+            if "=" in token_str:
+                key, value = token_str.split("=", 1)
+                normalized[str(key)] = str(value)
+        return normalized
+    return {}

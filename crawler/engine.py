@@ -194,7 +194,7 @@ class CrawlerEngine:
 
         # ✨ [수정/참고사항 반영] 무거운 DOM 순회 로직(find_all)을 스레드 풀로 위임
         def _extract_data_sync(soup_obj, base_url):
-            tokens = []
+            tokens = {}
             next_urls = set()
             forms_found = 0
             links_found = 0
@@ -208,7 +208,7 @@ class CrawlerEngine:
                     value = input_field.get("value", "")
                     input_type = input_field.get("type", "text")
                     if TokenDetector.detect(name, value, input_type):
-                        tokens.append(f"{name}={value}")
+                        tokens[name] = value
 
             # 다음 크롤링 대상 URL 추출
             for a in soup_obj.find_all("a", href=True):
@@ -227,7 +227,7 @@ class CrawlerEngine:
         # 3. 추출된 통계 업데이트 및 토큰 병합
         self._stats.total_forms_found += forms_cnt
         self._stats.total_links_found += links_cnt
-        page.dynamic_tokens.extend(tokens)
+        page.dynamic_tokens.update(tokens)
 
         # 4. 비동기 큐 매니저로 전달
         await self.queue_manager.add_page(page)
