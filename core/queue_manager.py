@@ -3,9 +3,6 @@ import asyncio
 from typing import Dict, Any
 
 from core.models import PageData
-from utils.logger import get_logger
-
-logger = get_logger(__name__)
 
 
 class QueueManager:
@@ -62,4 +59,3 @@ class QueueManager:
         self._page_queue = asyncio.Queue(maxsize=self.max_size)
         self._stats['pages_added'] = 0
         self._stats['pages_processed'] = 0
-        logger.info("QueueManager가 초기화되었습니다.")
