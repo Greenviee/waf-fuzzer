@@ -153,6 +153,14 @@ class FuzzerEngine:
             for _ in range(self.session_pool_size)
         ]
 
+    @staticmethod
+    def _format_payload_for_log(payload: Any, max_len: int = 160) -> str:
+        payload_value = getattr(payload, "value", payload)
+        text = str(payload_value)
+        if len(text) > max_len:
+            return f"{text[:max_len]}..."
+        return text
+
     async def run(
         self,
         *,
@@ -490,6 +498,11 @@ class FuzzerEngine:
         response: Any
         try:
             async with self._semaphore:
+                print(
+                    f"[test][{module.name}][worker:{worker_id}] "
+                    f"url={surface.url} param={parameter} "
+                    f"payload={self._format_payload_for_log(payload)}"
+                )
                 response = await request_sender(
                     session=session,
                     surface=surface,
@@ -514,6 +527,11 @@ class FuzzerEngine:
         async def module_requester(new_payload_value: str):
             mutated_payload = dataclasses.replace(payload, value=new_payload_value)
             async with self._semaphore:
+                print(
+                    f"[test][{module.name}][worker:{worker_id}][verify] "
+                    f"url={surface.url} param={parameter} "
+                    f"payload={self._format_payload_for_log(mutated_payload)}"
+                )
                 return await request_sender(
                     session=session,
                     surface=surface,
