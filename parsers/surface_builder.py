@@ -106,10 +106,15 @@ class SurfaceBuilder:
             # Form의 action URL에도 쿼리스트링이 있을 수 있으므로 정제
             safe_url = self._strip_query_string(action_url) if loc == ParamLocation.QUERY else action_url
 
-            # 파라미터 평탄화(List 제거) 및 동적 토큰 병합
-            parameters = self._normalize_parameters(form.get('parameters', {}))
+            normalized_params = self._normalize_parameters(form.get('parameters', {}))
+            parameters: dict[str, Any] = dict(normalized_params)
+
             if page_data.dynamic_tokens:
-                parameters.update(page_data.dynamic_tokens)
+                for token_str in page_data.dynamic_tokens:
+                    if "=" in token_str:
+                        parts = token_str.split("=", 1)
+                        if len(parts) == 2:
+                            parameters[parts[0]] = parts[1]
 
             surfaces.append(AttackSurface(
                 url=safe_url,
@@ -141,10 +146,16 @@ class SurfaceBuilder:
             raw_url = str(link.get('url', ''))
             clean_url = self._strip_query_string(raw_url)
 
-            # 파라미터 평탄화(List 제거) 및 동적 토큰 병합
-            parameters = self._normalize_parameters(link.get('params', {}))
+            normalized_params = self._normalize_parameters(link.get('params', {}))
+            # ✨ 타입 충돌 방지용 새 딕셔너리
+            parameters: dict[str, Any] = dict(normalized_params)
             if page_data.dynamic_tokens:
-                parameters.update(page_data.dynamic_tokens)
+                # ✨ 리스트 안의 "이름=값" 문자열을 쪼개서 parameters 딕셔너리에 삽입
+                for token_str in page_data.dynamic_tokens:
+                    if "=" in token_str:
+                        parts = token_str.split("=", 1)
+                        if len(parts) == 2:
+                            parameters[parts[0]] = parts[1]
 
             surfaces.append(AttackSurface(
                 url=clean_url,
