@@ -78,6 +78,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="JSON report output path",
     )
     parser.add_argument(
+        "--surfaces-output",
+        type=str,
+        default="attack_surfaces.json",
+        help="JSON output path for crawled attack surfaces",
+    )
+    parser.add_argument(
         "-t",
         "--type",
         type=str,

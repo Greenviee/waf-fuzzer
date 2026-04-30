@@ -28,16 +28,6 @@ class SurfaceBuilder:
     def __init__(self, fuzzer_callback: SurfaceCallback):
         self.fuzzer_callback = fuzzer_callback
         self._seen_signatures: Set[str] = set()
-        # 테스트 제외 대상 경로 (퍼저 전송 단계에서 필터링)
-        self._excluded_paths = {"/security.php", "/setup.php"}
-
-    def _is_excluded_surface(self, url: str) -> bool:
-        if not url:
-            return False
-        path = urlparse(url).path.lower().rstrip("/")
-        if not path:
-            return False
-        return path in self._excluded_paths
 
     async def consume_from_queue(self, queue_manager):
         """
@@ -189,7 +179,12 @@ class SurfaceBuilder:
         # ==========================================
         for surface in surfaces:
             if not surface.url: continue
-            if self._is_excluded_surface(surface.url):
+            # DVWA CSRF page changes current user password; exclude from active testing.
+            if "/vulnerabilities/csrf/" in str(surface.url).lower():
+                continue
+            # dynamic token이 필요한 surface는 테스트 대상에서 제외
+            # (토큰 갱신 오버헤드/실패로 인한 지연 완화 목적)
+            if getattr(surface, "dynamic_tokens", None):
                 continue
 
             sig = self._generate_signature(surface)

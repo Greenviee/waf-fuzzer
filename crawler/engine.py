@@ -138,7 +138,7 @@ class CrawlerEngine:
         self._visited.add(url)
         # ✨ [수정] 전체 요청 수 기록
         self._stats.total_requests += 1
-        logger.info("[%d] %s (depth=%d)", self._stats.total_requests, url, depth)
+        logger.debug("[%d] %s (depth=%d)", self._stats.total_requests, url, depth)
 
         try:
             response = await self.session_manager.get(url, timeout=self.config.timeout)

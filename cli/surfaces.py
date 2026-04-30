@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 
 from core import AttackSurface
@@ -13,6 +14,12 @@ from modules.bruteforce.target_prep import (
     prepare_bruteforce_surfaces,
 )
 from parsers.surface_builder import SurfaceBuilder
+
+
+def _export_surfaces_json(surfaces: list[AttackSurface], output_path: str) -> None:
+    payload = [surface.to_dict() for surface in surfaces]
+    with open(output_path, "w", encoding="utf-8") as fp:
+        json.dump(payload, fp, ensure_ascii=False, indent=2)
 
 
 async def resolve_surfaces(args, base_url: str, cookies: dict[str, str]) -> list[AttackSurface]:
@@ -72,6 +79,13 @@ async def _resolve_crawled_surfaces(
         return []
 
     print(f"[*] Crawler mode: discovered {len(surfaces)} attack surface(s).")
+    surfaces_output = (getattr(args, "surfaces_output", "") or "").strip()
+    if surfaces_output:
+        try:
+            _export_surfaces_json(surfaces, surfaces_output)
+            print(f"[*] Attack surfaces exported: {surfaces_output}")
+        except OSError as exc:
+            print(f"Failed to export attack surfaces JSON: {exc}")
     return surfaces
 
 
