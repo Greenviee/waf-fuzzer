@@ -74,9 +74,15 @@ class TokenDetector:
 
     @classmethod
     def detect(cls, name: str, value: str, input_type: str = None) -> bool:
+        normalized_value = str(value).strip() if value is not None else ""
+
+        # 값이 비어있는 경우에는 동적 토큰으로 보지 않는다.
+        if not normalized_value:
+            return False
+
         if cls.is_token_name(name): return True
-        if input_type == 'hidden' and cls.is_token_value(value): return True
-        if cls.is_token_value(value):
+        if input_type == 'hidden' and cls.is_token_value(normalized_value): return True
+        if cls.is_token_value(normalized_value):
             name_lower = name.lower() if name else ""
             weak_keywords = ['key', 'hash', 'secret', 'verify', 'check', 'valid']
             if any(kw in name_lower for kw in weak_keywords):
