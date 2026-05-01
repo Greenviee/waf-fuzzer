@@ -4,7 +4,7 @@ import urllib.parse
 import re
 import dataclasses
 import random
-from typing import Iterator
+from typing import Any, Iterator
 from modules.base_module import BaseModule
 from modules.sqli.payloads import get_sqli_payloads
 from modules.sqli.analyzer import detect_sqli, verify_sqli_logic 
@@ -126,6 +126,11 @@ class SQLiModule(BaseModule):
         )
 
         if final_hit:
-            object.__setattr__(payload, 'last_evidences', final_evidences)
+            # Payload can be a frozen/slots dataclass. In that case attaching
+            # ad-hoc metadata raises AttributeError; keep scan running anyway.
+            try:
+                object.__setattr__(payload, 'last_evidences', final_evidences)
+            except (AttributeError, TypeError):
+                pass
             return True
         return False
