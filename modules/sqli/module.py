@@ -4,7 +4,7 @@ import urllib.parse
 import re
 import dataclasses
 import random
-from typing import Iterator
+from typing import Iterator, Any, Tuple, List
 from modules.base_module import BaseModule
 from modules.sqli.payloads import get_sqli_payloads
 from modules.sqli.analyzer import detect_sqli, verify_sqli_logic 
@@ -36,10 +36,10 @@ class SQLiModule(BaseModule):
         return "time" in attack_type or "stacked" in attack_type
 
     def get_payloads(self) -> Iterator[Any]:
-
+        
         # 1. 원본 소스 로드
         all_raw = get_sqli_payloads()
-        
+                
         # 2. 인덱스 기반 분류
         fast_indices = []
         time_indices = []
@@ -58,10 +58,8 @@ class SQLiModule(BaseModule):
             limit = min(limit, len(time_indices))
             selected_time_indices = random.sample(time_indices, limit)
 
-        # 추가 리스트 없이 순회하며 생성
         for idx in (fast_indices + selected_time_indices):
             p = all_raw[idx]
-            
             # 우회 기법 필요할 때만 적용
             evasion_value = self._apply_evasion_by_level(p.value)
             yield dataclasses.replace(p, value=evasion_value)
@@ -71,13 +69,10 @@ class SQLiModule(BaseModule):
         del time_indices
 
     def get_payload_count(self) -> int:
-
         all_raw = get_sqli_payloads()
-        
         fast_count = 0
         time_total_count = 0
 
-        # 페이로드 추가 시 한 번만 개수 카운트
         for p in all_raw:
             if self._is_time_payload(p):
                 time_total_count += 1
@@ -104,7 +99,7 @@ class SQLiModule(BaseModule):
             value += "%00"
         return value
 
-    async def analyze(self, response, payload, elapsed_time, original_res=None, requester=None):
+    async def analyze(self, response, payload, elapsed_time, original_res=None, requester=None) -> Tuple[bool, List[str]]:
         is_vuln_1st, evidences, has_syntax_error = detect_sqli(
             response=response,
             payload=payload,
@@ -126,6 +121,6 @@ class SQLiModule(BaseModule):
         )
 
         if final_hit:
-            object.__setattr__(payload, 'last_evidences', final_evidences)
-            return True
-        return False
+            return True, final_evidences
+        
+        return False, []
