@@ -71,7 +71,6 @@ class CrawlerEngine:
             await self._run_workers()
 
         # ✨ [핵심 수정] 모든 워커가 종료된 후, 파서 컨슈머에게 종료 신호 전송
-        # QueueManager를 통해 큐에 None을 전달하여 파서(SurfaceBuilder)가 남은 데이터를 처리하고 종료되게 합니다.
         await self.queue_manager.add_page(None)
         logger.info("[Engine] 파서 종료 신호(Sentinel) 전송 완료")
 
@@ -81,7 +80,6 @@ class CrawlerEngine:
 
     def _reset_state(self):
         self._visited.clear()
-        # ✨ [수정] 시작 시간 초기화
         self._stats = CrawlStats(start_time=datetime.now())
         self._shutdown.clear()
 
@@ -127,7 +125,6 @@ class CrawlerEngine:
                 logger.error("워커 %d 오류: %s", worker_id, e)
 
     def _should_continue_crawling(self):
-        # ✨ [수정] 통합 모델의 successful_requests 필드로 제한 확인
         return not self._shutdown.is_set() and self._stats.successful_requests < self.config.max_urls
 
     async def _process_url(self, url, depth):
@@ -136,14 +133,12 @@ class CrawlerEngine:
             return
 
         self._visited.add(url)
-        # ✨ [수정] 전체 요청 수 기록
         self._stats.total_requests += 1
         logger.debug("[%d] %s (depth=%d)", self._stats.total_requests, url, depth)
 
         try:
             response = await self.session_manager.get(url, timeout=self.config.timeout)
             if response:
-                # ✨ [수정] 성공 코드(200번대)인 경우만 처리
                 if 200 <= response.get("status", 0) < 300:
                     await self._process_response(response, url, depth)
                 else:
@@ -156,15 +151,77 @@ class CrawlerEngine:
             self._stats.failed_requests += 1
             self._stats.record_error(type(e).__name__)
 
+    #  DB+OS 정보 추출 (헤더 + 쿠키 + URL 기반 교차 검증)
+    def _fingerprint_server(self, headers: dict, cookies: dict, url: str) -> dict:
+        info = {"os": "Unknown", "web_server": "Unknown", "language": "Unknown", "db": "Unknown"}
+
+        headers_lower = {k.lower(): v for k, v in headers.items()}
+        server_header = headers_lower.get("server", "").lower()
+        powered_by = headers_lower.get("x-powered-by", "").lower()
+
+        # 1. OS 추론 (헤더 기반)
+        if any(os in server_header for os in ["ubuntu", "debian", "centos", "redhat", "linux"]):
+            info["os"] = "Linux"
+        elif "win32" in server_header or "iis" in server_header:
+            info["os"] = "Windows"
+
+        # 2. 웹 서버 추론 (헤더 기반)
+        if "apache" in server_header:
+            info["web_server"] = "Apache"
+        elif "nginx" in server_header:
+            info["web_server"] = "Nginx"
+        elif "iis" in server_header:
+            info["web_server"] = "IIS"
+
+        # 3. 개발 언어 추론 (교차 검증: A. 헤더 -> B. 쿠키 -> C. URL)
+        # A. 헤더 확인
+        if "php" in powered_by or "php" in server_header:
+            info["language"] = "PHP"
+        elif "asp.net" in powered_by or "iis" in server_header:
+            info["language"] = "ASP.NET"
+        elif "jsp" in powered_by or "tomcat" in server_header or "java" in powered_by:
+            info["language"] = "Java"
+
+        # B. 쿠키 확인 (헤더에서 못 찾았을 경우)
+        if info["language"] == "Unknown":
+            if "PHPSESSID" in cookies:
+                info["language"] = "PHP"
+            elif "ASPSESSIONID" in cookies:
+                info["language"] = "ASP.NET"
+            elif "JSESSIONID" in cookies:
+                info["language"] = "Java"
+
+        # C. URL 확장자 확인 (쿠키로도 못 찾았을 경우)
+        url_lower = url.lower()
+        if info["language"] == "Unknown":
+            if ".php" in url_lower:
+                info["language"] = "PHP"
+            elif ".asp" in url_lower or ".aspx" in url_lower:
+                info["language"] = "ASP.NET"
+            elif ".jsp" in url_lower or ".do" in url_lower:
+                info["language"] = "Java"
+
+        # 4. 언어 기반 DB 유추 세팅
+        if info["language"] == "PHP":
+            info["db"] = "MySQL/MariaDB"
+        elif info["language"] == "ASP.NET":
+            info["db"] = "MSSQL"
+        elif info["language"] == "Java":
+            info["db"] = "Oracle/MySQL"
+
+        return info
+
     async def _process_response(self, response, url, depth):
         html = response.get("text", "")
         final_url = str(response.get("url", url))
         headers = response.get("headers", {})
         cookies = self.session_manager.get_cookies()
 
+        #  서버 환경 탐지 실행 (헤더, 쿠키, URL 모두 전달)
+        server_info = self._fingerprint_server(headers, cookies, final_url)
+
         loop = asyncio.get_running_loop()
 
-        # 1. HTML -> Soup 파싱 작업을 스레드 풀에서 실행 (블로킹 방지)
         parse_result = await loop.run_in_executor(
             None, AsyncHTMLParser.parse_html_string, html, final_url
         )
@@ -178,21 +235,21 @@ class CrawlerEngine:
         if soup is None:
             return
 
-        # 성공적인 요청 기록
         self._stats.successful_requests += 1
         self._stats.record_status(response.get("status", 0))
 
-        # 2. PageData 객체 생성 (soup 포함)
+        # 🚀 PageData 생성 시 server_info 전달
         page = PageData(
             url=final_url,
             html=html,
             depth=depth,
             headers=headers,
             cookies=cookies,
+            server_info=server_info,  # 추가된 부분
             soup=soup
         )
 
-        # ✨ [수정/참고사항 반영] 무거운 DOM 순회 로직(find_all)을 스레드 풀로 위임
+        # ✨ 무거운 DOM 순회 로직을 스레드 풀로 위임하기 위한 내부 함수
         def _extract_data_sync(soup_obj, base_url):
             tokens = {}
             next_urls = set()
@@ -219,7 +276,7 @@ class CrawlerEngine:
 
             return tokens, next_urls, forms_found, links_found
 
-        # ✨ [수정] 스레드 풀에서 DOM 순회 작업을 실행하여 메인 루프 블로킹 방지
+        # ✨ 스레드 풀에서 DOM 순회 작업을 실행하여 메인 루프 블로킹 방지
         tokens, next_urls, forms_cnt, links_cnt = await loop.run_in_executor(
             None, _extract_data_sync, soup, final_url
         )
@@ -240,7 +297,6 @@ class CrawlerEngine:
 
     def _log_summary(self):
         logger.info("========== 크롤링 종료 ==========")
-        # ✨ [수정] 통합 CrawlStats의 to_dict() 활용
         stats_dict = self._stats.to_dict()
         logger.info(
             "요청 성공: %s, 폼 발견: %s, 링크 발견: %s, 소요 시간: %s",
