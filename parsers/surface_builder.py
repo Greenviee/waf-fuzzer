@@ -120,6 +120,7 @@ class SurfaceBuilder:
                 headers=page_data.headers,
                 cookies=page_data.cookies,
                 dynamic_tokens=page_data.dynamic_tokens.copy(),
+                server_info=page_data.server_info.copy(),
                 source_url=str(page_data.url),
                 description=f"Form (risk: {form.get('risk_level')}, tokens: {len(page_data.dynamic_tokens)})"
             ))
@@ -156,6 +157,7 @@ class SurfaceBuilder:
                 headers=page_data.headers,
                 cookies=page_data.cookies,
                 dynamic_tokens=page_data.dynamic_tokens.copy(),
+                server_info=page_data.server_info.copy(),
                 source_url=str(page_data.url),
                 description="Link Query Params"
             ))

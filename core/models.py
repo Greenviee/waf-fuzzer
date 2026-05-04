@@ -99,6 +99,7 @@ class PageData:
             headers: dict[str, str] | None = None,
             cookies: dict[str, str] | None = None,
             dynamic_tokens: Dict[str, str] | None = None,
+            server_info: dict[str, str] | None = None,  # 🚀 서버 정보 필드 추가
             soup: Any = None
     ):
         self.url = url
@@ -107,6 +108,7 @@ class PageData:
         self.headers = headers if headers is not None else {}
         self.cookies = cookies if cookies is not None else {}
         self.dynamic_tokens = dynamic_tokens if dynamic_tokens is not None else {}
+        self.server_info = server_info if server_info is not None else {}
         self.soup = soup  # 파서로부터 전달받은 soup 저장
 
     def __repr__(self) -> str:
@@ -129,6 +131,7 @@ class AttackSurface:
     headers: dict[str, str] = field(default_factory=dict)
     cookies: dict[str, str] = field(default_factory=dict)
     dynamic_tokens: Dict[str, str] = field(default_factory=dict)
+    server_info: dict[str, str] = field(default_factory=dict)
     source_url: str | None = None
     description: str | None = None
     depth: int = 0
@@ -150,6 +153,7 @@ class AttackSurface:
             'headers': self.headers,
             'cookies': self.cookies,
             'dynamic_tokens': self.dynamic_tokens,
+            'server_info': self.server_info,
             'source_url': self.source_url,
             'description': self.description,
             'depth': self.depth,
@@ -166,6 +170,7 @@ class AttackSurface:
             headers=data.get('headers', {}),
             cookies=data.get('cookies', {}),
             dynamic_tokens=_normalize_dynamic_tokens(data.get('dynamic_tokens', {})),
+            server_info=data.get('server_info', {}),
             source_url=data.get('source_url'),
             description=data.get('description'),
             depth=data.get('depth', 0),
