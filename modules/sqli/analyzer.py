@@ -136,8 +136,7 @@ async def verify_sqli_logic(response, payload, original_res, requester, is_vuln_
     
     logic_pattern = r"(['\"]?\w+['\"]?)\s*=\s*\1"
     is_true_expanded = (len(pure_res) >= len(pure_orig) * 1.1) and (len(pure_res) - len(pure_orig) >= 20)
-    is_true_legit = (true_ratio >= 0.995) or is_true_expanded
-    is_blind_candidate = (true_ratio >= 0.985) and (not is_true_legit)
+    is_blind_candidate = (true_ratio >= 0.985) and (not is_true_expanded)
 
     # [A] 1차 탐지에서 변화 감지
     if is_vuln_1st: 
@@ -145,7 +144,7 @@ async def verify_sqli_logic(response, payload, original_res, requester, is_vuln_
             return True, evidences
 
         # Path 1: 구조적 파손 검증 (주석 처리)
-        if not is_true_legit and not is_blind_candidate:
+        if not is_true_expanded and not is_blind_candidate:
             if val.strip().endswith("'") or val.strip().endswith('"'):
                 fix_res = await requester(val + " -- ")
                 ratio = get_text_ratio(fix_res.text, orig_text)
@@ -155,7 +154,7 @@ async def verify_sqli_logic(response, payload, original_res, requester, is_vuln_
         # Path 2: 논리 반전 테스트
         has_logic = re.search(logic_pattern, val) or "1=1" in val
         
-        if is_true_legit or is_blind_candidate or has_logic or any(tag in str(evidences) for tag in ["[ExecutionErr]"]):
+        if is_true_expanded or is_blind_candidate or has_logic or any(tag in str(evidences) for tag in ["[ExecutionErr]"]):
             
             # 주석 복구 시도
             if val.strip().endswith("'") or val.strip().endswith('"'):
@@ -180,11 +179,11 @@ async def verify_sqli_logic(response, payload, original_res, requester, is_vuln_
                             false_has_syntax_error = True
                             break
 
-                # [검증 1] 참 조건 응답에 데이터가 추가되었거나 baseline과 충분히 유사하고, 참 조건 응답과 거짓 조건 응답이 다른가
-                if is_true_legit:
+                # [검증 1] 참 조건 응답에 데이터가 추가되었고 참 조건 응답과 거짓 조건 응답이 다른가
+                if is_true_expanded:
                     f_to_t_ratio = get_text_ratio(false_res.text, res_text)
                     if f_to_t_ratio < 0.99:
-                        tag = f"[Verified] Logic Swapping (Expansion) Ratio: {f_to_t_ratio:.4f}" if is_true_expanded else f"[Verified] Logic Swapping (True!=False) Ratio: {f_to_t_ratio:.4f}"
+                        tag = f"[Verified] Logic Swapping (Expansion) Ratio: {f_to_t_ratio:.4f}"
                         return True, evidences + [tag]
                 
                 # [검증 2] 참 조건 응답이 baseline과 조금 다르고, 거짓 조건 응답은 같은가
@@ -201,7 +200,7 @@ async def verify_sqli_logic(response, payload, original_res, requester, is_vuln_
                         return True, evidences + [f"[Verified] Inverted Logic Swapping (False Expansion) Ratio: {f_to_orig_ratio:.4f}"]
 
     # [B]: 1차 탐지에서 변화 미감지
-    elif not has_syntax_error and is_true_legit:
+    elif not has_syntax_error:
         if re.search(logic_pattern, val) or "1=1" in val:
             false_payload = val.replace("1=1", "1=2") if "1=1" in val else re.sub(logic_pattern, "1=2", val)
             false_res = await requester(false_payload)

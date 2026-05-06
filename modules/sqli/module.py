@@ -164,10 +164,8 @@ class SQLiModule(BaseModule):
                         await asyncio.wait_for(self._barrier_event.wait(), timeout=25.0)
                     except asyncio.TimeoutError:
                         if not self._time_phase_active:
-                            print(f"\n[!] Deadlock Breaker: Time-based phase forced.")
                     
                 if not self._time_phase_active:
-                    print(f"\n[★TRANSITION] Barrier cleared. Starting REAL time-based attacks!")
                     self._time_phase_active = True
 
                 # 2. 전역 직렬 실행 락
@@ -211,7 +209,6 @@ class SQLiModule(BaseModule):
                     self._time_attack_in_flight -= 1
                     if self._time_attack_in_flight == 0:
                         if self._time_phase_active:
-                            print(f"[★TRANSITION] Going back to normal payloads")
                             self._barrier_event.clear()
                             self._time_phase_active = False
 
