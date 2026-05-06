@@ -136,7 +136,7 @@ async def verify_sqli_logic(response, payload, original_res, requester, is_vuln_
     
     logic_pattern = r"(['\"]?\w+['\"]?)\s*=\s*\1"
     is_true_expanded = (len(pure_res) >= len(pure_orig) * 1.1) and (len(pure_res) - len(pure_orig) >= 20)
-    is_blind_candidate = (true_ratio >= 0.985) and (not is_true_expanded)
+    is_blind_candidate = (true_ratio >= 0.95) and (not is_true_expanded)
 
     # [A] 1차 탐지에서 변화 감지
     if is_vuln_1st: 
@@ -148,7 +148,7 @@ async def verify_sqli_logic(response, payload, original_res, requester, is_vuln_
             if val.strip().endswith("'") or val.strip().endswith('"'):
                 fix_res = await requester(val + " -- ")
                 ratio = get_text_ratio(fix_res.text, orig_text)
-                if ratio >= 0.995:
+                if ratio >= 0.99:
                     return True, evidences + [f"[Verified] Syntax Fix Test(broken) Ratio: {ratio:.4f}"]
 
         # Path 2: 논리 반전 테스트
@@ -160,7 +160,7 @@ async def verify_sqli_logic(response, payload, original_res, requester, is_vuln_
             if val.strip().endswith("'") or val.strip().endswith('"'):
                 fix_res = await requester(val + " -- ")
                 fix_ratio = get_text_ratio(fix_res.text, orig_text)
-                if fix_ratio >= 0.995:
+                if fix_ratio >= 0.99:
                     return True, evidences + [f"[Verified] Syntax Fix Test Ratio: {fix_ratio:.4f}"]
 
             # 논리 반전 테스트
@@ -182,22 +182,22 @@ async def verify_sqli_logic(response, payload, original_res, requester, is_vuln_
                 # [검증 1] 참 조건 응답에 데이터가 추가되었고 참 조건 응답과 거짓 조건 응답이 다른가
                 if is_true_expanded:
                     f_to_t_ratio = get_text_ratio(false_res.text, res_text)
-                    if f_to_t_ratio < 0.99:
+                    if f_to_t_ratio < 0.98:
                         tag = f"[Verified] Logic Swapping (Expansion) Ratio: {f_to_t_ratio:.4f}"
                         return True, evidences + [tag]
                 
                 # [검증 2] 참 조건 응답이 baseline과 조금 다르고, 거짓 조건 응답은 같은가
                 elif is_blind_candidate:
                     f_to_orig_ratio = get_text_ratio(false_res.text, orig_text)
-                    if false_status == orig_status and f_to_orig_ratio >= 0.99:
+                    if false_status == orig_status and f_to_orig_ratio >= 0.98:
                         return True, evidences + [f"[Verified] Inverted Logic Swapping (False==Baseline) Ratio: {f_to_orig_ratio:.4f}"]
 
                 # [검증 3] 거짓 조건 응답에 데이터가 추가되었고, 참 조건 응답과 거짓조건 응답이 다른가
                 is_false_expanded = (len(false_pure_res) >= len(pure_orig) * 1.1) and (len(false_pure_res) - len(pure_orig) >= 20)
                 if not false_has_syntax_error and is_false_expanded:
-                    f_to_orig_ratio = get_text_ratio(false_res.text, orig_text)
-                    if f_to_orig_ratio < 0.99:
-                        return True, evidences + [f"[Verified] Inverted Logic Swapping (False Expansion) Ratio: {f_to_orig_ratio:.4f}"]
+                    f_to_t_ratio = get_text_ratio(false_res.text, res_text)
+                    if f_to_t_ratio < 0.98:
+                        return True, evidences + [f"[Verified] Inverted Logic Swapping (False Expansion) Ratio: {f_to_t_ratio:.4f}"]
 
     # [B]: 1차 탐지에서 변화 미감지
     elif not has_syntax_error:
@@ -205,7 +205,7 @@ async def verify_sqli_logic(response, payload, original_res, requester, is_vuln_
             false_payload = val.replace("1=1", "1=2") if "1=1" in val else re.sub(logic_pattern, "1=2", val)
             false_res = await requester(false_payload)
             f_to_t_ratio = get_text_ratio(false_res.text, res_text)
-            if f_to_t_ratio < 0.995:
+            if f_to_t_ratio < 0.99:
                 return True, [f"[Verified] Blind SQLi (Baseline==True and True!=False) Ratio: {f_to_t_ratio:.4f}"]
 
     return False, []
