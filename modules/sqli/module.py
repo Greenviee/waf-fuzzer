@@ -164,6 +164,7 @@ class SQLiModule(BaseModule):
                         await asyncio.wait_for(self._barrier_event.wait(), timeout=25.0)
                     except asyncio.TimeoutError:
                         if not self._time_phase_active:
+                            pass
                     
                 if not self._time_phase_active:
                     self._time_phase_active = True
