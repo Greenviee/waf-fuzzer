@@ -12,7 +12,6 @@ from fuzzer.request_builder import send_baseline_request
 try:
     from core.models import AttackSurface  # type: ignore
 except (ImportError, AttributeError):
-    # Temporary fallback for bootstrap phase where models are incomplete.
     @dataclass(slots=True)
     class AttackSurface:  # type: ignore[no-redef]
         url: str
@@ -73,7 +72,7 @@ class AttackModule(Protocol):
         elapsed_time: float,
         original_res: Any | None = None,
         requester: Callable[[str], Awaitable[Any]] | None = None,
-    ) -> tuple[bool, list[str]] | Awaitable[tuple[bool, list[str]]]: ...
+    ) -> tuple[bool, list[str], Any] | Awaitable[tuple[bool, list[str], Any]]: ...
 
 
 class FuzzerEngine:
@@ -288,12 +287,6 @@ class FuzzerEngine:
         request_sender: AsyncRequestSender,
         on_finding: ResultCallback | None = None,
     ) -> EngineStats:
-        """
-        Module-oriented execution mode.
-        - Creates one queue per attack module.
-        - Dispatches each incoming surface into every module queue.
-        - Loads module payloads once per worker at startup.
-        """
         if not self.modules:
             raise ValueError("modules must be configured to run module queue mode")
 
@@ -321,10 +314,6 @@ class FuzzerEngine:
         request_sender: AsyncRequestSender,
         on_finding: ResultCallback | None = None,
     ) -> None:
-        """
-        Start module workers.
-        Useful when parser/crawler streams surfaces over time.
-        """
         if self._module_runtime_active:
             raise RuntimeError("module mode is already running")
         if not self.modules:
@@ -362,9 +351,6 @@ class FuzzerEngine:
         self._module_runtime_active = True
 
     async def submit_surface(self, surface: AttackSurface) -> None:
-        """
-        Dispatch one parser-provided surface into every module queue.
-        """
         if not self._module_runtime_active:
             raise RuntimeError("module mode is not running")
 
@@ -382,9 +368,6 @@ class FuzzerEngine:
                 self._stats.queued += len(params) * len(payloads)
 
     async def stop_module_mode(self) -> None:
-        """
-        Wait until all module queues drain, then stop workers.
-        """
         if not self._module_runtime_active:
             return
 
@@ -502,8 +485,7 @@ class FuzzerEngine:
                     payload=mutated_payload,
                 )
 
-        # [수정] 분석 결과를 tuple로 받아 처리
-        result = module.analyze(
+        verdict = module.analyze(
             response=response,
             payload=payload,
             elapsed_time=elapsed_time,
@@ -511,14 +493,20 @@ class FuzzerEngine:
             requester=module_requester
         )
         
-        if isawaitable(result):
-            result = await result
+        if isawaitable(verdict):
+            verdict = await verdict
 
-        # [수정] tuple 언패킹 및 검증 (단순 bool 반환 모듈에 대한 하위 호환성 유지)
-        if isinstance(result, tuple):
-            is_hit, evidences = result
+        actual_payload = payload
+        if isinstance(verdict, tuple):
+            if len(verdict) == 3:
+                is_hit, evidences, actual_payload = verdict
+            elif len(verdict) == 2:
+                is_hit, evidences = verdict
+            else:
+                is_hit = verdict[0]
+                evidences = []
         else:
-            is_hit = bool(result)
+            is_hit = bool(verdict)
             evidences = []
 
         async with self._stats_lock:
@@ -527,11 +515,10 @@ class FuzzerEngine:
         if not is_hit:
             return
 
-        # [수정] Finding 생성 시 언패킹된 evidences를 직접 할당
         finding = Finding(
             surface=surface,
             parameter=parameter,
-            payload=payload,
+            payload=actual_payload,
             response=response,
             module_name=module.name,
             evidences=evidences
