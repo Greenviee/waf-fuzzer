@@ -73,7 +73,8 @@ class AttackModule(Protocol):
         elapsed_time: float,
         original_res: Any | None = None,
         requester: Callable[[str], Awaitable[Any]] | None = None,
-    ) -> bool | Awaitable[bool]: ...
+    ) -> tuple[bool, list[str], Any] | Awaitable[tuple[bool, list[str], Any]]: ...
+    #또는) -> bool | Awaitable[bool]: 
 
 
 class FuzzerEngine:
@@ -263,8 +264,6 @@ class FuzzerEngine:
         is_hit = await verdict if isawaitable(verdict) else verdict
         if not is_hit:
             return
-
-        evidences = getattr(job.payload, "last_evidences", None)
 
         finding = Finding(
             surface=job.surface,
@@ -528,7 +527,24 @@ class FuzzerEngine:
             original_res=baseline_response,
             requester=module_requester
         )
-        is_hit = await verdict if isawaitable(verdict) else verdict
+
+        if isawaitable(verdict):
+            verdict = await verdict
+
+        if isinstance(verdict, tuple):
+            if len(verdict) == 3:
+                is_hit, evidences, actual_payload = verdict
+            elif len(verdict) == 2:
+                is_hit, evidences = verdict
+                actual_payload = payload
+            else:
+                is_hit = verdict[0]
+                evidences = []
+                actual_payload = payload
+        else:
+            is_hit = bool(verdict)
+            evidences = []
+            actual_payload = payload
 
         async with self._stats_lock:
             self._stats.completed += 1
@@ -542,7 +558,7 @@ class FuzzerEngine:
                 session=session,
                 surface=surface,
                 parameter=parameter,
-                payload=payload,
+                payload=actual_payload,
                 response=response,
                 baseline_response=baseline_response,
             )
@@ -552,12 +568,10 @@ class FuzzerEngine:
             if not is_verified:
                 return
 
-        evidences = getattr(payload, "last_evidences", [])
-
         finding = Finding(
             surface=surface,
             parameter=parameter,
-            payload=payload,
+            payload=actual_payload,
             response=response,
             module_name=module.name,
             evidences=evidences
