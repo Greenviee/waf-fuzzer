@@ -143,7 +143,7 @@ class SQLiModule(BaseModule):
                 final_hit, final_evidences = await verify_sqli_logic(
                     response, payload, original_res, requester, is_hit, evidences, has_syntax_error, self.syntax_signatures
                 )
-                return final_hit, final_evidences, payload
+                return final_hit
             finally:
                 async with self._counter_lock:
                     self._global_fast_completed += 1
@@ -194,7 +194,7 @@ class SQLiModule(BaseModule):
                             is_hit, evidences = await verify_sqli_logic(
                                 real_res, actual_payload, original_res, requester, is_hit, evidences, has_syntax_error, self.syntax_signatures
                             )
-                        return is_hit, evidences, actual_payload
+                        return is_hit
 
                     except asyncio.TimeoutError:
                         is_hit, evidences, _ = detect_sqli(
@@ -204,7 +204,7 @@ class SQLiModule(BaseModule):
                             mismatch_signatures=self.mismatch_signatures,
                             original_res=original_res
                         )
-                        return True, evidences, actual_payload
+                        return True
             finally:
                 async with self._counter_lock:
                     self._time_attack_in_flight -= 1
@@ -213,4 +213,4 @@ class SQLiModule(BaseModule):
                             self._barrier_event.clear()
                             self._time_phase_active = False
 
-        return False, [], payload
+        return False
