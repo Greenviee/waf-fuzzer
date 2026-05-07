@@ -12,6 +12,7 @@ from fuzzer.request_builder import send_baseline_request
 try:
     from core.models import AttackSurface  # type: ignore
 except (ImportError, AttributeError):
+    # Temporary fallback for bootstrap phase where models are incomplete.
     @dataclass(slots=True)
     class AttackSurface:  # type: ignore[no-redef]
         url: str
@@ -72,7 +73,7 @@ class AttackModule(Protocol):
         elapsed_time: float,
         original_res: Any | None = None,
         requester: Callable[[str], Awaitable[Any]] | None = None,
-    ) -> tuple[bool, list[str], Any] | Awaitable[tuple[bool, list[str], Any]]: ...
+    ) -> bool | Awaitable[bool]: ...
 
 
 class FuzzerEngine:
@@ -111,6 +112,7 @@ class FuzzerEngine:
         self._queue: asyncio.Queue[AttackJob | None] = asyncio.Queue(maxsize=queue_maxsize)
         self._module_queues: dict[str, asyncio.Queue[AttackSurface | None]] = {}
         self._module_payloads: dict[str, list[Any]] = {}
+        self._module_stop_events: dict[str, asyncio.Event] = {}
         self._module_workers: list[asyncio.Task[None]] = []
         self._module_runtime_active = False
         self._stats = EngineStats()
@@ -287,6 +289,12 @@ class FuzzerEngine:
         request_sender: AsyncRequestSender,
         on_finding: ResultCallback | None = None,
     ) -> EngineStats:
+        """
+        Module-oriented execution mode.
+        - Creates one queue per attack module.
+        - Dispatches each incoming surface into every module queue.
+        - Loads module payloads once per worker at startup.
+        """
         if not self.modules:
             raise ValueError("modules must be configured to run module queue mode")
 
@@ -314,6 +322,10 @@ class FuzzerEngine:
         request_sender: AsyncRequestSender,
         on_finding: ResultCallback | None = None,
     ) -> None:
+        """
+        Start module workers.
+        Useful when parser/crawler streams surfaces over time.
+        """
         if self._module_runtime_active:
             raise RuntimeError("module mode is already running")
         if not self.modules:
@@ -327,6 +339,10 @@ class FuzzerEngine:
         }
         self._module_payloads = {
             module.name: list(module.get_payloads())
+            for module in self.modules
+        }
+        self._module_stop_events = {
+            module.name: asyncio.Event()
             for module in self.modules
         }
         self._module_workers = []
@@ -351,10 +367,16 @@ class FuzzerEngine:
         self._module_runtime_active = True
 
     async def submit_surface(self, surface: AttackSurface) -> None:
+        """
+        Dispatch one parser-provided surface into every module queue.
+        """
         if not self._module_runtime_active:
             raise RuntimeError("module mode is not running")
 
         for module in self.modules:
+            stop_event = self._module_stop_events[module.name]
+            if stop_event.is_set():
+                continue
             payloads = self._module_payloads.get(module.name, [])
             queue = self._module_queues[module.name]
             params = tuple(self._iter_parameters(surface))
@@ -368,6 +390,9 @@ class FuzzerEngine:
                 self._stats.queued += len(params) * len(payloads)
 
     async def stop_module_mode(self) -> None:
+        """
+        Wait until all module queues drain, then stop workers.
+        """
         if not self._module_runtime_active:
             return
 
@@ -383,6 +408,7 @@ class FuzzerEngine:
         self._module_workers.clear()
         self._module_queues.clear()
         self._module_payloads.clear()
+        self._module_stop_events.clear()
         self._module_runtime_active = False
 
     async def _module_worker(
@@ -403,6 +429,9 @@ class FuzzerEngine:
                 return
 
             try:
+                stop_event = self._module_stop_events.get(module.name)
+                if stop_event is not None and stop_event.is_set():
+                    continue
                 params = tuple(self._iter_parameters(surface))
                 selector = getattr(module, "get_target_parameters", None)
                 if callable(selector):
@@ -419,6 +448,8 @@ class FuzzerEngine:
                 ]
                 batch_size = max(1, self.max_concurrent_requests)
                 for batch in self._chunked(attack_units, batch_size):
+                    if stop_event is not None and stop_event.is_set():
+                        break
                     tasks = [
                         asyncio.create_task(
                             self._process_module_attack(
@@ -452,6 +483,10 @@ class FuzzerEngine:
         request_sender: AsyncRequestSender,
         on_finding: ResultCallback | None,
     ) -> None:
+        stop_event = self._module_stop_events.get(module.name)
+        if stop_event is not None and stop_event.is_set():
+            return
+
         response: Any
         try:
             async with self._semaphore:
@@ -469,6 +504,7 @@ class FuzzerEngine:
             return
 
         if self.delay > 0:
+            # Sleep outside semaphore so slots are not blocked by throttle waits.
             await asyncio.sleep(self.delay)
 
         elapsed_time = float(
@@ -492,22 +528,7 @@ class FuzzerEngine:
             original_res=baseline_response,
             requester=module_requester
         )
-        
-        if isawaitable(verdict):
-            verdict = await verdict
-
-        actual_payload = payload
-        if isinstance(verdict, tuple):
-            if len(verdict) == 3:
-                is_hit, evidences, actual_payload = verdict
-            elif len(verdict) == 2:
-                is_hit, evidences = verdict
-            else:
-                is_hit = verdict[0]
-                evidences = []
-        else:
-            is_hit = bool(verdict)
-            evidences = []
+        is_hit = await verdict if isawaitable(verdict) else verdict
 
         async with self._stats_lock:
             self._stats.completed += 1
@@ -515,15 +536,32 @@ class FuzzerEngine:
         if not is_hit:
             return
 
+        verify_hook = getattr(module, "verify", None)
+        if callable(verify_hook):
+            verify_result = verify_hook(
+                session=session,
+                surface=surface,
+                parameter=parameter,
+                payload=payload,
+                response=response,
+                baseline_response=baseline_response,
+            )
+            is_verified = (
+                await verify_result if isawaitable(verify_result) else bool(verify_result)
+            )
+            if not is_verified:
+                return
+
+        evidences = getattr(payload, "last_evidences", [])
+
         finding = Finding(
             surface=surface,
             parameter=parameter,
-            payload=actual_payload,
+            payload=payload,
             response=response,
             module_name=module.name,
             evidences=evidences
         )
-        
         self._findings.append(finding)
         async with self._stats_lock:
             self._stats.findings += 1
@@ -533,11 +571,35 @@ class FuzzerEngine:
             if isawaitable(callback_result):
                 await callback_result
 
+        stop_on_first_hit = bool(getattr(module, "stop_on_first_hit", False))
+        if stop_on_first_hit and stop_event is not None and not stop_event.is_set():
+            stop_event.set()
+            print(f"[*] [{module.name}] stop-on-first-hit triggered; skipping remaining payloads.")
+
     @staticmethod
-    def _iter_parameters(surface: AttackSurface) -> Iterable[str]:
+    def _dynamic_token_names(surface: AttackSurface) -> set[str]:
+        raw_tokens = getattr(surface, "dynamic_tokens", None)
+        if not raw_tokens:
+            return set()
+        if isinstance(raw_tokens, dict):
+            return {str(name) for name in raw_tokens.keys() if str(name)}
+        if isinstance(raw_tokens, (list, tuple, set)):
+            return {str(name) for name in raw_tokens if str(name)}
+        token_name = str(raw_tokens).strip()
+        return {token_name} if token_name else set()
+
+    @classmethod
+    def _iter_parameters(cls, surface: AttackSurface) -> Iterable[str]:
         params = getattr(surface, "parameters", None)
+        dynamic_token_names = cls._dynamic_token_names(surface)
         if params is None:
             return ()
         if isinstance(params, dict):
-            return params.keys()
-        return tuple(str(p) for p in params)
+            return tuple(
+                key for key in params.keys()
+                if str(key) not in dynamic_token_names
+            )
+        return tuple(
+            str(p) for p in params
+            if str(p) not in dynamic_token_names
+        )
