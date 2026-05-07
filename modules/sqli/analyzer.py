@@ -109,7 +109,7 @@ def detect_sqli(response, payload, elapsed_time, exploit_signatures, syntax_sign
 
         ratio = get_text_ratio(original_res.text, res_text)
         if ratio < 0.995:
-            evidences.append(f"[Boolean] Text similarity ratio: {ratio:.4f}")
+            evidences.append(f"[Boolean] Text similarity ratio: {ratio:.4f} (Baseline Status: {orig_status})")
             
             orig_pure = _get_pure_text(original_res.text).lower()
             curr_pure = _get_pure_text(res_text).lower()
@@ -136,7 +136,7 @@ async def verify_sqli_logic(response, payload, original_res, requester, is_vuln_
     
     logic_pattern = r"(['\"]?\w+['\"]?)\s*=\s*\1"
     is_true_expanded = (len(pure_res) >= len(pure_orig) * 1.1) and (len(pure_res) - len(pure_orig) >= 20)
-    is_blind_candidate = (true_ratio >= 0.95) and (not is_true_expanded)
+    is_blind_candidate = (99 > true_ratio >= 0.95) and (not is_true_expanded)
 
     # [A] 1차 탐지에서 변화 감지
     if is_vuln_1st: 
@@ -186,10 +186,11 @@ async def verify_sqli_logic(response, payload, original_res, requester, is_vuln_
                         tag = f"[Verified] Logic Swapping (Expansion) Ratio: {f_to_t_ratio:.4f}"
                         return True, evidences + [tag]
                 
-                # [검증 2] 참 조건 응답이 baseline과 조금 다르고, 거짓 조건 응답은 같은가
+                # [검증 2] 참 조건 응답이 baseline과 조금 다르고, 거짓 조건 응답은 baseline과 같으면서 참 조건 응답과 다른가
                 elif is_blind_candidate:
                     f_to_orig_ratio = get_text_ratio(false_res.text, orig_text)
-                    if false_status == orig_status and f_to_orig_ratio >= 0.98:
+                    f_to_t_ratio = get_text_ratio(false_res.text, res_text)
+                    if f_to_t_ratio < 0.99 and false_status == orig_status and f_to_orig_ratio >= 0.98:
                         return True, evidences + [f"[Verified] Inverted Logic Swapping (False==Baseline) Ratio: {f_to_orig_ratio:.4f}"]
 
                 # [검증 3] 거짓 조건 응답에 데이터가 추가되었고, 참 조건 응답과 거짓조건 응답이 다른가
@@ -206,6 +207,6 @@ async def verify_sqli_logic(response, payload, original_res, requester, is_vuln_
             false_res = await requester(false_payload)
             f_to_t_ratio = get_text_ratio(false_res.text, res_text)
             if f_to_t_ratio < 0.99:
-                return True, [f"[Verified] Blind SQLi (Baseline==True and True!=False) Ratio: {f_to_t_ratio:.4f}"]
+                return True, [f"[Verified] Blind SQLi (Baseline==True(Status: {orig_status}) and True!=False) Ratio: {f_to_t_ratio:.4f}"]
 
     return False, []
