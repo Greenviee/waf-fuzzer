@@ -111,14 +111,14 @@ class SQLiModule(BaseModule):
                     )
 
     def _apply_evasion_by_level(self, value: str, level: int) -> str:
-        if level <= 0: return value
-        if level >= 1:
+        if level == 0: return value
+        if level == 1:
             value = value.replace("SELECT", "sElEcT").replace("UNION", "uNiOn")\
                          .replace("AND", "aNd").replace("OR", "oR")\
                          .replace("CASE", "cAsE").replace("WHEN", "wHeN")
-        if level >= 2:
+        if level == 2:
             value = value.replace(" ", "/**/")
-        if level >= 3:
+        if level == 3:
             value = urllib.parse.quote(urllib.parse.quote(value)) + "%00"
         return value
 
