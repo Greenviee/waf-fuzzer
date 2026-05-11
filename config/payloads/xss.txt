@@ -1,4 +1,0 @@
-<script>alert(1)</script>||XSS-Tag||High
-<img src=x onerror=alert(1)>||XSS-Event||High
-" onclick="alert(1)||XSS-Attribute||Medium
-'; alert(1); //||XSS-Script||Medium

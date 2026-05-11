@@ -12,6 +12,13 @@ class BaseModule(ABC):
         pass
 
     @abstractmethod
-    def analyze(self, response, payload: Payload, elapsed_time: float) -> bool:
+    def analyze(
+        self,
+        response,
+        payload: Payload,
+        elapsed_time: float,
+        original_res=None,
+        requester=None,
+    ) -> bool:
         """취약점 여부 분석 (추상 메서드)"""
         pass

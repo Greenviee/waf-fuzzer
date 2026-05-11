@@ -6,7 +6,7 @@ import time
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from typing import Any
-from urllib.parse import quote
+from urllib.parse import parse_qsl, quote, urlencode, urlsplit, urlunsplit
 
 import aiohttp
 
@@ -15,6 +15,19 @@ from core.models import AttackSurface, ParamLocation
 
 _DYNAMIC_TOKEN_LOCKS: dict[str, asyncio.Lock] = {}
 _DYNAMIC_TOKEN_LOCKS_GUARD = asyncio.Lock()
+_HOP_BY_HOP_OR_RESPONSE_HEADERS = {
+    "content-length",
+    "content-encoding",
+    "transfer-encoding",
+    "connection",
+    "keep-alive",
+    "upgrade",
+    "trailer",
+    "te",
+    "date",
+    "server",
+    "via",
+}
 
 
 @dataclass(slots=True)
@@ -88,8 +101,8 @@ async def fetch_dynamic_tokens(
     headers_override: dict[str, Any] | None = None,
     cookies_override: dict[str, Any] | None = None,
 ) -> dict[str, str]:
-    dynamic_tokens = getattr(surface, "dynamic_tokens", None) or []
-    token_targets = {str(token) for token in dynamic_tokens if str(token)}
+    dynamic_tokens = getattr(surface, "dynamic_tokens", None) or {}
+    token_targets = {str(token) for token in dynamic_tokens.keys() if str(token)}
     if not token_targets:
         return {}
 
@@ -220,6 +233,35 @@ async def _send_prepared_request(
         )
 
 
+def _resolve_payload_value(payload: Any) -> str:
+    if hasattr(payload, "value"):
+        return str(getattr(payload, "value"))
+    return str(payload)
+
+
+def _sanitize_headers_for_request(headers: dict[str, Any], *, is_file_payload: bool) -> dict[str, Any]:
+    """
+    AttackSurface may carry crawled response headers.
+    Strip response-only headers and let aiohttp set multipart Content-Type.
+    """
+    sanitized: dict[str, Any] = {}
+    for key, value in headers.items():
+        key_lower = str(key).lower()
+        if key_lower in _HOP_BY_HOP_OR_RESPONSE_HEADERS:
+            continue
+        if is_file_payload and key_lower == "content-type":
+            continue
+        sanitized[key] = value
+    return sanitized
+
+
+def _is_file_payload(payload: Any) -> bool:
+    return all(
+        hasattr(payload, attr)
+        for attr in ("filename", "content", "content_type")
+    )
+
+
 def _inject_path_payload(url: str, parameter: str, payload: str) -> str:
     """
     Replace a path placeholder with encoded payload.
@@ -240,7 +282,7 @@ async def build_and_send_request(
     session: aiohttp.ClientSession,
     surface: AttackSurface,
     parameter: str,
-    payload: str,
+    payload: Any,
 ) -> FuzzerResponse:
     """
     Clone attack surface data, inject one payload, and send the HTTP request.
@@ -255,27 +297,69 @@ async def build_and_send_request(
     if isinstance(req_params, list):
         req_params = {str(k): "" for k in req_params}
 
+    def _apply_lfi_query_url() -> None:
+        nonlocal url
+        if not (
+            is_lfi_payload
+            and surface.param_location == ParamLocation.QUERY
+            and req_params
+        ):
+            return
+        split_url = urlsplit(url)
+        merged_params = dict(parse_qsl(split_url.query, keep_blank_values=True))
+        merged_params.update(req_params)
+        query_string = urlencode(merged_params, safe="../%:")
+        url = urlunsplit(
+            (
+                split_url.scheme,
+                split_url.netloc,
+                split_url.path,
+                query_string,
+                split_url.fragment,
+            )
+        )
+        request_kwargs.pop("params", None)
+
     request_kwargs: dict[str, Any] = {}
+    payload_value = _resolve_payload_value(payload)
+    is_file_payload = _is_file_payload(payload)
+    is_lfi_payload = type(payload).__name__ == "LFIPayload"
+    headers = _sanitize_headers_for_request(headers, is_file_payload=is_file_payload)
 
     if surface.param_location == ParamLocation.QUERY:
-        req_params[parameter] = payload
-        request_kwargs["params"] = req_params
+        req_params[parameter] = payload_value
+        if not is_lfi_payload:
+            request_kwargs["params"] = req_params
     elif surface.param_location == ParamLocation.BODY_FORM:
-        req_params[parameter] = payload
-        request_kwargs["data"] = req_params
+        if is_file_payload:
+            form = aiohttp.FormData()
+            for key, value in req_params.items():
+                if key == parameter:
+                    continue
+                form.add_field(str(key), str(value))
+            form.add_field(
+                parameter,
+                payload.content,
+                filename=str(payload.filename),
+                content_type=str(payload.content_type),
+            )
+            request_kwargs["data"] = form
+        else:
+            req_params[parameter] = payload_value
+            request_kwargs["data"] = req_params
     elif surface.param_location == ParamLocation.BODY_JSON:
-        req_params[parameter] = payload
+        req_params[parameter] = payload_value
         request_kwargs["json"] = req_params
     elif surface.param_location == ParamLocation.HEADER:
-        headers[parameter] = payload
+        headers[parameter] = payload_value
         if req_params:
             request_kwargs["params"] = req_params
     elif surface.param_location == ParamLocation.COOKIE:
-        cookies[parameter] = payload
+        cookies[parameter] = payload_value
         if req_params:
             request_kwargs["params"] = req_params
     elif surface.param_location == ParamLocation.PATH:
-        url = _inject_path_payload(url=url, parameter=parameter, payload=payload)
+        url = _inject_path_payload(url=url, parameter=parameter, payload=payload_value)
         if req_params:
             request_kwargs["params"] = req_params
     else:
@@ -286,7 +370,8 @@ async def build_and_send_request(
         request_kwargs["headers"] = headers
     if cookies:
         request_kwargs["cookies"] = cookies
-    dynamic_tokens = getattr(surface, "dynamic_tokens", None) or []
+    _apply_lfi_query_url()
+    dynamic_tokens = getattr(surface, "dynamic_tokens", None) or {}
     if not dynamic_tokens:
         return await _send_prepared_request(
             session,
@@ -322,13 +407,29 @@ async def build_and_send_request(
             )
 
         if surface.param_location == ParamLocation.QUERY and req_params:
-            request_kwargs["params"] = req_params
+            if not is_lfi_payload:
+                request_kwargs["params"] = req_params
         elif surface.param_location == ParamLocation.BODY_FORM:
-            request_kwargs["data"] = req_params
+            if is_file_payload:
+                form = aiohttp.FormData()
+                for key, value in req_params.items():
+                    if key == parameter:
+                        continue
+                    form.add_field(str(key), str(value))
+                form.add_field(
+                    parameter,
+                    payload.content,
+                    filename=str(payload.filename),
+                    content_type=str(payload.content_type),
+                )
+                request_kwargs["data"] = form
+            else:
+                request_kwargs["data"] = req_params
         elif surface.param_location == ParamLocation.BODY_JSON:
             request_kwargs["json"] = req_params
         elif req_params:
             request_kwargs["params"] = req_params
+        _apply_lfi_query_url()
         if headers:
             request_kwargs["headers"] = headers
         if cookies:
@@ -366,7 +467,7 @@ async def send_baseline_request(
         request_kwargs["headers"] = headers
     if cookies:
         request_kwargs["cookies"] = cookies
-    dynamic_tokens = getattr(surface, "dynamic_tokens", None) or []
+    dynamic_tokens = getattr(surface, "dynamic_tokens", None) or {}
     if not dynamic_tokens:
         return await _send_prepared_request(
             session,

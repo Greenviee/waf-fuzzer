@@ -29,6 +29,48 @@ def build_parser() -> argparse.ArgumentParser:
         help="Cookie header value (e.g. 'PHPSESSID=abc; security=low')",
     )
     parser.add_argument(
+        "--login-url",
+        type=str,
+        default="",
+        help="Login page URL used before crawling (e.g. http://target/login.php)",
+    )
+    parser.add_argument(
+        "--username",
+        type=str,
+        default="",
+        help="Login username used before crawling",
+    )
+    parser.add_argument(
+        "--password",
+        type=str,
+        default="",
+        help="Login password used before crawling",
+    )
+    parser.add_argument(
+        "--username-field",
+        type=str,
+        default="username",
+        help="Form field name for username (default: username)",
+    )
+    parser.add_argument(
+        "--password-field",
+        type=str,
+        default="password",
+        help="Form field name for password (default: password)",
+    )
+    parser.add_argument(
+        "--csrf-field",
+        type=str,
+        default="user_token",
+        help="CSRF token field name on login form (default: user_token)",
+    )
+    parser.add_argument(
+        "--submit-field",
+        type=str,
+        default="Login",
+        help="Submit field name on login form (default: Login)",
+    )
+    parser.add_argument(
         "-o",
         "--output",
         type=str,
@@ -36,12 +78,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="JSON report output path",
     )
     parser.add_argument(
+        "--surfaces-output",
+        type=str,
+        default="attack_surfaces.json",
+        help="JSON output path for crawled attack surfaces",
+    )
+    parser.add_argument(
         "-t",
         "--type",
         type=str,
         default="all",
-        choices=["sqli", "xss", "bruteforce", "all"],
-        help="Attack category to run (default: all)",
+        choices=["sqli", "bruteforce", "lfi", "file_upload", "ssrf", "all"],
+        help="Attack category to run (default: all, excludes bruteforce)",
     )
     parser.add_argument(
         "--bf-wordlist",
@@ -82,6 +130,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Maximum length for true random bruteforce mode",
     )
     parser.add_argument(
+        "--bf-min-length",
+        type=int,
+        default=1,
+        help="Minimum length for true random bruteforce mode",
+    )
+    parser.add_argument(
         "--bf-length",
         type=str,
         default="",
@@ -102,6 +156,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=0,
         help="Cap true random payload count (0=all)",
+    )
+    parser.add_argument(
+        "--bf-stop-on-first-hit",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Stop bruteforce module after first verified credential hit (default: enabled)",
     )
     parser.add_argument(
         "--bf-request-file",
@@ -202,6 +262,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="Enable unicode escape variants",
     )
     parser.add_argument(
+        "--sqli-evasion-level",
+        type=int,
+        choices=[0, 1, 2, 3],
+        default=0,
+        help="evasion level: 0 (None), 1 (1 technique), 2 (2 techniques), 3 (3 techniques)"
+    )  
+    parser.add_argument(
         "--include-time-based",
         action="store_true",
         help="Include SQLi time/stacked payloads (much slower)",
@@ -217,6 +284,28 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=3,
         help="Number of HTTP sessions to use in parallel (default: 3)",
+    )
+    parser.add_argument(
+        "--lfi-evasion-level",
+        type=int,
+        choices=[0, 1, 2, 3],
+        default=1,
+        help=(
+            "LFI payload mutation level "
+            "(0=raw only, 1=url-encoding, 2=double+null-byte, 3=path/case bypass)"
+        ),
+    )
+    parser.add_argument(
+        "--ssrf-bypass-level",
+        type=int,
+        choices=[0, 1, 2],
+        default=1,
+        help="SSRF bypass mutation level (0=off, 1=path encode, 2=path+ip obfuscation)",
+    )
+    parser.add_argument(
+        "--ssrf-include-oob",
+        action="store_true",
+        help="Include OOB/template SSRF payloads in runtime payload set",
     )
     return parser
 

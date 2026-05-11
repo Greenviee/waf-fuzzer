@@ -25,7 +25,7 @@ async def main() -> None:
 
     cookies = parse_cookies(args.cookie) if args.cookie else {}
     base_url = args.url.rstrip("/")
-    surfaces = resolve_surfaces(args, base_url, cookies)
+    surfaces = await resolve_surfaces(args, base_url, cookies)
     if not surfaces:
         return
 

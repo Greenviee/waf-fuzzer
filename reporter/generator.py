@@ -21,11 +21,11 @@ class ReportGenerator:
         """
         Prints the scan result in a table-like CLI format.
         """
-        table_width = 114
+        table_width = 126
         severity_width = 10
         location_width = 10
         parameter_width = 14
-        type_width = 24
+        type_width = 34
 
         print("\n" + "=" * table_width)
         print("WAF Fuzzer Security Scan Report")
@@ -63,9 +63,14 @@ class ReportGenerator:
             display_payload = (
                 payload_value[:37] + "..." if len(payload_value) > 40 else payload_value
             )
+            display_type = (
+                attack_type[: type_width - 3] + "..."
+                if len(attack_type) > type_width
+                else attack_type
+            )
             print(
                 f"{severity:<{severity_width}} | {location_text:<{location_width}} | "
-                f"{finding.parameter:<{parameter_width}} | {attack_type:<{type_width}} | "
+                f"{finding.parameter:<{parameter_width}} | {display_type:<{type_width}} | "
                 f"{display_payload}"
             )
 
@@ -94,7 +99,7 @@ class ReportGenerator:
             payload_obj = finding.payload
             payload_value = getattr(payload_obj, "value", str(payload_obj))
             attack_type = getattr(payload_obj, "attack_type", "Unknown")
-            severity = getattr(payload_obj, "risk_level", "Unknown")
+            severity = getattr(payload_obj, "risk_level", "high")
             description = getattr(payload_obj, "description", "")
 
             response = finding.response
