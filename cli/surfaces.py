@@ -77,6 +77,13 @@ async def _resolve_crawled_surfaces(
     except Exception as exc:
         print(f"Failed to crawl target URL {start_url}: {exc}")
         return []
+    finally:
+        # login 단계에서 조기 종료되면 crawler.start() context manager가
+        # 실행되지 않아 세션이 남을 수 있으므로 여기서 항상 정리한다.
+        try:
+            await crawler.session_manager.close()
+        except Exception:
+            pass
 
     print(f"[*] Crawler mode: discovered {len(surfaces)} attack surface(s).")
     surfaces_output = (getattr(args, "surfaces_output", "") or "").strip()

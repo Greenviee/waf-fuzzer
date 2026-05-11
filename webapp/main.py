@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from argparse import Namespace
 import asyncio
+import json
 import time
 from pathlib import Path
 from typing import Literal
@@ -11,6 +13,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+
+from cli.options import parse_bf_length, parse_cookies
+from cli.runner import prepare_scan_context
+from cli.surfaces import resolve_surfaces
+from fuzzer import FuzzerEngine
+from fuzzer.request_builder import build_and_send_request
+from reporter import ReportGenerator
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
@@ -87,8 +96,8 @@ class ScanRequest(BaseModel):
 
 
 app = FastAPI(
-    title="WAF Fuzzer Web UI Mock API",
-    description="Mock backend that matches current CLI options and modules.",
+    title="WAF Fuzzer Web UI API",
+    description="Web UI backend connected to the real CLI scan pipeline.",
     version="0.1.0",
 )
 app.add_middleware(
@@ -130,12 +139,23 @@ async def start_scan(req: ScanRequest, background_tasks: BackgroundTasks) -> dic
         "created_at": now,
         "updated_at": now,
         "request": req.model_dump(by_alias=True),
+        "target": req.target_url,
+        "findings": [],
+        "summary": {
+            "queued": 0,
+            "completed": 0,
+            "failures": 0,
+            "findings": 0,
+            "elapsed_time": 0.0,
+        },
+        "logs": [],
+        "report_json": None,
         "result": None,
     }
-    background_tasks.add_task(_simulate_scan, scan_id)
+    background_tasks.add_task(_run_real_scan, scan_id, req)
     return {
         "status": "accepted",
-        "message": "Mock scan registered in queue.",
+        "message": "Scan registered in queue.",
         "scan_id": scan_id,
         "request": req.model_dump(by_alias=True),
     }
@@ -149,27 +169,213 @@ async def get_scan(scan_id: str) -> dict:
     return scan
 
 
-async def _simulate_scan(scan_id: str) -> None:
-    steps = [5, 15, 35, 55, 75, 90, 100]
-    for idx, progress in enumerate(steps):
-        await asyncio.sleep(0.5 if idx == 0 else 1.0)
-        scan = scans_db.get(scan_id)
-        if scan is None:
-            return
-        scan["status"] = "running" if progress < 100 else "completed"
-        scan["progress"] = progress
-        scan["updated_at"] = time.time()
-        if progress == 100:
-            req = scan.get("request", {})
-            scan["result"] = {
-                "summary": {
-                    "target": req.get("url", ""),
-                    "scan_type": req.get("scan_type", "all"),
-                    "total_requests": 0,
-                    "findings": 0,
-                },
-                "note": "Mock result only. Connect here to cli/runner.py for real execution.",
+def _build_cli_args(req: ScanRequest) -> Namespace:
+    bf_min_length = req.bruteforce.bf_min_length
+    bf_max_length = req.bruteforce.bf_max_length
+    if req.bruteforce.bf_length.strip():
+        bf_min_length, bf_max_length = parse_bf_length(
+            req.bruteforce.bf_length,
+            req.bruteforce.bf_max_length,
+        )
+
+    return Namespace(
+        # Core scan options
+        url=req.target_url,
+        rps=req.engine.rps,
+        cookie=req.auth.cookie,
+        login_url=req.auth.login_url,
+        username=req.auth.username,
+        password=req.auth.password,
+        username_field=req.auth.username_field,
+        password_field=req.auth.password_field,
+        csrf_field=req.auth.csrf_field,
+        submit_field=req.auth.submit_field,
+        output=req.engine.output,
+        surfaces_output=req.engine.surfaces_output,
+        type=req.scan_type,
+        session_pool_size=req.engine.session_pool_size,
+        # Bruteforce options
+        bf_wordlist=req.bruteforce.bf_wordlist,
+        bf_disable_mutation=req.bruteforce.bf_disable_mutation,
+        bf_mutation_level=req.bruteforce.bf_mutation_level,
+        bf_true_random=req.bruteforce.bf_true_random,
+        bf_charset=req.bruteforce.bf_charset,
+        bf_min_length=bf_min_length,
+        bf_max_length=bf_max_length,
+        bf_length=req.bruteforce.bf_length,
+        bf_max_dictionary=req.bruteforce.bf_max_dictionary,
+        bf_max_true_random=req.bruteforce.bf_max_true_random,
+        bf_stop_on_first_hit=req.bruteforce.bf_stop_on_first_hit,
+        bf_request_file=req.bruteforce.bf_request_file,
+        bf_target_url=req.bruteforce.bf_target_url,
+        bf_method=req.bruteforce.bf_method,
+        bf_fuzz_param=req.bruteforce.bf_fuzz_param,
+        bf_target_param=req.bruteforce.bf_target_param,
+        bf_username_param=req.bruteforce.bf_username_param,
+        bf_username=req.bruteforce.bf_username,
+        bf_extra_params=req.bruteforce.bf_extra_params,
+        # SQLi / LFI / SSRF options
+        evasion_case=False,
+        evasion_null_byte=False,
+        evasion_keyword_split=False,
+        evasion_double_url=False,
+        evasion_unicode=False,
+        sqli_evasion_level=req.sqli.sqli_evasion_level,
+        include_time_based=req.sqli.include_time_based,
+        max_time_payloads=req.sqli.max_time_payloads,
+        lfi_evasion_level=req.lfi.lfi_evasion_level,
+        ssrf_bypass_level=req.ssrf.ssrf_bypass_level,
+        ssrf_include_oob=req.ssrf.ssrf_include_oob,
+    )
+
+
+def _serialize_findings(findings) -> list[dict[str, str]]:
+    serialized: list[dict[str, str]] = []
+    for finding in findings:
+        payload_obj = finding.payload
+        severity = str(getattr(payload_obj, "risk_level", "HIGH"))
+        attack_type = str(
+            getattr(payload_obj, "attack_type", finding.module_name or "Unknown")
+        )
+        payload_value = str(getattr(payload_obj, "value", payload_obj))
+        param_location = getattr(finding.surface, "param_location", "unknown")
+        location_text = str(getattr(param_location, "name", param_location))
+
+        serialized.append(
+            {
+                "severity": severity,
+                "location": location_text,
+                "parameter": str(finding.parameter),
+                "type": attack_type,
+                "payload": payload_value,
             }
+        )
+    return serialized
+
+
+def _scan_log(scan: dict, message: str) -> None:
+    scan.setdefault("logs", []).append(f"[{time.strftime('%H:%M:%S')}] {message}")
+
+
+async def _run_real_scan(scan_id: str, req: ScanRequest) -> None:
+    started_at = time.monotonic()
+    scan = scans_db.get(scan_id)
+    if scan is None:
+        return
+
+    scan["status"] = "running"
+    scan["updated_at"] = time.time()
+    _scan_log(scan, f"스캔 시작: target={req.target_url}, type={req.scan_type}")
+
+    try:
+        args = _build_cli_args(req)
+        _scan_log(scan, "CLI 인자 구성 완료")
+        cookies = parse_cookies(args.cookie) if args.cookie else {}
+        _scan_log(scan, "공격면 수집 시작")
+        surfaces = await resolve_surfaces(args, base_url=args.url, cookies=cookies)
+        if not surfaces:
+            raise RuntimeError("No attack surfaces resolved from target.")
+        _scan_log(scan, f"공격면 수집 완료: {len(surfaces)}개")
+
+        context = prepare_scan_context(args, surfaces)
+        if context is None:
+            raise RuntimeError("Scan context preparation failed.")
+        _scan_log(
+            scan,
+            "스캔 컨텍스트 구성 완료 "
+            f"(modules={len(context['modules'])}, total_requests={context['total_requests']})",
+        )
+
+        engine = FuzzerEngine(
+            max_concurrent_requests=context["concurrency"],
+            worker_count=context["queue_workers"],
+            modules=context["modules"],
+            concurrency_per_module=context["queue_workers"],
+            session_pool_size=max(1, args.session_pool_size),
+            delay=context["delay"],
+        )
+
+        async def _request_sender(session, surface, parameter, payload):
+            return await build_and_send_request(session, surface, parameter, payload)
+
+        total_requests = max(1, context["total_requests"])
+        last_logged_progress = -1
+        scan_task = asyncio.create_task(
+            engine.run_with_attack_modules(
+                surfaces=surfaces,
+                request_sender=_request_sender,
+            )
+        )
+
+        while not scan_task.done():
+            completed = min(engine.stats.completed, total_requests)
+            progress = min(int((completed / total_requests) * 100), 99)
+            scan["progress"] = progress
+            scan["summary"] = {
+                "queued": engine.stats.queued,
+                "completed": engine.stats.completed,
+                "failures": engine.stats.failures,
+                "findings": engine.stats.findings,
+                "elapsed_time": round(time.monotonic() - started_at, 2),
+            }
+            scan["updated_at"] = time.time()
+            if progress != last_logged_progress:
+                _scan_log(
+                    scan,
+                    f"진행률 {progress}% (completed={engine.stats.completed}, findings={engine.stats.findings}, failures={engine.stats.failures})",
+                )
+                last_logged_progress = progress
+            await asyncio.sleep(0.3)
+
+        stats = await scan_task
+        reporter = ReportGenerator(stats=stats, findings=engine.findings)
+        reporter.export_to_json(args.output)
+        _scan_log(scan, f"리포트 파일 저장 완료: {args.output}")
+
+        report_json = None
+        try:
+            with open(args.output, "r", encoding="utf-8") as fp:
+                report_json = json.load(fp)
+            _scan_log(scan, "리포트 JSON 로드 완료")
+        except (OSError, json.JSONDecodeError) as exc:
+            _scan_log(scan, f"리포트 JSON 로드 실패: {exc}")
+
+        findings = _serialize_findings(engine.findings)
+        scan["status"] = "completed"
+        scan["progress"] = 100
+        scan["findings"] = findings
+        scan["summary"] = {
+            "queued": stats.queued,
+            "completed": stats.completed,
+            "failures": stats.failures,
+            "findings": stats.findings,
+            "elapsed_time": round(time.monotonic() - started_at, 2),
+        }
+        scan["result"] = {
+            "summary": {
+                "target": args.url,
+                "scan_type": args.type,
+                "total_requests": stats.completed,
+                "findings": len(findings),
+                "output": args.output,
+            }
+        }
+        scan["report_json"] = report_json
+        scan["updated_at"] = time.time()
+        _scan_log(scan, "스캔 완료")
+    except Exception as exc:
+        scan["status"] = "failed"
+        scan["progress"] = 100
+        scan["error"] = str(exc)
+        scan["summary"] = {
+            "queued": 0,
+            "completed": 0,
+            "failures": 0,
+            "findings": 0,
+            "elapsed_time": round(time.monotonic() - started_at, 2),
+        }
+        scan["updated_at"] = time.time()
+        _scan_log(scan, f"스캔 실패: {exc}")
 
 
 @app.get("/")

@@ -8,44 +8,121 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-main: #0b1020;
-      --bg-panel: #121a2d;
-      --bg-soft: #1a243b;
-      --border: #27324a;
+      --bg-main: #0a0e1a;
+      --bg-panel: #11182c;
+      --bg-sidebar: #121a2f;
+      --border: #263550;
       --text: #e5e7eb;
-      --muted: #9ca3af;
+      --muted: #95a3ba;
       --accent: #22d3ee;
-      --accent-2: #38bdf8;
       --danger: #f43f5e;
       --ok: #22c55e;
+      --warn: #f59e0b;
       --terminal: #05080f;
     }
 
     html, body { height: 100%; }
     body {
       margin: 0;
-      background: radial-gradient(circle at 20% 0%, #111b35 0%, var(--bg-main) 45%);
+      background: radial-gradient(circle at 15% 0%, #13203f 0%, var(--bg-main) 45%);
       color: var(--text);
       font-family: "Inter", sans-serif;
       overflow: hidden;
+      display: flex;
     }
 
-    .topbar {
-      height: 62px;
+    .sidebar {
+      width: 250px;
+      background: linear-gradient(180deg, #10172a, #0d1424);
+      border-right: 1px solid var(--border);
+      transition: width 0.22s ease;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar.collapsed { width: 68px; }
+
+    .sidebar-head {
+      min-height: 62px;
       border-bottom: 1px solid var(--border);
-      background: rgba(9, 13, 24, 0.88);
-      backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 20px;
+      padding: 0 12px 0 14px;
+      gap: 8px;
     }
-    .brand {
+    .sidebar-title {
       font-weight: 800;
       letter-spacing: 0.4px;
-      font-size: 1.05rem;
+      white-space: nowrap;
     }
-    .brand .accent { color: var(--accent); }
+    .sidebar-title .accent { color: var(--accent); }
+    .sidebar-toggle {
+      border: 1px solid #365073;
+      color: #cae4ff;
+      background: rgba(17, 31, 58, 0.5);
+      border-radius: 7px;
+      width: 34px;
+      height: 34px;
+      line-height: 1;
+    }
+
+    .nav-list {
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .nav-item {
+      border: 1px solid transparent;
+      border-radius: 8px;
+      color: #a7b6cd;
+      text-decoration: none;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+    }
+    .nav-item:hover {
+      background: rgba(40, 58, 95, 0.45);
+      color: #def2ff;
+      border-color: #35517c;
+    }
+    .nav-item.active {
+      background: rgba(34, 211, 238, 0.12);
+      color: #d9fbff;
+      border-color: #2c7184;
+    }
+    .nav-icon {
+      width: 20px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .sidebar.collapsed .nav-text,
+    .sidebar.collapsed .sidebar-title {
+      display: none;
+    }
+    .sidebar.collapsed .nav-item {
+      justify-content: center;
+      padding: 10px 0;
+    }
+
+    .main-wrap {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .topbar {
+      min-height: 62px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(9, 13, 24, 0.88);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+    }
     .status-chip {
       border: 1px solid #1f5533;
       color: #86efac;
@@ -55,14 +132,21 @@
       padding: 6px 10px;
     }
 
-    .app {
-      height: calc(100% - 62px);
-      display: grid;
-      grid-template-columns: minmax(460px, 48%) 1fr;
-      gap: 14px;
-      padding: 14px;
+    .view {
+      display: none;
+      flex: 1;
+      min-height: 0;
+    }
+    .view.active {
+      display: flex;
     }
 
+    .scan-view {
+      min-height: 0;
+      width: 100%;
+      gap: 12px;
+      padding: 12px;
+    }
     .left-pane {
       background: linear-gradient(180deg, rgba(18, 26, 45, 0.95), rgba(13, 20, 36, 0.98));
       border: 1px solid var(--border);
@@ -71,6 +155,8 @@
       display: flex;
       flex-direction: column;
       min-height: 0;
+      width: min(560px, 47%);
+      min-width: 470px;
     }
 
     .left-scroll {
@@ -219,25 +305,108 @@
     .terminal-body::-webkit-scrollbar { width: 8px; }
     .terminal-body::-webkit-scrollbar-thumb { background: #263247; border-radius: 8px; }
 
+    .report-view {
+      width: 100%;
+      min-height: 0;
+      padding: 16px;
+      flex-direction: column;
+      gap: 12px;
+      overflow: auto;
+    }
+    .report-title {
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: #dbeafe;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 10px;
+    }
+    .stat-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(14, 23, 42, 0.95), rgba(10, 16, 30, 0.95));
+      padding: 12px;
+    }
+    .stat-label {
+      color: #9cb0cf;
+      font-size: 0.76rem;
+      margin-bottom: 3px;
+    }
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+    .report-box {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(10, 16, 30, 0.8);
+      padding: 14px;
+    }
+    .report-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .vuln-item {
+      border-left: 4px solid var(--danger);
+      border: 1px solid #3f2a35;
+      border-left-width: 4px;
+      border-radius: 8px;
+      padding: 10px;
+      background: rgba(244, 63, 94, 0.08);
+    }
+    .vuln-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+    .badge-sev {
+      border-radius: 999px;
+      padding: 2px 9px;
+      font-size: 0.72rem;
+      border: 1px solid #6e2438;
+      color: #ffd9e0;
+      background: rgba(244, 63, 94, 0.18);
+    }
+    .muted { color: var(--muted); font-size: 0.84rem; }
+
     @media (max-width: 1200px) {
       body { overflow: auto; }
-      .app {
-        grid-template-columns: 1fr;
-        height: auto;
-      }
-      .left-pane, .right-pane {
-        min-height: 560px;
-      }
+      .scan-view { flex-direction: column; }
+      .left-pane { width: 100%; min-width: 0; }
+      .right-pane { min-height: 420px; }
+      .stat-grid { grid-template-columns: repeat(2, minmax(150px, 1fr)); }
     }
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">WAF <span class="accent">SCANNER</span> CONSOLE</div>
-    <div class="status-chip">Engine Ready (Mock)</div>
-  </header>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <div class="sidebar-title">WAF <span class="accent">SCANNER</span></div>
+      <button type="button" class="sidebar-toggle" id="sidebarToggle">☰</button>
+    </div>
+    <nav class="nav-list">
+      <a href="#" class="nav-item active" data-view-target="scanView">
+        <span class="nav-icon">🛰</span><span class="nav-text">스캔 콘솔</span>
+      </a>
+      <a href="#" class="nav-item" data-view-target="reportView">
+        <span class="nav-icon">📊</span><span class="nav-text">결과 리포트</span>
+      </a>
+    </nav>
+  </aside>
 
-  <main class="app">
+  <div class="main-wrap">
+    <header class="topbar">
+      <div>WAF Fuzzer Runtime</div>
+      <div class="status-chip">Engine Ready (Mock)</div>
+    </header>
+
+    <section class="view active scan-view" id="scanView">
     <section class="left-pane">
       <form id="scanForm" class="left-scroll">
         <div class="section">
@@ -503,7 +672,41 @@
       <div class="terminal-body" id="responseLog">[INIT] WAF Fuzzer mock console online.
 [INFO] 대상/옵션 입력 후 '스캔 시작' 버튼을 누르세요.</div>
     </section>
-  </main>
+    </section>
+
+    <section class="view report-view" id="reportView">
+      <div class="report-title">취약점 스캔 결과 리포트</div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-label">상태</div>
+          <div class="stat-value" id="reportStatus">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">진행률</div>
+          <div class="stat-value" id="reportProgress">0%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">대상 URL</div>
+          <div class="stat-value" id="reportTarget" style="font-size: 0.95rem;">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">취약점 수</div>
+          <div class="stat-value" id="reportFindings">0</div>
+        </div>
+      </div>
+
+      <div class="report-box">
+        <div class="section-header" style="padding:0 0 8px 0;border-bottom:1px solid var(--border);margin-bottom:8px;">
+          <span>발견 내역</span>
+          <span class="hint" id="reportScanId">scan_id: (없음)</span>
+        </div>
+        <div id="findingList" class="report-list">
+          <div class="muted">아직 리포트가 없습니다. 스캔을 시작하고 상태를 조회해 주세요.</div>
+        </div>
+      </div>
+    </section>
+  </div>
 
   <script>
     const responseLog = document.getElementById("responseLog");
@@ -512,7 +715,35 @@
     const checkStatusBtn = document.getElementById("checkStatusBtn");
     const advancedToggle = document.getElementById("advancedToggle");
     const advancedWrap = document.getElementById("advancedWrap");
+    const sidebar = document.getElementById("sidebar");
+    const sidebarToggle = document.getElementById("sidebarToggle");
+    const navItems = document.querySelectorAll("[data-view-target]");
+    const views = document.querySelectorAll(".view");
+    const reportStatus = document.getElementById("reportStatus");
+    const reportProgress = document.getElementById("reportProgress");
+    const reportTarget = document.getElementById("reportTarget");
+    const reportFindings = document.getElementById("reportFindings");
+    const reportScanId = document.getElementById("reportScanId");
+    const findingList = document.getElementById("findingList");
     let lastScanId = "";
+    let pollTimer = null;
+    let displayedServerLogCount = 0;
+
+    sidebarToggle.addEventListener("click", () => {
+      sidebar.classList.toggle("collapsed");
+    });
+
+    navItems.forEach((item) => {
+      item.addEventListener("click", (e) => {
+        e.preventDefault();
+        navItems.forEach((x) => x.classList.remove("active"));
+        item.classList.add("active");
+        const target = item.getAttribute("data-view-target");
+        views.forEach((view) => {
+          view.classList.toggle("active", view.id === target);
+        });
+      });
+    });
 
     advancedToggle.addEventListener("click", () => {
       const isOpen = advancedWrap.classList.toggle("open");
@@ -532,6 +763,15 @@
       responseLog.scrollTop = responseLog.scrollHeight;
     }
 
+    function appendServerLogs(logs) {
+      if (!Array.isArray(logs)) return;
+      for (let i = displayedServerLogCount; i < logs.length; i += 1) {
+        responseLog.textContent += `\n${logs[i]}`;
+      }
+      displayedServerLogCount = logs.length;
+      responseLog.scrollTop = responseLog.scrollHeight;
+    }
+
     function toInt(id, fallback = 0) {
       const n = parseInt(document.getElementById(id).value, 10);
       return Number.isNaN(n) ? fallback : n;
@@ -540,6 +780,56 @@
     function parseExtraParams(value) {
       if (!value.trim()) return [];
       return value.split(",").map((item) => item.trim()).filter(Boolean);
+    }
+
+    function renderReport(scan) {
+      const reportVulns = scan.report_json?.vulnerabilities || [];
+      const findings = reportVulns.length ? reportVulns : (scan.findings || []);
+      reportScanId.textContent = `scan_id: ${scan.scan_id || "(없음)"}`;
+      reportStatus.textContent = scan.status || "-";
+      reportProgress.textContent = `${scan.progress ?? 0}%`;
+      reportTarget.textContent = scan.target || scan.request?.url || "-";
+      reportFindings.textContent = String(findings.length);
+
+      if (!findings.length) {
+        findingList.innerHTML = '<div class="muted">발견된 취약점이 없습니다.</div>';
+        return;
+      }
+
+      findingList.innerHTML = findings.map((item) => {
+        const severity = item.attack_info?.severity || item.severity || "Unknown";
+        const type = item.attack_info?.type || item.type || "Unknown";
+        const parameter = item.target?.parameter || item.parameter || "-";
+        const location = item.target?.location || item.location || "-";
+        const payload = item.attack_info?.payload_value || item.payload || "-";
+        return `
+          <div class="vuln-item">
+            <div class="vuln-head">
+              <span class="badge-sev">${severity}</span>
+              <span class="muted">${type}</span>
+            </div>
+            <div class="muted">파라미터: ${parameter}</div>
+            <div class="muted">위치: ${location}</div>
+            <div class="muted">페이로드: ${payload}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function syncScanState() {
+      if (!lastScanId) return;
+      const data = await requestJson(`/api/scan/${lastScanId}`);
+      scanMeta.textContent = `scan_id: ${lastScanId}`;
+      appendServerLogs(data.logs || []);
+      renderReport(data);
+
+      if (data.status === "completed" || data.status === "failed") {
+        if (pollTimer) {
+          clearInterval(pollTimer);
+          pollTimer = null;
+        }
+      }
+      return data;
     }
 
     function buildPayload() {
@@ -615,10 +905,22 @@
           body: JSON.stringify(payload)
         });
         lastScanId = data.scan_id;
+        displayedServerLogCount = 0;
         scanMeta.textContent = `scan_id: ${lastScanId}`;
         appendLog("OK", `요청 접수됨: scan_id=${lastScanId}`);
+        reportScanId.textContent = `scan_id: ${lastScanId}`;
+        reportTarget.textContent = data.request?.url || "-";
+        reportStatus.textContent = "queued";
+        reportProgress.textContent = "0%";
+        reportFindings.textContent = "0";
+        findingList.innerHTML = '<div class="muted">스캔 진행 중입니다. 상태 조회 후 리포트가 갱신됩니다.</div>';
         appendLog("INFO", "응답 JSON:");
         appendLog("INFO", JSON.stringify(data, null, 2));
+        if (pollTimer) clearInterval(pollTimer);
+        pollTimer = setInterval(() => {
+          syncScanState().catch((err) => appendLog("ERR", `자동 동기화 실패: ${err}`));
+        }, 1000);
+        await syncScanState();
       } catch (err) {
         appendLog("ERR", `요청 실패: ${err}`);
       }
@@ -631,9 +933,8 @@
       }
       appendLog("INFO", `GET /api/scan/${lastScanId}`);
       try {
-        const data = await requestJson(`/api/scan/${lastScanId}`);
+        const data = await syncScanState();
         appendLog("OK", `상태=${data.status}, 진행률=${data.progress}%`);
-        appendLog("INFO", JSON.stringify(data, null, 2));
       } catch (err) {
         appendLog("ERR", `상태 조회 실패: ${err}`);
       }
