@@ -1,1 +1,1 @@
-"""Web dashboard package for FastAPI scanner UI."""
+"""Web application package for the scanner mock UI."""

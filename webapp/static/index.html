@@ -1,365 +1,643 @@
 <!doctype html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WAF Scanner Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-    >
-    <style>
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1f2937; }
-        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WAF Scanner Console</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #0b1020;
+      --bg-panel: #121a2d;
+      --bg-soft: #1a243b;
+      --border: #27324a;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #22d3ee;
+      --accent-2: #38bdf8;
+      --danger: #f43f5e;
+      --ok: #22c55e;
+      --terminal: #05080f;
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at 20% 0%, #111b35 0%, var(--bg-main) 45%);
+      color: var(--text);
+      font-family: "Inter", sans-serif;
+      overflow: hidden;
+    }
+
+    .topbar {
+      height: 62px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(9, 13, 24, 0.88);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+    }
+    .brand {
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      font-size: 1.05rem;
+    }
+    .brand .accent { color: var(--accent); }
+    .status-chip {
+      border: 1px solid #1f5533;
+      color: #86efac;
+      background: rgba(34, 197, 94, 0.08);
+      border-radius: 999px;
+      font-size: 0.78rem;
+      padding: 6px 10px;
+    }
+
+    .app {
+      height: calc(100% - 62px);
+      display: grid;
+      grid-template-columns: minmax(460px, 48%) 1fr;
+      gap: 14px;
+      padding: 14px;
+    }
+
+    .left-pane {
+      background: linear-gradient(180deg, rgba(18, 26, 45, 0.95), rgba(13, 20, 36, 0.98));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .left-scroll {
+      overflow: auto;
+      padding: 16px;
+      min-height: 0;
+    }
+    .left-scroll::-webkit-scrollbar { width: 8px; }
+    .left-scroll::-webkit-scrollbar-thumb { background: #324364; border-radius: 8px; }
+
+    .section {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(5, 9, 20, 0.35);
+      margin-bottom: 12px;
+    }
+    .section-header {
+      padding: 11px 13px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #dbeafe;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .section-body { padding: 13px; }
+    .hint { color: var(--muted); font-size: 0.75rem; }
+    .field-help {
+      color: #8fa3c4;
+      font-size: 0.72rem;
+      margin-top: 3px;
+      line-height: 1.35;
+    }
+
+    .form-label {
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      margin-bottom: 4px;
+    }
+    .form-control, .form-select {
+      border: 1px solid var(--border);
+      background: rgba(15, 24, 44, 0.75);
+      color: var(--text);
+      font-size: 0.84rem;
+    }
+    .form-control::placeholder { color: #64748b; }
+    .form-control:focus, .form-select:focus {
+      color: var(--text);
+      border-color: var(--accent);
+      background: rgba(15, 24, 44, 0.96);
+      box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.15);
+    }
+    .form-check-label { font-size: 0.8rem; color: #cbd5e1; }
+    .form-check-input:checked { background-color: #0891b2; border-color: #0891b2; }
+    .advanced-toggle {
+      width: 100%;
+      border: 1px dashed #3d4f74;
+      border-radius: 8px;
+      background: rgba(15, 24, 44, 0.55);
+      color: #cbd5e1;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 9px 12px;
+      text-align: left;
+    }
+    .advanced-toggle:hover { border-color: var(--accent); color: #e2f5ff; }
+    .advanced-wrap { display: none; }
+    .advanced-wrap.open { display: block; }
+
+    .actions {
+      padding: 12px 16px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      background: rgba(7, 12, 24, 0.8);
+    }
+    .btn-launch {
+      flex: 1;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #e11d48, #f43f5e);
+      color: white;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      padding: 10px 12px;
+    }
+    .btn-launch:hover { filter: brightness(1.06); }
+    .btn-poll {
+      border: 1px solid #3d4f74;
+      color: #dbeafe;
+      background: rgba(18, 26, 45, 0.55);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-weight: 600;
+    }
+    .btn-poll:hover { background: rgba(33, 52, 90, 0.65); }
+
+    .right-pane {
+      background: var(--terminal);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.5);
+    }
+    .terminal-head {
+      border-bottom: 1px solid #1f2b44;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      color: #94a3b8;
+      background: rgba(15, 23, 42, 0.5);
+    }
+    .dots span {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+    .dot-r { background: #fb7185; }
+    .dot-y { background: #fbbf24; }
+    .dot-g { background: #34d399; }
+
+    .terminal-meta {
+      border-bottom: 1px solid #1f2b44;
+      padding: 8px 14px;
+      color: #93c5fd;
+      font-size: 0.78rem;
+      font-family: "JetBrains Mono", monospace;
+    }
+    .terminal-body {
+      flex: 1;
+      overflow: auto;
+      padding: 14px;
+      white-space: pre-wrap;
+      color: #86efac;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.82rem;
+      line-height: 1.55;
+    }
+    .terminal-body::-webkit-scrollbar { width: 8px; }
+    .terminal-body::-webkit-scrollbar-thumb { background: #263247; border-radius: 8px; }
+
+    @media (max-width: 1200px) {
+      body { overflow: auto; }
+      .app {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+      .left-pane, .right-pane {
+        min-height: 560px;
+      }
+    }
+  </style>
 </head>
-<body class="h-screen overflow-hidden bg-gray-900 font-sans text-white antialiased">
-<div class="flex h-full">
-    <aside class="flex w-64 flex-col bg-gray-800 shadow-xl">
-        <div class="flex h-16 items-center border-b border-gray-700 px-6">
-            <i class="fa-solid fa-shield-halved mr-3 text-2xl text-blue-500"></i>
-            <span class="text-xl font-bold tracking-wider">WAF Fuzzer</span>
+<body>
+  <header class="topbar">
+    <div class="brand">WAF <span class="accent">SCANNER</span> CONSOLE</div>
+    <div class="status-chip">Engine Ready (Mock)</div>
+  </header>
+
+  <main class="app">
+    <section class="left-pane">
+      <form id="scanForm" class="left-scroll">
+        <div class="section">
+          <div class="section-header">
+            <span>1) 대상 설정</span>
+            <span class="hint">대상/모듈 선택</span>
+          </div>
+          <div class="section-body">
+            <div class="mb-3">
+              <label class="form-label" for="url">대상 URL</label>
+              <input id="url" type="url" class="form-control" placeholder="http://127.0.0.1/DVWA" required>
+            </div>
+            <div>
+              <label class="form-label" for="scan_type">공격 모듈</label>
+              <select id="scan_type" class="form-select">
+                <option value="all">all (전체 모듈)</option>
+                <option value="sqli">sqli</option>
+                <option value="bruteforce">bruteforce</option>
+                <option value="lfi">lfi</option>
+                <option value="file_upload">file_upload</option>
+                <option value="ssrf">ssrf</option>
+              </select>
+            </div>
+          </div>
         </div>
-        <nav class="flex-1 space-y-2 px-4 py-6">
-            <a href="#" class="flex items-center rounded-lg bg-blue-600 px-4 py-3 text-white">
-                <i class="fa-solid fa-crosshairs w-6"></i> New Scan
-            </a>
-            <a href="#" class="flex items-center rounded-lg px-4 py-3 text-gray-400 transition hover:bg-gray-700 hover:text-white">
-                <i class="fa-solid fa-list-check w-6"></i> History
-            </a>
-            <a href="#" class="flex items-center rounded-lg px-4 py-3 text-gray-400 transition hover:bg-gray-700 hover:text-white">
-                <i class="fa-solid fa-gear w-6"></i> Settings
-            </a>
-        </nav>
-    </aside>
 
-    <main class="flex h-full flex-1 flex-col overflow-y-auto">
-        <header class="flex h-16 items-center justify-between border-b border-gray-700 bg-gray-800 px-8">
-            <h1 class="text-xl font-semibold">Vulnerability Scanner</h1>
-            <i class="fa-solid fa-circle-user text-2xl text-gray-400"></i>
-        </header>
-
-        <div class="mx-auto w-full max-w-6xl space-y-8 p-8">
-            <section class="rounded-xl border border-gray-700 bg-gray-800 p-6 shadow-lg">
-                <h2 class="mb-4 border-b border-gray-700 pb-2 text-lg font-bold">
-                    <i class="fa-solid fa-rocket mr-2"></i>Target Configuration
-                </h2>
-                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <div class="md:col-span-2">
-                        <label for="targetUrl" class="mb-1 block text-sm text-gray-400">Target URL</label>
-                        <input
-                            type="text"
-                            id="targetUrl"
-                            value="http://snowden.kr/DVWA"
-                            class="w-full rounded border border-gray-600 bg-gray-900 p-2.5 text-white focus:border-blue-500 focus:outline-none"
-                        >
-                    </div>
-                    <div class="md:col-span-2">
-                        <label for="cookieInput" class="mb-1 block text-sm text-gray-400">Session Cookie (Optional)</label>
-                        <textarea
-                            id="cookieInput"
-                            rows="2"
-                            placeholder="PHPSESSID=abc123...; security=low"
-                            class="w-full rounded border border-gray-600 bg-gray-900 p-2.5 font-mono text-sm text-white focus:border-blue-500 focus:outline-none"
-                        ></textarea>
-                        <p class="mt-1 text-xs text-gray-500">로그인이 필요한 페이지면 브라우저에서 쿠키를 복사해 입력하세요.</p>
-                    </div>
-                    <div>
-                        <label for="attackType" class="mb-1 block text-sm text-gray-400">Attack Type</label>
-                        <select
-                            id="attackType"
-                            class="w-full rounded border border-gray-600 bg-gray-900 p-2.5 text-white focus:border-blue-500 focus:outline-none"
-                        >
-                            <option value="all">All Modules</option>
-                            <option value="sqli">SQL Injection</option>
-                            <option value="bruteforce">Brute Force</option>
-                            <option value="xss">XSS</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="rps" class="mb-1 block text-sm text-gray-400">Throttle (RPS)</label>
-                        <input
-                            type="number"
-                            id="rps"
-                            value="50"
-                            min="1"
-                            class="w-full rounded border border-gray-600 bg-gray-900 p-2.5 text-white focus:border-blue-500 focus:outline-none"
-                        >
-                    </div>
-                    <div class="md:col-span-2">
-                        <div class="mb-2 flex items-center justify-between">
-                            <label class="block text-sm text-gray-400">Advanced Options (key/value)</label>
-                            <button id="addOptionBtn" type="button" class="rounded bg-gray-700 px-3 py-1 text-sm text-white hover:bg-gray-600">
-                                <i class="fa-solid fa-plus mr-1"></i>Add
-                            </button>
-                        </div>
-                        <div id="extraOptionsContainer" class="space-y-2">
-                            <div class="grid grid-cols-1 gap-2 md:grid-cols-12 option-row">
-                                <input
-                                    type="text"
-                                    class="option-key md:col-span-5 rounded border border-gray-600 bg-gray-900 p-2 text-sm text-white"
-                                    placeholder="bruteforce.max_dictionary_candidates"
-                                >
-                                <input
-                                    type="text"
-                                    class="option-value md:col-span-6 rounded border border-gray-600 bg-gray-900 p-2 text-sm text-white"
-                                    placeholder="100"
-                                >
-                                <button type="button" class="remove-option md:col-span-1 rounded bg-red-900/60 px-3 text-sm text-red-200 hover:bg-red-800">
-                                    <i class="fa-solid fa-xmark"></i>
-                                </button>
-                            </div>
-                            <div class="grid grid-cols-1 gap-2 md:grid-cols-12 option-row">
-                                <input
-                                    type="text"
-                                    class="option-key md:col-span-5 rounded border border-gray-600 bg-gray-900 p-2 text-sm text-white"
-                                    placeholder="sqli.include_time_based"
-                                >
-                                <input
-                                    type="text"
-                                    class="option-value md:col-span-6 rounded border border-gray-600 bg-gray-900 p-2 text-sm text-white"
-                                    placeholder="false"
-                                >
-                                <button type="button" class="remove-option md:col-span-1 rounded bg-red-900/60 px-3 text-sm text-red-200 hover:bg-red-800">
-                                    <i class="fa-solid fa-xmark"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-6 flex justify-end">
-                    <button
-                        id="startBtn"
-                        class="rounded bg-blue-600 px-6 py-2.5 font-bold text-white shadow-lg transition duration-200 hover:bg-blue-500"
-                    >
-                        <i class="fa-solid fa-bolt mr-2"></i> Start Scan
-                    </button>
-                </div>
-            </section>
-
-            <section id="progressCard" class="hidden rounded-xl border border-gray-700 bg-gray-800 p-6 shadow-lg">
-                <div class="mb-2 flex items-center justify-between">
-                    <h2 class="text-lg font-bold text-blue-400" id="statusText">Scanning in progress...</h2>
-                    <span class="text-xl font-bold" id="percentText">0%</span>
-                </div>
-                <div class="relative h-4 w-full overflow-hidden rounded-full border border-gray-700 bg-gray-900">
-                    <div id="progressBar" class="h-4 rounded-full bg-blue-500 transition-all duration-500" style="width: 0%"></div>
-                </div>
-            </section>
-
-            <section id="summaryCard" class="hidden grid grid-cols-1 gap-4 md:grid-cols-4">
-                <div class="rounded-xl border border-gray-700 bg-gray-800 p-5 text-center shadow-lg">
-                    <i class="fa-solid fa-paper-plane mb-2 text-2xl text-blue-400"></i>
-                    <div class="text-xs text-gray-400">Total Sent</div>
-                    <div id="statTotal" class="text-2xl font-bold">0</div>
-                </div>
-                <div class="rounded-xl border border-red-900/50 bg-gray-800 p-5 text-center shadow-lg">
-                    <i class="fa-solid fa-skull-crossbones mb-2 text-2xl text-red-500"></i>
-                    <div class="text-xs text-gray-400">Successful Findings</div>
-                    <div id="statVuln" class="text-2xl font-bold text-red-500">0</div>
-                </div>
-                <div class="rounded-xl border border-gray-700 bg-gray-800 p-5 text-center shadow-lg">
-                    <i class="fa-solid fa-triangle-exclamation mb-2 text-2xl text-yellow-400"></i>
-                    <div class="text-xs text-gray-400">Failed / Errors</div>
-                    <div id="statFailed" class="text-2xl font-bold text-yellow-400">0</div>
-                </div>
-                <div class="rounded-xl border border-gray-700 bg-gray-800 p-5 text-center shadow-lg">
-                    <i class="fa-solid fa-stopwatch mb-2 text-2xl text-green-400"></i>
-                    <div class="text-xs text-gray-400">Time Taken (s)</div>
-                    <div id="statTime" class="text-2xl font-bold text-green-400">0.0</div>
-                </div>
-            </section>
-
-            <section id="resultsCard" class="hidden rounded-xl border border-gray-700 bg-gray-800 p-6 shadow-lg">
-                <h2 class="mb-4 border-b border-gray-700 pb-2 text-lg font-bold text-red-400">
-                    <i class="fa-solid fa-bug mr-2"></i>Findings
-                </h2>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm text-gray-300">
-                        <thead class="bg-gray-900 text-gray-400">
-                        <tr>
-                            <th class="rounded-tl-lg px-4 py-3">Severity</th>
-                            <th class="px-4 py-3">Location</th>
-                            <th class="px-4 py-3">Parameter</th>
-                            <th class="px-4 py-3">Type</th>
-                            <th class="rounded-tr-lg px-4 py-3">Payload</th>
-                        </tr>
-                        </thead>
-                        <tbody id="resultsTableBody" class="divide-y divide-gray-700"></tbody>
-                    </table>
-                </div>
-            </section>
+        <div class="section">
+          <div class="section-header">
+            <span>2) 필수 인증 정보</span>
+            <span class="hint">계정 정보</span>
+          </div>
+          <div class="section-body">
+            <div class="row g-2">
+              <div class="col-md-6">
+                <label class="form-label" for="username">아이디</label>
+                <input id="username" type="text" class="form-control" placeholder="admin">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="password">비밀번호</label>
+                <input id="password" type="password" class="form-control" placeholder="password">
+              </div>
+            </div>
+          </div>
         </div>
-    </main>
-</div>
 
-<script>
-    let currentScanId = null;
-    let pollingInterval = null;
+        <button type="button" id="advancedToggle" class="advanced-toggle mb-2" aria-expanded="false">
+          상세 옵션 열기 (선택 입력)
+        </button>
 
-    const startBtn = document.getElementById("startBtn");
-    const optionsContainer = document.getElementById("extraOptionsContainer");
-    const addOptionBtn = document.getElementById("addOptionBtn");
-    startBtn.addEventListener("click", startScan);
-    addOptionBtn.addEventListener("click", addOptionRow);
-    optionsContainer.addEventListener("click", (event) => {
-        const removeButton = event.target.closest(".remove-option");
-        if (!removeButton) return;
+        <div class="advanced-wrap" id="advancedWrap">
+        <div class="section">
+          <div class="section-header">
+            <span>3) 선택 입력: 인증 / 세션 상세</span>
+            <span class="hint">필드 오버라이드 + 수동 세션</span>
+          </div>
+          <div class="section-body">
+            <div class="row g-2">
+              <div class="col-12">
+                <label class="form-label" for="login_url">로그인 URL</label>
+                <input id="login_url" type="url" class="form-control" placeholder="http://127.0.0.1/DVWA/login.php">
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="cookie">쿠키 (선택)</label>
+                <input id="cookie" type="text" class="form-control" placeholder="PHPSESSID=...; security=low">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="username_field">아이디 필드명</label>
+                <input id="username_field" type="text" class="form-control" value="username">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="password_field">비밀번호 필드명</label>
+                <input id="password_field" type="text" class="form-control" value="password">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="csrf_field">CSRF 필드명</label>
+                <input id="csrf_field" type="text" class="form-control" value="user_token">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="submit_field">제출 필드명</label>
+                <input id="submit_field" type="text" class="form-control" value="Login">
+              </div>
+            </div>
+          </div>
+        </div>
 
-        const rows = optionsContainer.querySelectorAll(".option-row");
-        if (rows.length <= 1) {
-            const row = removeButton.closest(".option-row");
-            row.querySelector(".option-key").value = "";
-            row.querySelector(".option-value").value = "";
-            return;
-        }
-        removeButton.closest(".option-row").remove();
+        <div class="section">
+          <div class="section-header">
+            <span>4) 선택 입력: 엔진 옵션</span>
+            <span class="hint">실행 제어</span>
+          </div>
+          <div class="section-body">
+            <div class="row g-2">
+              <div class="col-md-3">
+                <label class="form-label" for="rps">RPS</label>
+                <input id="rps" type="number" class="form-control" min="1" value="50">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="session_pool_size">세션 풀</label>
+                <input id="session_pool_size" type="number" class="form-control" min="1" value="3">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="output">출력 파일</label>
+                <input id="output" type="text" class="form-control" value="scan_report.json">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="surfaces_output">공격면 파일</label>
+                <input id="surfaces_output" type="text" class="form-control" value="attack_surfaces.json">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <span>5) 선택 입력: 모듈별 상세</span>
+            <span class="hint">SQLi / BF / LFI / SSRF</span>
+          </div>
+          <div class="section-body">
+            <div class="row g-2 mb-3">
+              <div class="col-12 hint">SQLi</div>
+              <div class="col-md-4">
+                <label class="form-label" for="sqli_evasion_level">우회 단계</label>
+                <input id="sqli_evasion_level" type="number" class="form-control" min="0" max="3" value="1">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="max_time_payloads">시간기반 상한</label>
+                <input id="max_time_payloads" type="number" class="form-control" min="0" value="0">
+              </div>
+              <div class="col-md-4 d-flex align-items-end">
+                <div class="form-check mb-2">
+                  <input id="include_time_based" type="checkbox" class="form-check-input">
+                  <label for="include_time_based" class="form-check-label">시간기반 포함</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-12 hint">Bruteforce</div>
+              <div class="col-md-4">
+                <label class="form-label" for="bf_wordlist">워드리스트 경로</label>
+                <input id="bf_wordlist" class="form-control" value="config/payloads/common_passwords.txt" placeholder="config/payloads/common_passwords.txt">
+                <div class="field-help">사전 대입 모드에서 사용할 비밀번호 목록 파일 경로입니다.</div>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label" for="bf_mutation_level">변형 강도</label>
+                <input id="bf_mutation_level" type="number" class="form-control" min="0" max="3" value="1" placeholder="1">
+                <div class="field-help">0~3 단계. 높을수록 후보 조합이 많아집니다.</div>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label" for="bf_min_length">최소 길이</label>
+                <input id="bf_min_length" type="number" class="form-control" min="1" value="1" placeholder="1">
+                <div class="field-help">랜덤 대입 시 생성 문자열 최소 길이입니다.</div>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label" for="bf_max_length">최대 길이</label>
+                <input id="bf_max_length" type="number" class="form-control" min="1" value="3" placeholder="3">
+                <div class="field-help">랜덤 대입 시 생성 문자열 최대 길이입니다.</div>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label" for="bf_method">요청 메서드</label>
+                <select id="bf_method" class="form-select">
+                  <option>GET</option>
+                  <option>POST</option>
+                </select>
+                <div class="field-help">직접 타깃 URL 모드에서만 사용됩니다.</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="bf_charset">문자셋</label>
+                <input id="bf_charset" class="form-control" value="abcdefghijklmnopqrstuvwxyz0123456789" placeholder="abcdefghijklmnopqrstuvwxyz0123456789">
+                <div class="field-help">랜덤 대입 시 사용할 문자 집합입니다.</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="bf_target_url">직접 타깃 URL</label>
+                <input id="bf_target_url" class="form-control" placeholder="http://target/login.php">
+                <div class="field-help">요청 파일 없이 직접 브루트포스할 URL입니다.</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="bf_request_file">요청 파일</label>
+                <input id="bf_request_file" class="form-control" placeholder="requests/login.txt">
+                <div class="field-help">Burp 스타일 raw 요청 파일. 타깃 값은 `FUZZ`로 표시합니다.</div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="bf_fuzz_param">FUZZ 파라미터</label>
+                <input id="bf_fuzz_param" class="form-control" value="password" placeholder="password">
+                <div class="field-help">직접 타깃 모드에서 대입할 파라미터명입니다.</div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="bf_target_param">강제 타깃 파라미터</label>
+                <input id="bf_target_param" class="form-control" placeholder="password">
+                <div class="field-help">자동 추론 대신 이 파라미터만 공격합니다.</div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="bf_username_param">사용자명 파라미터</label>
+                <input id="bf_username_param" class="form-control" value="username" placeholder="username">
+                <div class="field-help">폼 내 사용자명 필드 이름입니다.</div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="bf_username">사용자명 값</label>
+                <input id="bf_username" class="form-control" value="admin" placeholder="admin">
+                <div class="field-help">브루트포스 시 고정으로 전송할 사용자명 값입니다.</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="bf_length">길이 범위</label>
+                <input id="bf_length" class="form-control" placeholder="2~8 또는 8">
+                <div class="field-help">입력 시 `bf_min/max_length`보다 우선 적용됩니다.</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="bf_max_dictionary">사전 후보 상한</label>
+                <input id="bf_max_dictionary" type="number" class="form-control" min="0" value="0" placeholder="0">
+                <div class="field-help">0이면 전체 사용, 0보다 크면 해당 수만 사용합니다.</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="bf_max_true_random">랜덤 후보 상한</label>
+                <input id="bf_max_true_random" type="number" class="form-control" min="0" value="0" placeholder="0">
+                <div class="field-help">랜덤 생성 후보 개수를 제한합니다. 0은 무제한입니다.</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="bf_extra_params">추가 파라미터</label>
+                <input id="bf_extra_params" class="form-control" placeholder="username=admin,Login=Login">
+                <div class="field-help">`k=v` 형식으로 쉼표 구분해 추가 전송합니다.</div>
+              </div>
+              <div class="col-md-2 d-flex align-items-center"><div class="form-check"><input id="bf_disable_mutation" class="form-check-input" type="checkbox"><label class="form-check-label" for="bf_disable_mutation">변형 끔</label></div></div>
+              <div class="col-md-2 d-flex align-items-center"><div class="form-check"><input id="bf_true_random" class="form-check-input" type="checkbox"><label class="form-check-label" for="bf_true_random">랜덤 모드</label></div></div>
+              <div class="col-md-2 d-flex align-items-center"><div class="form-check"><input id="bf_stop_on_first_hit" class="form-check-input" type="checkbox" checked><label class="form-check-label" for="bf_stop_on_first_hit">첫 성공 중단</label></div></div>
+            </div>
+
+            <div class="row g-2">
+              <div class="col-12 hint">LFI / SSRF</div>
+              <div class="col-md-4">
+                <label class="form-label" for="lfi_evasion_level">LFI 우회 단계</label>
+                <input id="lfi_evasion_level" type="number" class="form-control" min="0" max="3" value="1">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="ssrf_bypass_level">SSRF 우회 단계</label>
+                <input id="ssrf_bypass_level" type="number" class="form-control" min="0" max="2" value="1">
+              </div>
+              <div class="col-md-4 d-flex align-items-end">
+                <div class="form-check mb-2">
+                  <input id="ssrf_include_oob" type="checkbox" class="form-check-input">
+                  <label for="ssrf_include_oob" class="form-check-label">OOB 포함</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </form>
+
+      <div class="actions">
+        <button id="startBtn" type="submit" form="scanForm" class="btn-launch">스캔 시작</button>
+        <button id="checkStatusBtn" type="button" class="btn-poll">상태 조회</button>
+      </div>
+    </section>
+
+    <section class="right-pane">
+      <div class="terminal-head">
+        <div class="dots">
+          <span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span>
+        </div>
+        <div>waf_fuzzer@console:~/runtime</div>
+      </div>
+      <div class="terminal-meta" id="scanMeta">scan_id: (없음)</div>
+      <div class="terminal-body" id="responseLog">[INIT] WAF Fuzzer mock console online.
+[INFO] 대상/옵션 입력 후 '스캔 시작' 버튼을 누르세요.</div>
+    </section>
+  </main>
+
+  <script>
+    const responseLog = document.getElementById("responseLog");
+    const scanMeta = document.getElementById("scanMeta");
+    const form = document.getElementById("scanForm");
+    const checkStatusBtn = document.getElementById("checkStatusBtn");
+    const advancedToggle = document.getElementById("advancedToggle");
+    const advancedWrap = document.getElementById("advancedWrap");
+    let lastScanId = "";
+
+    advancedToggle.addEventListener("click", () => {
+      const isOpen = advancedWrap.classList.toggle("open");
+      advancedToggle.setAttribute("aria-expanded", String(isOpen));
+      advancedToggle.textContent = isOpen
+        ? "상세 옵션 닫기 (선택 입력)"
+        : "상세 옵션 열기 (선택 입력)";
     });
 
-    function addOptionRow() {
-        const row = document.createElement("div");
-        row.className = "grid grid-cols-1 gap-2 md:grid-cols-12 option-row";
-        row.innerHTML = `
-            <input type="text" class="option-key md:col-span-5 rounded border border-gray-600 bg-gray-900 p-2 text-sm text-white" placeholder="module.option_name">
-            <input type="text" class="option-value md:col-span-6 rounded border border-gray-600 bg-gray-900 p-2 text-sm text-white" placeholder="value">
-            <button type="button" class="remove-option md:col-span-1 rounded bg-red-900/60 px-3 text-sm text-red-200 hover:bg-red-800"><i class="fa-solid fa-xmark"></i></button>
-        `;
-        optionsContainer.appendChild(row);
+    function now() {
+      return new Date().toISOString().replace("T", " ").slice(11, 19);
     }
 
-    function collectExtraOptions() {
-        const rows = optionsContainer.querySelectorAll(".option-row");
-        const options = [];
-        rows.forEach((row) => {
-            const key = row.querySelector(".option-key").value.trim();
-            const value = row.querySelector(".option-value").value.trim();
-            if (!key) return;
-            options.push({ key, value });
+    function appendLog(level, message) {
+      const markers = { INFO: "[*]", OK: "[+]", ERR: "[-]" };
+      responseLog.textContent += `\n[${now()}] ${markers[level] || "[*]"} ${message}`;
+      responseLog.scrollTop = responseLog.scrollHeight;
+    }
+
+    function toInt(id, fallback = 0) {
+      const n = parseInt(document.getElementById(id).value, 10);
+      return Number.isNaN(n) ? fallback : n;
+    }
+
+    function parseExtraParams(value) {
+      if (!value.trim()) return [];
+      return value.split(",").map((item) => item.trim()).filter(Boolean);
+    }
+
+    function buildPayload() {
+      return {
+        url: document.getElementById("url").value.trim(),
+        scan_type: document.getElementById("scan_type").value,
+        auth: {
+          login_url: document.getElementById("login_url").value.trim(),
+          cookie: document.getElementById("cookie").value.trim(),
+          username: document.getElementById("username").value,
+          password: document.getElementById("password").value,
+          username_field: document.getElementById("username_field").value,
+          password_field: document.getElementById("password_field").value,
+          csrf_field: document.getElementById("csrf_field").value,
+          submit_field: document.getElementById("submit_field").value
+        },
+        engine: {
+          rps: toInt("rps", 50),
+          session_pool_size: toInt("session_pool_size", 3),
+          output: document.getElementById("output").value,
+          surfaces_output: document.getElementById("surfaces_output").value
+        },
+        sqli: {
+          sqli_evasion_level: toInt("sqli_evasion_level", 1),
+          include_time_based: document.getElementById("include_time_based").checked,
+          max_time_payloads: toInt("max_time_payloads", 0)
+        },
+        bruteforce: {
+          bf_wordlist: document.getElementById("bf_wordlist").value,
+          bf_disable_mutation: document.getElementById("bf_disable_mutation").checked,
+          bf_mutation_level: toInt("bf_mutation_level", 1),
+          bf_true_random: document.getElementById("bf_true_random").checked,
+          bf_charset: document.getElementById("bf_charset").value,
+          bf_min_length: toInt("bf_min_length", 1),
+          bf_max_length: toInt("bf_max_length", 3),
+          bf_length: document.getElementById("bf_length").value.trim(),
+          bf_max_dictionary: toInt("bf_max_dictionary", 0),
+          bf_max_true_random: toInt("bf_max_true_random", 0),
+          bf_stop_on_first_hit: document.getElementById("bf_stop_on_first_hit").checked,
+          bf_request_file: document.getElementById("bf_request_file").value.trim(),
+          bf_target_url: document.getElementById("bf_target_url").value.trim(),
+          bf_method: document.getElementById("bf_method").value,
+          bf_fuzz_param: document.getElementById("bf_fuzz_param").value.trim(),
+          bf_target_param: document.getElementById("bf_target_param").value.trim(),
+          bf_username_param: document.getElementById("bf_username_param").value.trim(),
+          bf_username: document.getElementById("bf_username").value.trim(),
+          bf_extra_params: parseExtraParams(document.getElementById("bf_extra_params").value)
+        },
+        lfi: { lfi_evasion_level: toInt("lfi_evasion_level", 1) },
+        ssrf: {
+          ssrf_bypass_level: toInt("ssrf_bypass_level", 1),
+          ssrf_include_oob: document.getElementById("ssrf_include_oob").checked
+        }
+      };
+    }
+
+    async function requestJson(url, options) {
+      const res = await fetch(url, options);
+      const data = await res.json();
+      if (!res.ok) throw new Error(JSON.stringify(data, null, 2));
+      return data;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const payload = buildPayload();
+      appendLog("INFO", `스캔 요청 준비: target=${payload.url}, type=${payload.scan_type}`);
+      appendLog("INFO", "POST /api/scan/start 전송");
+      try {
+        const data = await requestJson("/api/scan/start", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
         });
-        return options;
-    }
+        lastScanId = data.scan_id;
+        scanMeta.textContent = `scan_id: ${lastScanId}`;
+        appendLog("OK", `요청 접수됨: scan_id=${lastScanId}`);
+        appendLog("INFO", "응답 JSON:");
+        appendLog("INFO", JSON.stringify(data, null, 2));
+      } catch (err) {
+        appendLog("ERR", `요청 실패: ${err}`);
+      }
+    });
 
-    async function startScan() {
-        startBtn.disabled = true;
-        startBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Starting...';
-
-        document.getElementById("progressCard").classList.remove("hidden");
-        document.getElementById("resultsCard").classList.add("hidden");
-        document.getElementById("summaryCard").classList.add("hidden");
-        document.getElementById("progressBar").style.width = "0%";
-        document.getElementById("progressBar").className = "h-4 rounded-full bg-blue-500 transition-all duration-500";
-        document.getElementById("percentText").innerText = "0%";
-        document.getElementById("statusText").innerText = "Engine starting...";
-        document.getElementById("statusText").className = "text-lg font-bold text-blue-400";
-
-        const payload = {
-            target_url: document.getElementById("targetUrl").value.trim(),
-            attack_type: document.getElementById("attackType").value,
-            rps: parseInt(document.getElementById("rps").value, 10),
-            cookie: document.getElementById("cookieInput").value.trim(),
-            extra_options: collectExtraOptions()
-        };
-
-        try {
-            const response = await fetch("/api/scan/start", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                throw new Error("scan start failed");
-            }
-
-            const data = await response.json();
-            currentScanId = data.scan_id;
-
-            if (pollingInterval) {
-                clearInterval(pollingInterval);
-            }
-            pollingInterval = setInterval(pollScanStatus, 1000);
-        } catch (error) {
-            alert("Failed to start scan. Check backend logs.");
-            resetStartButton();
-        }
-    }
-
-    async function pollScanStatus() {
-        if (!currentScanId) return;
-
-        try {
-            const response = await fetch(`/api/scan/${currentScanId}`);
-            if (!response.ok) {
-                throw new Error("polling failed");
-            }
-            const data = await response.json();
-
-            document.getElementById("progressBar").style.width = `${data.progress}%`;
-            document.getElementById("percentText").innerText = `${data.progress}%`;
-
-            if (data.status === "running") {
-                document.getElementById("statusText").innerText = `Fuzzing ${data.target} [${data.type}]...`;
-                return;
-            }
-
-            if (data.status === "completed") {
-                clearInterval(pollingInterval);
-                pollingInterval = null;
-
-                document.getElementById("statusText").innerText = "Scan Completed!";
-                document.getElementById("statusText").className = "text-lg font-bold text-green-400";
-                document.getElementById("progressBar").className = "h-4 rounded-full bg-green-500 transition-all duration-500";
-
-                renderSummary(data.summary || null);
-                renderFindings(data.findings || []);
-                resetStartButton();
-            }
-        } catch (error) {
-            clearInterval(pollingInterval);
-            pollingInterval = null;
-            alert("Polling failed. Check backend logs.");
-            resetStartButton();
-        }
-    }
-
-    function renderFindings(findings) {
-        const tbody = document.getElementById("resultsTableBody");
-        tbody.innerHTML = "";
-
-        if (findings.length > 0) {
-            document.getElementById("resultsCard").classList.remove("hidden");
-        }
-
-        findings.forEach((finding) => {
-            const severityColor = finding.severity === "High" ? "bg-red-500" : "bg-yellow-500";
-            const tr = document.createElement("tr");
-            tr.className = "transition hover:bg-gray-700";
-            tr.innerHTML = `
-                <td class="px-4 py-3"><span class="${severityColor} rounded px-2 py-1 text-xs font-bold text-white">${finding.severity}</span></td>
-                <td class="px-4 py-3 font-mono text-purple-400">${finding.location}</td>
-                <td class="px-4 py-3 font-mono">${finding.parameter}</td>
-                <td class="px-4 py-3 text-gray-400">${finding.type}</td>
-                <td class="max-w-xs truncate px-4 py-3 font-mono text-xs" title="${finding.payload}">${finding.payload}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function renderSummary(summary) {
-        if (!summary) return;
-        document.getElementById("summaryCard").classList.remove("hidden");
-        document.getElementById("statTotal").innerText = Number(summary.total_requests || 0).toLocaleString();
-        document.getElementById("statVuln").innerText = Number(summary.successful_findings || 0).toLocaleString();
-        document.getElementById("statFailed").innerText = Number(summary.failed_requests || 0).toLocaleString();
-        document.getElementById("statTime").innerText = `${Number(summary.elapsed_time || 0).toFixed(2)}s`;
-    }
-
-    function resetStartButton() {
-        startBtn.disabled = false;
-        startBtn.innerHTML = '<i class="fa-solid fa-bolt mr-2"></i> Start Scan';
-    }
-</script>
+    checkStatusBtn.addEventListener("click", async () => {
+      if (!lastScanId) {
+        appendLog("ERR", "먼저 스캔을 시작해 scan_id를 생성하세요.");
+        return;
+      }
+      appendLog("INFO", `GET /api/scan/${lastScanId}`);
+      try {
+        const data = await requestJson(`/api/scan/${lastScanId}`);
+        appendLog("OK", `상태=${data.status}, 진행률=${data.progress}%`);
+        appendLog("INFO", JSON.stringify(data, null, 2));
+      } catch (err) {
+        appendLog("ERR", `상태 조회 실패: ${err}`);
+      }
+    });
+  </script>
 </body>
 </html>
