@@ -28,7 +28,7 @@ class ReportGenerator:
         type_width = 34
 
         print("\n" + "=" * table_width)
-        print("WAF Fuzzer Security Scan Report")
+        print("Modular Web Scanner Security Scan Report")
         print(f"Scan completed at: {self.timestamp}")
         print("=" * table_width)
 

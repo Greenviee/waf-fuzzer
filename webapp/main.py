@@ -90,7 +90,7 @@ class ScanRequest(BaseModel):
 
 
 app = FastAPI(
-    title="WAF Fuzzer Web UI API",
+    title="Modular Web Scanner API",
     description="Web UI backend connected to the real CLI scan pipeline.",
     version="0.1.0",
 )
