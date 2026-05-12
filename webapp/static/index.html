@@ -399,7 +399,7 @@
         grid-column: 1 / -1;
         margin-bottom: 0;
       }
-      .left-scroll > .advanced-wrap {
+      .left-scroll > .advanced-wrap.open {
         grid-column: 1 / -1;
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -407,16 +407,16 @@
         row-gap: 12px;
         align-content: start;
       }
-      .advanced-wrap > .section {
+      .advanced-wrap.open > .section {
         margin-bottom: 0;
       }
-      .advanced-wrap > .section:nth-child(1),
-      .advanced-wrap > .section:nth-child(2) {
+      .advanced-wrap.open > .section:nth-child(1),
+      .advanced-wrap.open > .section:nth-child(2) {
         align-self: start;
       }
-      .advanced-wrap > .section:nth-child(1) { grid-column: 1; grid-row: 1; }
-      .advanced-wrap > .section:nth-child(2) { grid-column: 2; grid-row: 1; }
-      .advanced-wrap > .section:nth-child(3) {
+      .advanced-wrap.open > .section:nth-child(1) { grid-column: 1; grid-row: 1; }
+      .advanced-wrap.open > .section:nth-child(2) { grid-column: 2; grid-row: 1; }
+      .advanced-wrap.open > .section:nth-child(3) {
         grid-column: 1 / -1;
       }
     }
@@ -431,7 +431,7 @@
       .left-scroll {
         display: block !important;
       }
-      .advanced-wrap {
+      .advanced-wrap.open {
         display: block !important;
       }
       .right-pane { min-height: 420px; }
@@ -476,7 +476,7 @@
             <div>
               <label class="form-label" for="scan_type">공격 모듈</label>
               <select id="scan_type" class="form-select">
-                <option value="all">all (sqli·lfi·file_upload·ssrf, bruteforce 제외)</option>
+                <option value="all">all (bruteforce 제외)</option>
                 <option value="sqli">sqli</option>
                 <option value="bruteforce">bruteforce</option>
                 <option value="lfi">lfi</option>
