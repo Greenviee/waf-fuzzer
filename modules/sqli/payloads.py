@@ -1,5 +1,6 @@
 import os
 import random
+import dataclasses
 from core.models import Payload
 
 def _resolve_payload_file() -> str | None:
@@ -12,7 +13,6 @@ def _resolve_payload_file() -> str | None:
     return None
 
 def get_dbms_specific_marker(text: str, dbms: str) -> str:
-
     if not text:
         return "''"
     
@@ -36,7 +36,6 @@ def get_dbms_specific_marker(text: str, dbms: str) -> str:
 
     # 5. 기타/Generic: 문자열 쪼개기 시도
     else:
-        # 'v' + 'un' 형태로 쪼개서 반사 제거 우회
         return " + ".join([f"'{c}'" for c in text])
 
 def get_sqli_payloads() -> list[Payload]:
@@ -47,8 +46,6 @@ def get_sqli_payloads() -> list[Payload]:
 
     DELIM_START = "SVSDAAAA"
     DELIM_STOP = "VASDAAAA"
-    
-    # 구조: { "MySQL": (start_m, stop_m, vun_m), "Oracle": (...) }
     marker_cache = {}
 
     with open(file_path, "r", encoding="utf-8") as f:
@@ -57,7 +54,7 @@ def get_sqli_payloads() -> list[Payload]:
             if not line or ":::" not in line:
                 continue
 
-            parts = [p.strip() for p in line.split(":::")]
+            parts = [p.strip() for p in line.split(":::", 3)]
 
             if len(parts) >= 4:
                 raw_value = parts[0]
@@ -65,7 +62,6 @@ def get_sqli_payloads() -> list[Payload]:
                 risk_level = parts[2]
                 dbms = parts[3]
 
-                # 해당 DBMS에 대한 마커가 이미 계산되어 캐시된 값 있는지 확인하고 없는 경우에만 계산
                 if dbms not in marker_cache:
                     marker_cache[dbms] = (
                         get_dbms_specific_marker(DELIM_START, dbms),
@@ -81,7 +77,7 @@ def get_sqli_payloads() -> list[Payload]:
                 final_value = final_value.replace("'[STOP_M]'", stop_marker).replace("[STOP_M]", stop_marker)
                 final_value = final_value.replace("'vun'", vun_marker).replace('"vun"', vun_marker)
 
-                # 2. 기타 플레이스홀더 처리
+                # 2. 숫자형 및 기타 플레이스홀더 최종 처리
                 for i in range(1, 10):
                     final_value = final_value.replace(f"[RANDNUM{i}]", str(i))
                 final_value = final_value.replace("[RANDNUM]", "1")
