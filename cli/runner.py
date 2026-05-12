@@ -16,7 +16,7 @@ def prepare_scan_context(args, surfaces):
         print(f"No modules registered for attack type {args.type!r}. Exiting.")
         return None
 
-    if args.type in ("bruteforce", "all") and not os.path.exists(args.bf_wordlist):
+    if args.type == "bruteforce" and not os.path.exists(args.bf_wordlist):
         print(f"Bruteforce wordlist not found: {args.bf_wordlist}")
         return None
 
@@ -51,6 +51,11 @@ async def run_scan(args, *, base_url: str, surfaces) -> None:
         attack_type=args.type,
         module_count=len(context["modules"]),
         payload_count=context["payload_count"],
+        level=args.level,
+        sqli_evasion_level=args.sqli_evasion_level,
+        lfi_evasion_level=args.lfi_evasion_level,
+        ssrf_evasion_level=args.ssrf_evasion_level,
+        ssrf_oob=args.ssrf_oob,
         sqli_time_based=args.sqli_time_based,
         sqli_time_max=args.sqli_time_max,
         total_requests=context["total_requests"],

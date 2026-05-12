@@ -9,6 +9,7 @@ import re
 # ✨ [핵심 수정] SSRF 방어를 위한 IP 및 비동기 모듈 추가
 import ipaddress
 import asyncio
+import os
 from urllib.parse import urlparse, urlunparse, parse_qs, urlencode, unquote
 
 from utils.logger import get_logger
@@ -88,6 +89,13 @@ class URLFilter:
         self._excluded_regex = [re.compile(p, re.IGNORECASE) for p in patterns]
         self._api_regex = [re.compile(p, re.IGNORECASE) for p in self.API_PATTERNS]
         self._interesting_regex = [re.compile(p, re.IGNORECASE) for p in self.INTERESTING_PATTERNS]
+        # 개발/테스트 환경에서만 내부망(예: localhost) 접근을 허용할 수 있는 스위치.
+        self.allow_private_targets = os.getenv("WAF_FUZZER_ALLOW_PRIVATE_TARGETS", "").lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
 
         logger.debug("URL 필터 초기화: 허용 도메인=%s", self.allowed_domains)
 
@@ -125,6 +133,13 @@ class URLFilter:
                     blocked_networks = self.BLOCKED_NETWORKS_V6
 
                 if any(ip in network for network in blocked_networks):
+                    if self.allow_private_targets:
+                        logger.warning(
+                            "개발 모드 허용: 내부망/로컬 대상 접근 허용됨 -> %s (IP: %s)",
+                            url,
+                            ip,
+                        )
+                        continue
                     logger.warning(f"보안 경고: 내부망 IP 접근 시도 차단됨 -> {url} (IP: {ip})")
                     return False
 

@@ -6,7 +6,7 @@ import os
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="WAF Fuzzer - integrated web vulnerability scanner CLI"
+        description="Modular Web Scanner (MWS) - integrated web vulnerability scanner CLI"
     )
     parser.add_argument(
         "-u",

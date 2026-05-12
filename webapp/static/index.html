@@ -1,0 +1,1124 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Modular Web Scanner</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #0a0e1a;
+      --bg-panel: #11182c;
+      --bg-sidebar: #121a2f;
+      --border: #263550;
+      --text: #e5e7eb;
+      --muted: #95a3ba;
+      --accent: #22d3ee;
+      --danger: #f43f5e;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --terminal: #05080f;
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at 15% 0%, #13203f 0%, var(--bg-main) 45%);
+      color: var(--text);
+      font-family: "Inter", sans-serif;
+      overflow: hidden;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 250px;
+      background: linear-gradient(180deg, #10172a, #0d1424);
+      border-right: 1px solid var(--border);
+      transition: width 0.22s ease;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar.collapsed { width: 68px; }
+
+    .sidebar-head {
+      min-height: 62px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px 0 14px;
+      gap: 8px;
+    }
+    .sidebar-title {
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      white-space: nowrap;
+    }
+    .sidebar-title .accent { color: var(--accent); }
+    .sidebar-toggle {
+      border: 1px solid #365073;
+      color: #cae4ff;
+      background: rgba(17, 31, 58, 0.5);
+      border-radius: 7px;
+      width: 34px;
+      height: 34px;
+      line-height: 1;
+    }
+
+    .nav-list {
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .nav-item {
+      border: 1px solid transparent;
+      border-radius: 8px;
+      color: #a7b6cd;
+      text-decoration: none;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+    }
+    .nav-item:hover {
+      background: rgba(40, 58, 95, 0.45);
+      color: #def2ff;
+      border-color: #35517c;
+    }
+    .nav-item.active {
+      background: rgba(34, 211, 238, 0.12);
+      color: #d9fbff;
+      border-color: #2c7184;
+    }
+    .nav-icon {
+      width: 20px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .sidebar.collapsed .nav-text,
+    .sidebar.collapsed .sidebar-title {
+      display: none;
+    }
+    .sidebar.collapsed .nav-item {
+      justify-content: center;
+      padding: 10px 0;
+    }
+
+    .main-wrap {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .topbar {
+      min-height: 62px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(9, 13, 24, 0.88);
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 0 16px;
+    }
+    .view {
+      display: none;
+      flex: 1;
+      min-height: 0;
+    }
+    .view.active {
+      display: flex;
+    }
+    .view.active.scan-view {
+      display: grid;
+      grid-template-columns: minmax(340px, min(52vw, 920px)) minmax(300px, 1fr);
+      gap: 12px;
+      padding: 12px;
+      min-height: 0;
+      width: 100%;
+      align-items: stretch;
+    }
+
+    .scan-view {
+      min-height: 0;
+      width: 100%;
+    }
+    .left-pane {
+      background: linear-gradient(180deg, rgba(18, 26, 45, 0.95), rgba(13, 20, 36, 0.98));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      width: auto;
+      max-width: 960px;
+      min-width: 0;
+    }
+
+    .left-scroll {
+      overflow: auto;
+      padding: 16px;
+      min-height: 0;
+    }
+    .left-scroll::-webkit-scrollbar { width: 8px; }
+    .left-scroll::-webkit-scrollbar-thumb { background: #324364; border-radius: 8px; }
+
+    .section {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(5, 9, 20, 0.35);
+      margin-bottom: 12px;
+    }
+    .section-header {
+      padding: 11px 13px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #dbeafe;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .section-body { padding: 13px; }
+    .hint { color: var(--muted); font-size: 0.75rem; }
+    .field-help {
+      color: #8fa3c4;
+      font-size: 0.72rem;
+      margin-top: 3px;
+      line-height: 1.35;
+    }
+
+    .form-label {
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      margin-bottom: 4px;
+    }
+    .form-control, .form-select {
+      border: 1px solid var(--border);
+      background: rgba(15, 24, 44, 0.75);
+      color: var(--text);
+      font-size: 0.84rem;
+    }
+    .form-control::placeholder { color: #64748b; }
+    .form-control:focus, .form-select:focus {
+      color: var(--text);
+      border-color: var(--accent);
+      background: rgba(15, 24, 44, 0.96);
+      box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.15);
+    }
+    .form-check-label { font-size: 0.8rem; color: #cbd5e1; }
+    .form-check-input:checked { background-color: #0891b2; border-color: #0891b2; }
+    .advanced-toggle {
+      width: 100%;
+      border: 1px dashed #3d4f74;
+      border-radius: 8px;
+      background: rgba(15, 24, 44, 0.55);
+      color: #cbd5e1;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 9px 12px;
+      text-align: left;
+    }
+    .advanced-toggle:hover { border-color: var(--accent); color: #e2f5ff; }
+    .advanced-wrap { display: none; }
+    .advanced-wrap.open { display: block; }
+
+    .actions {
+      padding: 12px 16px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      background: rgba(7, 12, 24, 0.8);
+    }
+    .btn-launch {
+      flex: 1;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #e11d48, #f43f5e);
+      color: white;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      padding: 10px 12px;
+    }
+    .btn-launch:hover { filter: brightness(1.06); }
+    .btn-poll {
+      border: 1px solid #3d4f74;
+      color: #dbeafe;
+      background: rgba(18, 26, 45, 0.55);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-weight: 600;
+    }
+    .btn-poll:hover { background: rgba(33, 52, 90, 0.65); }
+
+    .right-pane {
+      background: var(--terminal);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      min-width: 0;
+      box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.5);
+    }
+    .terminal-head {
+      border-bottom: 1px solid #1f2b44;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      color: #94a3b8;
+      background: rgba(15, 23, 42, 0.5);
+    }
+    .dots span {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+    .dot-r { background: #fb7185; }
+    .dot-y { background: #fbbf24; }
+    .dot-g { background: #34d399; }
+
+    .terminal-meta {
+      border-bottom: 1px solid #1f2b44;
+      padding: 8px 14px;
+      color: #93c5fd;
+      font-size: 0.78rem;
+      font-family: "JetBrains Mono", monospace;
+    }
+    .terminal-body {
+      flex: 1;
+      overflow: auto;
+      padding: 14px;
+      white-space: pre-wrap;
+      color: #86efac;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.82rem;
+      line-height: 1.55;
+    }
+    .terminal-body::-webkit-scrollbar { width: 8px; }
+    .terminal-body::-webkit-scrollbar-thumb { background: #263247; border-radius: 8px; }
+
+    .report-view {
+      width: 100%;
+      min-height: 0;
+      padding: 16px;
+      flex-direction: column;
+      gap: 12px;
+      overflow: auto;
+    }
+    .report-title {
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: #dbeafe;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 10px;
+    }
+    .stat-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(14, 23, 42, 0.95), rgba(10, 16, 30, 0.95));
+      padding: 12px;
+    }
+    .stat-label {
+      color: #9cb0cf;
+      font-size: 0.76rem;
+      margin-bottom: 3px;
+    }
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+    .report-box {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(10, 16, 30, 0.8);
+      padding: 14px;
+    }
+    .report-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .vuln-item {
+      border-radius: 8px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-left-width: 4px;
+      background: rgba(30, 41, 59, 0.45);
+      border-left-color: #64748b;
+    }
+    .vuln-item--low {
+      border-color: rgba(34, 197, 94, 0.35);
+      border-left-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+    }
+    .vuln-item--medium {
+      border-color: rgba(234, 179, 8, 0.45);
+      border-left-color: #eab308;
+      background: rgba(234, 179, 8, 0.1);
+    }
+    .vuln-item--high {
+      border-color: rgba(249, 115, 22, 0.45);
+      border-left-color: #f97316;
+      background: rgba(249, 115, 22, 0.1);
+    }
+    .vuln-item--critical {
+      border-color: rgba(239, 68, 68, 0.5);
+      border-left-color: #ef4444;
+      background: rgba(244, 63, 94, 0.1);
+    }
+    .vuln-item--unknown {
+      border-color: #3d4f74;
+      border-left-color: #94a3b8;
+      background: rgba(15, 23, 42, 0.55);
+    }
+    .vuln-url {
+      word-break: break-all;
+      line-height: 1.45;
+    }
+    .vuln-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+    .badge-sev {
+      border-radius: 999px;
+      padding: 2px 9px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: capitalize;
+      border: 1px solid #475569;
+      color: #e2e8f0;
+      background: rgba(71, 85, 105, 0.35);
+    }
+    .badge-sev--low {
+      border-color: #15803d;
+      color: #bbf7d0;
+      background: rgba(34, 197, 94, 0.22);
+    }
+    .badge-sev--medium {
+      border-color: #a16207;
+      color: #fef08a;
+      background: rgba(234, 179, 8, 0.22);
+    }
+    .badge-sev--high {
+      border-color: #c2410c;
+      color: #ffedd5;
+      background: rgba(249, 115, 22, 0.25);
+    }
+    .badge-sev--critical {
+      border-color: #991b1b;
+      color: #fecaca;
+      background: rgba(239, 68, 68, 0.28);
+    }
+    .badge-sev--unknown {
+      border-color: #475569;
+      color: #cbd5e1;
+      background: rgba(71, 85, 105, 0.35);
+    }
+    .muted { color: var(--muted); font-size: 0.84rem; }
+
+    @media (min-width: 1240px) {
+      .view.active.scan-view {
+        grid-template-columns: minmax(400px, min(56vw, 980px)) 1fr;
+      }
+      .left-scroll {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 16px;
+        row-gap: 12px;
+        align-content: start;
+      }
+      .left-scroll > .section {
+        margin-bottom: 0;
+      }
+      .left-scroll > .section:nth-child(1),
+      .left-scroll > .section:nth-child(2) {
+        align-self: start;
+      }
+      .left-scroll > .section:nth-child(1) { grid-column: 1; grid-row: 1; }
+      .left-scroll > .section:nth-child(2) { grid-column: 2; grid-row: 1; }
+      .left-scroll > .advanced-toggle {
+        grid-column: 1 / -1;
+        margin-bottom: 0;
+      }
+      .left-scroll > .advanced-wrap.open {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 16px;
+        row-gap: 12px;
+        align-content: start;
+      }
+      .advanced-wrap.open > .section {
+        margin-bottom: 0;
+      }
+      .advanced-wrap.open > .section:nth-child(1),
+      .advanced-wrap.open > .section:nth-child(2) {
+        align-self: start;
+      }
+      .advanced-wrap.open > .section:nth-child(1) { grid-column: 1; grid-row: 1; }
+      .advanced-wrap.open > .section:nth-child(2) { grid-column: 2; grid-row: 1; }
+      .advanced-wrap.open > .section:nth-child(3) {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 1200px) {
+      body { overflow: auto; }
+      .view.active.scan-view {
+        display: flex;
+        flex-direction: column;
+      }
+      .left-pane { width: 100%; max-width: none; }
+      .left-scroll {
+        display: block !important;
+      }
+      .advanced-wrap.open {
+        display: block !important;
+      }
+      .right-pane { min-height: 420px; }
+      .stat-grid { grid-template-columns: repeat(2, minmax(150px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <div class="sidebar-title">Modular <span class="accent">Web Scanner</span></div>
+      <button type="button" class="sidebar-toggle" id="sidebarToggle">☰</button>
+    </div>
+    <nav class="nav-list">
+      <a href="#" class="nav-item active" data-view-target="scanView">
+        <span class="nav-icon">🛰</span><span class="nav-text">스캔 콘솔</span>
+      </a>
+      <a href="#" class="nav-item" data-view-target="reportView">
+        <span class="nav-icon">📊</span><span class="nav-text">결과 리포트</span>
+      </a>
+    </nav>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <div>MWS Runtime</div>
+    </header>
+
+    <section class="view active scan-view" id="scanView">
+    <section class="left-pane">
+      <form id="scanForm" class="left-scroll">
+        <div class="section">
+          <div class="section-header">
+            <span>1) 대상 설정</span>
+            <span class="hint">대상/모듈 선택</span>
+          </div>
+          <div class="section-body">
+            <div class="mb-3">
+              <label class="form-label" for="url">대상 URL</label>
+              <input id="url" type="url" class="form-control" placeholder="http://127.0.0.1/DVWA" required>
+            </div>
+            <div>
+              <label class="form-label" for="scan_type">공격 모듈</label>
+              <select id="scan_type" class="form-select">
+                <option value="all">all (bruteforce 제외)</option>
+                <option value="sqli">sqli</option>
+                <option value="bruteforce">bruteforce</option>
+                <option value="lfi">lfi</option>
+                <option value="file_upload">file_upload</option>
+                <option value="ssrf">ssrf</option>
+              </select>
+            </div>
+            <div class="mt-3">
+              <label class="form-label" for="level">우회 단계</label>
+              <input id="level" type="number" class="form-control" min="0" max="3" value="1">
+              <div class="field-help">
+                전체 모듈에 공통 적용되며, bruteforce에는 적용되지 않습니다.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <span>2) 필수 인증 정보</span>
+            <span class="hint">계정 정보</span>
+          </div>
+          <div class="section-body">
+            <div class="row g-2">
+              <div class="col-md-6">
+                <label class="form-label" for="username">아이디</label>
+                <input id="username" type="text" class="form-control" placeholder="admin">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="password">비밀번호</label>
+                <input id="password" type="password" class="form-control" placeholder="password">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" id="advancedToggle" class="advanced-toggle mb-2" aria-expanded="false">
+          상세 옵션 열기 (선택 입력)
+        </button>
+
+        <div class="advanced-wrap" id="advancedWrap">
+        <div class="section">
+          <div class="section-header">
+            <span>3) 선택 입력: 인증 / 세션 상세</span>
+            <span class="hint">필드 오버라이드 + 수동 세션</span>
+          </div>
+          <div class="section-body">
+            <div class="row g-2">
+              <div class="col-12">
+                <label class="form-label" for="login_url">로그인 URL</label>
+                <input id="login_url" type="url" class="form-control" placeholder="http://127.0.0.1/DVWA/login.php">
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="cookie">쿠키 (선택)</label>
+                <input id="cookie" type="text" class="form-control" placeholder="PHPSESSID=...; security=low">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="username_field">아이디 필드명</label>
+                <input id="username_field" type="text" class="form-control" value="username">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="password_field">비밀번호 필드명</label>
+                <input id="password_field" type="text" class="form-control" value="password">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="csrf_field">CSRF 필드명</label>
+                <input id="csrf_field" type="text" class="form-control" value="user_token">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="submit_field">제출 필드명</label>
+                <input id="submit_field" type="text" class="form-control" value="Login">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <span>4) 선택 입력: 엔진 옵션</span>
+            <span class="hint">실행 제어</span>
+          </div>
+          <div class="section-body">
+            <div class="row g-2">
+              <div class="col-md-3">
+                <label class="form-label" for="rps">RPS</label>
+                <input id="rps" type="number" class="form-control" min="1" value="50">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="session_pool_size">세션 풀</label>
+                <input id="session_pool_size" type="number" class="form-control" min="1" value="3">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="output">출력 파일</label>
+                <input id="output" type="text" class="form-control" value="scan_report.json">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="surfaces_output">공격면 파일</label>
+                <input id="surfaces_output" type="text" class="form-control" value="attack_surfaces.json">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section" id="moduleDetailSection">
+          <div class="section-header">
+            <span>5) 선택 입력: 모듈별 상세</span>
+            <span class="hint" id="moduleDetailHint">SQLi · SSRF</span>
+          </div>
+          <div class="section-body">
+            <div id="detailPanelSqli" class="module-detail-panel">
+            <div class="row g-2 mb-3">
+              <div class="col-12 hint">SQLi</div>
+              <div class="col-md-6">
+                <label class="form-label" for="max_time_payloads">시간기반 상한</label>
+                <input id="max_time_payloads" type="number" class="form-control" min="0" value="0">
+              </div>
+              <div class="col-md-6 d-flex align-items-end">
+                <div class="form-check mb-2">
+                  <input id="include_time_based" type="checkbox" class="form-check-input">
+                  <label for="include_time_based" class="form-check-label">시간기반 포함</label>
+                </div>
+              </div>
+            </div>
+            </div>
+
+            <div id="detailPanelBf" class="module-detail-panel" hidden>
+            <div class="row g-2 mb-3">
+              <div class="col-12 hint">Bruteforce</div>
+              <div class="col-md-4">
+                <label class="form-label" for="bf_wordlist">워드리스트 경로</label>
+                <input id="bf_wordlist" class="form-control" value="config/payloads/bruteforce/common_passwords.txt" placeholder="config/payloads/bruteforce/common_passwords.txt">
+                <div class="field-help">사전 대입 모드에서 사용할 비밀번호 목록 파일 경로입니다.</div>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label" for="bf_mutation_level">변형 강도</label>
+                <input id="bf_mutation_level" type="number" class="form-control" min="0" max="3" value="1" placeholder="1">
+                <div class="field-help">0~3 단계. 높을수록 후보 조합이 많아집니다.</div>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label" for="bf_min_length">최소 길이</label>
+                <input id="bf_min_length" type="number" class="form-control" min="1" value="1" placeholder="1">
+                <div class="field-help">랜덤 대입 시 생성 문자열 최소 길이입니다.</div>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label" for="bf_max_length">최대 길이</label>
+                <input id="bf_max_length" type="number" class="form-control" min="1" value="3" placeholder="3">
+                <div class="field-help">랜덤 대입 시 생성 문자열 최대 길이입니다.</div>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label" for="bf_method">요청 메서드</label>
+                <select id="bf_method" class="form-select">
+                  <option>GET</option>
+                  <option>POST</option>
+                </select>
+                <div class="field-help">직접 타깃 URL 모드에서만 사용됩니다.</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="bf_charset">문자셋</label>
+                <input id="bf_charset" class="form-control" value="abcdefghijklmnopqrstuvwxyz0123456789" placeholder="abcdefghijklmnopqrstuvwxyz0123456789">
+                <div class="field-help">랜덤 대입 시 사용할 문자 집합입니다.</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="bf_target_url">직접 타깃 URL</label>
+                <input id="bf_target_url" class="form-control" placeholder="http://target/login.php">
+                <div class="field-help">요청 파일 없이 직접 브루트포스할 URL입니다.</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="bf_request_file">요청 파일</label>
+                <input id="bf_request_file" class="form-control" placeholder="requests/login.txt">
+                <div class="field-help">Burp 스타일 raw 요청 파일. 타깃 값은 `FUZZ`로 표시합니다.</div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="bf_fuzz_param">FUZZ 파라미터</label>
+                <input id="bf_fuzz_param" class="form-control" value="password" placeholder="password">
+                <div class="field-help">직접 타깃 모드에서 대입할 파라미터명입니다.</div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="bf_target_param">강제 타깃 파라미터</label>
+                <input id="bf_target_param" class="form-control" placeholder="password">
+                <div class="field-help">자동 추론 대신 이 파라미터만 공격합니다.</div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="bf_username_param">사용자명 파라미터</label>
+                <input id="bf_username_param" class="form-control" value="username" placeholder="username">
+                <div class="field-help">폼 내 사용자명 필드 이름입니다.</div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" for="bf_username">사용자명 값</label>
+                <input id="bf_username" class="form-control" value="admin" placeholder="admin">
+                <div class="field-help">브루트포스 시 고정으로 전송할 사용자명 값입니다.</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="bf_length">길이 범위</label>
+                <input id="bf_length" class="form-control" placeholder="2~8 또는 8">
+                <div class="field-help">입력 시 `bf_min/max_length`보다 우선 적용됩니다.</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="bf_max_dictionary">사전 후보 상한</label>
+                <input id="bf_max_dictionary" type="number" class="form-control" min="0" value="0" placeholder="0">
+                <div class="field-help">0이면 전체 사용, 0보다 크면 해당 수만 사용합니다.</div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="bf_max_true_random">랜덤 후보 상한</label>
+                <input id="bf_max_true_random" type="number" class="form-control" min="0" value="0" placeholder="0">
+                <div class="field-help">랜덤 생성 후보 개수를 제한합니다. 0은 무제한입니다.</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="bf_extra_params">추가 파라미터</label>
+                <input id="bf_extra_params" class="form-control" placeholder="username=admin,Login=Login">
+                <div class="field-help">`k=v` 형식으로 쉼표 구분해 추가 전송합니다.</div>
+              </div>
+              <div class="col-md-2 d-flex align-items-center"><div class="form-check"><input id="bf_disable_mutation" class="form-check-input" type="checkbox"><label class="form-check-label" for="bf_disable_mutation">변형 끔</label></div></div>
+              <div class="col-md-2 d-flex align-items-center"><div class="form-check"><input id="bf_true_random" class="form-check-input" type="checkbox"><label class="form-check-label" for="bf_true_random">랜덤 모드</label></div></div>
+              <div class="col-md-2 d-flex align-items-center"><div class="form-check"><input id="bf_stop_on_first_hit" class="form-check-input" type="checkbox" checked><label class="form-check-label" for="bf_stop_on_first_hit">첫 성공 중단</label></div></div>
+            </div>
+            </div>
+
+            <div id="detailPanelSsrf" class="module-detail-panel">
+            <div class="row g-2">
+              <div class="col-12 hint">SSRF</div>
+              <div class="col-md-6 d-flex align-items-end">
+                <div class="form-check mb-2">
+                  <input id="ssrf_include_oob" type="checkbox" class="form-check-input">
+                  <label for="ssrf_include_oob" class="form-check-label">OOB 포함</label>
+                </div>
+              </div>
+            </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </form>
+
+      <div class="actions">
+        <button id="startBtn" type="submit" form="scanForm" class="btn-launch">스캔 시작</button>
+        <button id="checkStatusBtn" type="button" class="btn-poll">상태 조회</button>
+      </div>
+    </section>
+
+    <section class="right-pane">
+      <div class="terminal-head">
+        <div class="dots">
+          <span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span>
+        </div>
+        <div>mws@runtime:~/scan</div>
+      </div>
+      <div class="terminal-meta" id="scanMeta">scan_id: (없음)</div>
+      <div class="terminal-body" id="responseLog">[INIT] Modular Web Scanner console online.
+[INFO] 대상/옵션 입력 후 '스캔 시작' 버튼을 누르세요.</div>
+    </section>
+    </section>
+
+    <section class="view report-view" id="reportView">
+      <div class="report-title">취약점 스캔 결과 리포트</div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-label">상태</div>
+          <div class="stat-value" id="reportStatus">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">진행률</div>
+          <div class="stat-value" id="reportProgress">0%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">대상 URL</div>
+          <div class="stat-value" id="reportTarget" style="font-size: 0.95rem;">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">취약점 수</div>
+          <div class="stat-value" id="reportFindings">0</div>
+        </div>
+      </div>
+
+      <div class="report-box">
+        <div class="section-header" style="padding:0 0 8px 0;border-bottom:1px solid var(--border);margin-bottom:8px;">
+          <span>발견 내역</span>
+          <span class="hint" id="reportScanId">scan_id: (없음)</span>
+        </div>
+        <div id="findingList" class="report-list">
+          <div class="muted">아직 리포트가 없습니다. 스캔을 시작하고 상태를 조회해 주세요.</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const responseLog = document.getElementById("responseLog");
+    const scanMeta = document.getElementById("scanMeta");
+    const form = document.getElementById("scanForm");
+    const checkStatusBtn = document.getElementById("checkStatusBtn");
+    const advancedToggle = document.getElementById("advancedToggle");
+    const advancedWrap = document.getElementById("advancedWrap");
+    const sidebar = document.getElementById("sidebar");
+    const sidebarToggle = document.getElementById("sidebarToggle");
+    const navItems = document.querySelectorAll("[data-view-target]");
+    const views = document.querySelectorAll(".view");
+    const reportStatus = document.getElementById("reportStatus");
+    const reportProgress = document.getElementById("reportProgress");
+    const reportTarget = document.getElementById("reportTarget");
+    const reportFindings = document.getElementById("reportFindings");
+    const reportScanId = document.getElementById("reportScanId");
+    const findingList = document.getElementById("findingList");
+    const scanTypeSelect = document.getElementById("scan_type");
+    const moduleDetailSection = document.getElementById("moduleDetailSection");
+    const detailPanelSqli = document.getElementById("detailPanelSqli");
+    const detailPanelBf = document.getElementById("detailPanelBf");
+    const detailPanelSsrf = document.getElementById("detailPanelSsrf");
+    const moduleDetailHint = document.getElementById("moduleDetailHint");
+    let lastScanId = "";
+    let pollTimer = null;
+    let displayedServerLogCount = 0;
+
+    sidebarToggle.addEventListener("click", () => {
+      sidebar.classList.toggle("collapsed");
+    });
+
+    navItems.forEach((item) => {
+      item.addEventListener("click", (e) => {
+        e.preventDefault();
+        navItems.forEach((x) => x.classList.remove("active"));
+        item.classList.add("active");
+        const target = item.getAttribute("data-view-target");
+        views.forEach((view) => {
+          view.classList.toggle("active", view.id === target);
+        });
+      });
+    });
+
+    advancedToggle.addEventListener("click", () => {
+      const isOpen = advancedWrap.classList.toggle("open");
+      advancedToggle.setAttribute("aria-expanded", String(isOpen));
+      advancedToggle.textContent = isOpen
+        ? "상세 옵션 닫기 (선택 입력)"
+        : "상세 옵션 열기 (선택 입력)";
+    });
+
+    function syncModuleDetailPanels() {
+      const t = scanTypeSelect.value;
+      const showSqli = t === "all" || t === "sqli";
+      const showBf = t === "bruteforce";
+      const showSsrf = t === "all" || t === "ssrf";
+      const any = showSqli || showBf || showSsrf;
+
+      detailPanelSqli.hidden = !showSqli;
+      detailPanelBf.hidden = !showBf;
+      detailPanelSsrf.hidden = !showSsrf;
+      moduleDetailSection.hidden = !any;
+
+      const labels = [];
+      if (showSqli) labels.push("SQLi");
+      if (showBf) labels.push("Bruteforce");
+      if (showSsrf) labels.push("SSRF");
+      moduleDetailHint.textContent = labels.length ? labels.join(" · ") : "";
+    }
+
+    scanTypeSelect.addEventListener("change", syncModuleDetailPanels);
+    syncModuleDetailPanels();
+
+    function now() {
+      return new Date().toISOString().replace("T", " ").slice(11, 19);
+    }
+
+    function appendLog(level, message) {
+      const markers = { INFO: "[*]", OK: "[+]", ERR: "[-]" };
+      responseLog.textContent += `\n[${now()}] ${markers[level] || "[*]"} ${message}`;
+      responseLog.scrollTop = responseLog.scrollHeight;
+    }
+
+    function appendServerLogs(logs) {
+      if (!Array.isArray(logs)) return;
+      for (let i = displayedServerLogCount; i < logs.length; i += 1) {
+        responseLog.textContent += `\n${logs[i]}`;
+      }
+      displayedServerLogCount = logs.length;
+      responseLog.scrollTop = responseLog.scrollHeight;
+    }
+
+    function toInt(id, fallback = 0) {
+      const n = parseInt(document.getElementById(id).value, 10);
+      return Number.isNaN(n) ? fallback : n;
+    }
+
+    function parseExtraParams(value) {
+      if (!value.trim()) return [];
+      return value.split(",").map((item) => item.trim()).filter(Boolean);
+    }
+
+    function severityTier(raw) {
+      const s = String(raw ?? "").trim().toLowerCase();
+      if (s === "critical" || s === "crit") return "critical";
+      if (s === "high") return "high";
+      if (s === "medium" || s === "med") return "medium";
+      if (s === "low") return "low";
+      return "unknown";
+    }
+
+    const SEVERITY_SORT_ORDER = { critical: 0, high: 1, medium: 2, low: 3, unknown: 4 };
+
+    function severityRank(item) {
+      const raw = item.attack_info?.severity ?? item.severity;
+      const tier = severityTier(raw);
+      return SEVERITY_SORT_ORDER[tier] ?? 4;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function renderReport(scan) {
+      const reportVulns = scan.report_json?.vulnerabilities || [];
+      const findings = reportVulns.length ? reportVulns : (scan.findings || []);
+      reportScanId.textContent = `scan_id: ${scan.scan_id || "(없음)"}`;
+      reportStatus.textContent = scan.status || "-";
+      reportProgress.textContent = `${scan.progress ?? 0}%`;
+      reportTarget.textContent = scan.target || scan.request?.url || "-";
+      reportFindings.textContent = String(findings.length);
+
+      if (!findings.length) {
+        findingList.innerHTML = '<div class="muted">발견된 취약점이 없습니다.</div>';
+        return;
+      }
+
+      const sorted = [...findings].sort((a, b) => {
+        const ra = severityRank(a);
+        const rb = severityRank(b);
+        if (ra !== rb) return ra - rb;
+        const ua = String(a.target?.url || a.url || "");
+        const ub = String(b.target?.url || b.url || "");
+        if (ua !== ub) return ua.localeCompare(ub);
+        const pa = String(a.target?.parameter || a.parameter || "");
+        const pb = String(b.target?.parameter || b.parameter || "");
+        return pa.localeCompare(pb);
+      });
+
+      findingList.innerHTML = sorted.map((item) => {
+        const severityRaw = item.attack_info?.severity || item.severity || "Unknown";
+        const tier = severityTier(severityRaw);
+        const severity = escapeHtml(severityRaw);
+        const type = escapeHtml(item.attack_info?.type || item.type || "Unknown");
+        const parameter = escapeHtml(item.target?.parameter || item.parameter || "-");
+        const targetUrl = escapeHtml(
+          item.target?.url || item.url || scan.target || scan.request?.url || "-"
+        );
+        const location = escapeHtml(item.target?.location || item.location || "-");
+        const payload = escapeHtml(item.attack_info?.payload_value || item.payload || "-");
+        return `
+          <div class="vuln-item vuln-item--${tier}">
+            <div class="vuln-head">
+              <span class="badge-sev badge-sev--${tier}">${severity}</span>
+              <span class="muted">${type}</span>
+            </div>
+            <div class="muted vuln-url">타겟 URL: ${targetUrl}</div>
+            <div class="muted">파라미터: ${parameter}</div>
+            <div class="muted">위치: ${location}</div>
+            <div class="muted">페이로드: ${payload}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function syncScanState() {
+      if (!lastScanId) return;
+      const data = await requestJson(`/api/scan/${lastScanId}`);
+      scanMeta.textContent = `scan_id: ${lastScanId}`;
+      appendServerLogs(data.logs || []);
+      renderReport(data);
+
+      if (data.status === "completed" || data.status === "failed") {
+        if (pollTimer) {
+          clearInterval(pollTimer);
+          pollTimer = null;
+        }
+      }
+      return data;
+    }
+
+    function buildPayload() {
+      return {
+        url: document.getElementById("url").value.trim(),
+        scan_type: document.getElementById("scan_type").value,
+        level: toInt("level", 1),
+        auth: {
+          login_url: document.getElementById("login_url").value.trim(),
+          cookie: document.getElementById("cookie").value.trim(),
+          username: document.getElementById("username").value,
+          password: document.getElementById("password").value,
+          username_field: document.getElementById("username_field").value,
+          password_field: document.getElementById("password_field").value,
+          csrf_field: document.getElementById("csrf_field").value,
+          submit_field: document.getElementById("submit_field").value
+        },
+        engine: {
+          rps: toInt("rps", 50),
+          session_pool_size: toInt("session_pool_size", 3),
+          output: document.getElementById("output").value,
+          surfaces_output: document.getElementById("surfaces_output").value
+        },
+        sqli: {
+          include_time_based: document.getElementById("include_time_based").checked,
+          max_time_payloads: toInt("max_time_payloads", 0)
+        },
+        bruteforce: {
+          bf_wordlist: document.getElementById("bf_wordlist").value,
+          bf_disable_mutation: document.getElementById("bf_disable_mutation").checked,
+          bf_mutation_level: toInt("bf_mutation_level", 1),
+          bf_true_random: document.getElementById("bf_true_random").checked,
+          bf_charset: document.getElementById("bf_charset").value,
+          bf_min_length: toInt("bf_min_length", 1),
+          bf_max_length: toInt("bf_max_length", 3),
+          bf_length: document.getElementById("bf_length").value.trim(),
+          bf_max_dictionary: toInt("bf_max_dictionary", 0),
+          bf_max_true_random: toInt("bf_max_true_random", 0),
+          bf_stop_on_first_hit: document.getElementById("bf_stop_on_first_hit").checked,
+          bf_request_file: document.getElementById("bf_request_file").value.trim(),
+          bf_target_url: document.getElementById("bf_target_url").value.trim(),
+          bf_method: document.getElementById("bf_method").value,
+          bf_fuzz_param: document.getElementById("bf_fuzz_param").value.trim(),
+          bf_target_param: document.getElementById("bf_target_param").value.trim(),
+          bf_username_param: document.getElementById("bf_username_param").value.trim(),
+          bf_username: document.getElementById("bf_username").value.trim(),
+          bf_extra_params: parseExtraParams(document.getElementById("bf_extra_params").value)
+        },
+        ssrf: {
+          ssrf_include_oob: document.getElementById("ssrf_include_oob").checked
+        }
+      };
+    }
+
+    async function requestJson(url, options) {
+      const res = await fetch(url, options);
+      const data = await res.json();
+      if (!res.ok) throw new Error(JSON.stringify(data, null, 2));
+      return data;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const payload = buildPayload();
+      appendLog("INFO", `스캔 요청 준비: target=${payload.url}, type=${payload.scan_type}`);
+      appendLog("INFO", "POST /api/scan/start 전송");
+      try {
+        const data = await requestJson("/api/scan/start", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        lastScanId = data.scan_id;
+        displayedServerLogCount = 0;
+        scanMeta.textContent = `scan_id: ${lastScanId}`;
+        appendLog("OK", `요청 접수됨: scan_id=${lastScanId}`);
+        reportScanId.textContent = `scan_id: ${lastScanId}`;
+        reportTarget.textContent = data.request?.url || "-";
+        reportStatus.textContent = "queued";
+        reportProgress.textContent = "0%";
+        reportFindings.textContent = "0";
+        findingList.innerHTML = '<div class="muted">스캔 진행 중입니다. 상태 조회 후 리포트가 갱신됩니다.</div>';
+        appendLog("INFO", "응답 JSON:");
+        appendLog("INFO", JSON.stringify(data, null, 2));
+        if (pollTimer) clearInterval(pollTimer);
+        pollTimer = setInterval(() => {
+          syncScanState().catch((err) => appendLog("ERR", `자동 동기화 실패: ${err}`));
+        }, 1000);
+        await syncScanState();
+      } catch (err) {
+        appendLog("ERR", `요청 실패: ${err}`);
+      }
+    });
+
+    checkStatusBtn.addEventListener("click", async () => {
+      if (!lastScanId) {
+        appendLog("ERR", "먼저 스캔을 시작해 scan_id를 생성하세요.");
+        return;
+      }
+      appendLog("INFO", `GET /api/scan/${lastScanId}`);
+      try {
+        const data = await syncScanState();
+        appendLog("OK", `상태=${data.status}, 진행률=${data.progress}%`);
+      } catch (err) {
+        appendLog("ERR", `상태 조회 실패: ${err}`);
+      }
+    });
+  </script>
+</body>
+</html>

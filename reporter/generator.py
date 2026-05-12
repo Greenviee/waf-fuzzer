@@ -7,6 +7,28 @@ from typing import Any
 from fuzzer import EngineStats, Finding
 
 
+def _severity_rank(raw: str) -> int:
+    """Lower is more severe (critical first)."""
+    key = str(raw or "").strip().lower()
+    if key in ("critical", "crit"):
+        return 0
+    if key == "high":
+        return 1
+    if key in ("medium", "med"):
+        return 2
+    if key == "low":
+        return 3
+    return 4
+
+
+def _finding_sort_key(finding: Finding) -> tuple[int, str, str]:
+    payload_obj = finding.payload
+    severity = str(getattr(payload_obj, "risk_level", "high"))
+    url = str(getattr(finding.surface, "url", "") or "")
+    param = str(finding.parameter or "")
+    return (_severity_rank(severity), url, param)
+
+
 class ReportGenerator:
     """
     Converts fuzzing engine statistics and findings into readable reports.
@@ -28,7 +50,7 @@ class ReportGenerator:
         type_width = 34
 
         print("\n" + "=" * table_width)
-        print("WAF Fuzzer Security Scan Report")
+        print("Modular Web Scanner Security Scan Report")
         print(f"Scan completed at: {self.timestamp}")
         print("=" * table_width)
 
@@ -51,7 +73,7 @@ class ReportGenerator:
         )
         print("-" * table_width)
 
-        for finding in self.findings:
+        for finding in sorted(self.findings, key=_finding_sort_key):
             payload_obj = finding.payload
             severity = getattr(payload_obj, "risk_level", "HIGH")
             attack_type = getattr(payload_obj, "attack_type", "PotentialIssue")
@@ -95,7 +117,7 @@ class ReportGenerator:
             "vulnerabilities": [],
         }
 
-        for finding in self.findings:
+        for finding in sorted(self.findings, key=_finding_sort_key):
             payload_obj = finding.payload
             payload_value = getattr(payload_obj, "value", str(payload_obj))
             attack_type = getattr(payload_obj, "attack_type", "Unknown")
