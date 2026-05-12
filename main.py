@@ -14,6 +14,10 @@ from cli.surfaces import resolve_surfaces
 
 async def main() -> None:
     args = parse_arguments()
+    if args.level is not None:
+        args.sqli_evasion_level = args.level
+        args.lfi_evasion_level = args.level
+        args.ssrf_evasion_level = min(args.level, 2)
     try:
         args.bf_min_length, args.bf_max_length = parse_bf_length(
             args.bf_length,

@@ -92,6 +92,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="Attack category to run (default: all, excludes bruteforce)",
     )
     parser.add_argument(
+        "--level",
+        type=int,
+        choices=[0, 1, 2, 3],
+        default=None,
+        metavar="N",
+        help=(
+            "Set SQLi, LFI, and SSRF evasion level to N at once (bruteforce unchanged). "
+            "SSRF is capped at 2. Overrides --sqli-evasion-level, --lfi-evasion-level, "
+            "and --ssrf-evasion-level when set."
+        ),
+    )
+    parser.add_argument(
         "--bf-wordlist",
         type=str,
         default=os.path.join("config", "payloads", "common_passwords.txt"),
@@ -237,47 +249,26 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
-        "--evasion-case",
-        action="store_true",
-        help="Enable case alternation bypass variants",
-    )
-    parser.add_argument(
-        "--evasion-null-byte",
-        action="store_true",
-        help="Enable null-byte bypass variants",
-    )
-    parser.add_argument(
-        "--evasion-keyword-split",
-        action="store_true",
-        help="Enable SQL keyword split bypass variants",
-    )
-    parser.add_argument(
-        "--evasion-double-url",
-        action="store_true",
-        help="Enable double URL encoding variants",
-    )
-    parser.add_argument(
-        "--evasion-unicode",
-        action="store_true",
-        help="Enable unicode escape variants",
-    )
-    parser.add_argument(
         "--sqli-evasion-level",
         type=int,
         choices=[0, 1, 2, 3],
         default=0,
-        help="evasion level: 0 (None), 1 (1 technique), 2 (2 techniques), 3 (3 techniques)"
-    )  
-    parser.add_argument(
-        "--include-time-based",
-        action="store_true",
-        help="Include SQLi time/stacked payloads (much slower)",
+        help=(
+            "SQLi evasion intensity (cumulative per payload pass): "
+            "0=raw only; 1=keyword mixed-case; 2=+space as /**/; "
+            "3=+double URL-encode and %%00 suffix"
+        ),
     )
     parser.add_argument(
-        "--max-time-payloads",
+        "--sqli-time-based",
+        action="store_true",
+        help="SQLi: include time/stacked payloads (separate set; much slower)",
+    )
+    parser.add_argument(
+        "--sqli-time-max",
         type=int,
         default=0,
-        help="Limit number of time/stacked payloads when enabled (0=all)",
+        help="SQLi: max time/stacked payloads when --sqli-time-based is set (0=all)",
     )
     parser.add_argument(
         "--session-pool-size",
@@ -296,16 +287,19 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
-        "--ssrf-bypass-level",
+        "--ssrf-evasion-level",
         type=int,
         choices=[0, 1, 2],
         default=1,
-        help="SSRF bypass mutation level (0=off, 1=path encode, 2=path+ip obfuscation)",
+        help=(
+            "SSRF mutation level "
+            "(0=off, 1=path encode, 2=path encode + IP obfuscation)"
+        ),
     )
     parser.add_argument(
-        "--ssrf-include-oob",
+        "--ssrf-oob",
         action="store_true",
-        help="Include OOB/template SSRF payloads in runtime payload set",
+        help="SSRF: add OOB/template payloads to the runtime payload set",
     )
     return parser
 
