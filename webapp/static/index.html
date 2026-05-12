@@ -526,12 +526,13 @@
           </div>
         </div>
 
-        <div class="section">
+        <div class="section" id="moduleDetailSection">
           <div class="section-header">
             <span>5) 선택 입력: 모듈별 상세</span>
-            <span class="hint">SQLi / Bruteforce / SSRF</span>
+            <span class="hint" id="moduleDetailHint">SQLi · SSRF</span>
           </div>
           <div class="section-body">
+            <div id="detailPanelSqli" class="module-detail-panel">
             <div class="row g-2 mb-3">
               <div class="col-12 hint">SQLi</div>
               <div class="col-md-6">
@@ -545,7 +546,9 @@
                 </div>
               </div>
             </div>
+            </div>
 
+            <div id="detailPanelBf" class="module-detail-panel" hidden>
             <div class="row g-2 mb-3">
               <div class="col-12 hint">Bruteforce</div>
               <div class="col-md-4">
@@ -635,7 +638,9 @@
               <div class="col-md-2 d-flex align-items-center"><div class="form-check"><input id="bf_true_random" class="form-check-input" type="checkbox"><label class="form-check-label" for="bf_true_random">랜덤 모드</label></div></div>
               <div class="col-md-2 d-flex align-items-center"><div class="form-check"><input id="bf_stop_on_first_hit" class="form-check-input" type="checkbox" checked><label class="form-check-label" for="bf_stop_on_first_hit">첫 성공 중단</label></div></div>
             </div>
+            </div>
 
+            <div id="detailPanelSsrf" class="module-detail-panel">
             <div class="row g-2">
               <div class="col-12 hint">SSRF</div>
               <div class="col-md-6 d-flex align-items-end">
@@ -644,6 +649,7 @@
                   <label for="ssrf_include_oob" class="form-check-label">OOB 포함</label>
                 </div>
               </div>
+            </div>
             </div>
           </div>
         </div>
@@ -720,6 +726,12 @@
     const reportFindings = document.getElementById("reportFindings");
     const reportScanId = document.getElementById("reportScanId");
     const findingList = document.getElementById("findingList");
+    const scanTypeSelect = document.getElementById("scan_type");
+    const moduleDetailSection = document.getElementById("moduleDetailSection");
+    const detailPanelSqli = document.getElementById("detailPanelSqli");
+    const detailPanelBf = document.getElementById("detailPanelBf");
+    const detailPanelSsrf = document.getElementById("detailPanelSsrf");
+    const moduleDetailHint = document.getElementById("moduleDetailHint");
     let lastScanId = "";
     let pollTimer = null;
     let displayedServerLogCount = 0;
@@ -747,6 +759,28 @@
         ? "상세 옵션 닫기 (선택 입력)"
         : "상세 옵션 열기 (선택 입력)";
     });
+
+    function syncModuleDetailPanels() {
+      const t = scanTypeSelect.value;
+      const showSqli = t === "all" || t === "sqli";
+      const showBf = t === "bruteforce";
+      const showSsrf = t === "all" || t === "ssrf";
+      const any = showSqli || showBf || showSsrf;
+
+      detailPanelSqli.hidden = !showSqli;
+      detailPanelBf.hidden = !showBf;
+      detailPanelSsrf.hidden = !showSsrf;
+      moduleDetailSection.hidden = !any;
+
+      const labels = [];
+      if (showSqli) labels.push("SQLi");
+      if (showBf) labels.push("Bruteforce");
+      if (showSsrf) labels.push("SSRF");
+      moduleDetailHint.textContent = labels.length ? labels.join(" · ") : "";
+    }
+
+    scanTypeSelect.addEventListener("change", syncModuleDetailPanels);
+    syncModuleDetailPanels();
 
     function now() {
       return new Date().toISOString().replace("T", " ").slice(11, 19);
