@@ -8,7 +8,7 @@ class BaseModule(ABC):
 
     @abstractmethod
     def get_payloads(self) -> List[Payload]:
-        """config/payloads/ 에서 페이로드를 로드하거나 리스트를 반환"""
+        """config/payloads/<모듈>/ 에서 페이로드를 로드하거나 리스트를 반환"""
         pass
 
     @abstractmethod

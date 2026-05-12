@@ -30,8 +30,8 @@ def print_scan_configuration(
     attack_type: str,
     module_count: int,
     payload_count: int,
-    include_time_based: bool,
-    max_time_payloads: int,
+    sqli_time_based: bool,
+    sqli_time_max: int,
     total_requests: int,
     rps: int,
     delay: float,
@@ -46,8 +46,8 @@ def print_scan_configuration(
     print(f"Payload count:  {payload_count}")
     print(
         "SQLi timing:    "
-        + ("included" if include_time_based else "excluded (fast mode)")
-        + (f", max={max_time_payloads}" if include_time_based else "")
+        + ("included" if sqli_time_based else "excluded (fast mode)")
+        + (f", max={sqli_time_max}" if sqli_time_based else "")
     )
     print(f"Total requests: {total_requests}")
     print("Evasions:       off (mutator disabled)")

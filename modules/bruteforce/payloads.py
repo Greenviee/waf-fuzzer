@@ -6,7 +6,7 @@ from typing import Iterable
 
 from core.models import Payload
 
-DEFAULT_WORDLIST_PATH = os.path.join("config", "payloads", "common_passwords.txt")
+DEFAULT_WORDLIST_PATH = os.path.join("config", "payloads", "bruteforce", "common_passwords.txt")
 
 
 def _resolve_wordlist_file(wordlist_path: str | None = None) -> str | None:

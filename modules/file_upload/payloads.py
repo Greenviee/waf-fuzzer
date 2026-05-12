@@ -13,7 +13,7 @@ class FilePayload:
     attack_type: str
 
 
-_CONFIG_PATH = Path("config") / "payloads" / "file_upload_payloads.json"
+_CONFIG_PATH = Path("config") / "payloads" / "file_upload" / "file_upload_payloads.json"
 
 
 def _load_payload_config() -> dict:

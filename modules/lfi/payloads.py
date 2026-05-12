@@ -15,6 +15,7 @@ PAYLOAD_FILE = (
     Path(__file__).resolve().parents[2]
     / "config"
     / "payloads"
+    / "lfi"
     / "LFI-LFISuite-pathtotest.txt"
 )
 
