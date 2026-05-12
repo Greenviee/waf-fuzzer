@@ -51,7 +51,7 @@ class SQLiOptions(BaseModel):
 
 
 class BruteforceOptions(BaseModel):
-    bf_wordlist: str = "config/payloads/common_passwords.txt"
+    bf_wordlist: str = "config/payloads/bruteforce/common_passwords.txt"
     bf_disable_mutation: bool = False
     bf_mutation_level: int = Field(default=1, ge=0, le=3)
     bf_true_random: bool = False

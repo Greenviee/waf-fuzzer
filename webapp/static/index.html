@@ -476,7 +476,7 @@
             <div>
               <label class="form-label" for="scan_type">공격 모듈</label>
               <select id="scan_type" class="form-select">
-                <option value="all">all (전체 모듈)</option>
+                <option value="all">all (sqli·lfi·file_upload·ssrf, bruteforce 제외)</option>
                 <option value="sqli">sqli</option>
                 <option value="bruteforce">bruteforce</option>
                 <option value="lfi">lfi</option>
@@ -607,7 +607,7 @@
               <div class="col-12 hint">Bruteforce</div>
               <div class="col-md-4">
                 <label class="form-label" for="bf_wordlist">워드리스트 경로</label>
-                <input id="bf_wordlist" class="form-control" value="config/payloads/common_passwords.txt" placeholder="config/payloads/common_passwords.txt">
+                <input id="bf_wordlist" class="form-control" value="config/payloads/bruteforce/common_passwords.txt" placeholder="config/payloads/bruteforce/common_passwords.txt">
                 <div class="field-help">사전 대입 모드에서 사용할 비밀번호 목록 파일 경로입니다.</div>
               </div>
               <div class="col-md-2">

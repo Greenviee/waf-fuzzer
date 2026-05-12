@@ -16,7 +16,7 @@ def prepare_scan_context(args, surfaces):
         print(f"No modules registered for attack type {args.type!r}. Exiting.")
         return None
 
-    if args.type in ("bruteforce", "all") and not os.path.exists(args.bf_wordlist):
+    if args.type == "bruteforce" and not os.path.exists(args.bf_wordlist):
         print(f"Bruteforce wordlist not found: {args.bf_wordlist}")
         return None
 
