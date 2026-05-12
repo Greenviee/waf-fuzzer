@@ -20,6 +20,7 @@ from cli.surfaces import resolve_surfaces
 from fuzzer import FuzzerEngine
 from fuzzer.request_builder import build_and_send_request
 from reporter import ReportGenerator
+from reporter.generator import _finding_sort_key
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
@@ -224,7 +225,7 @@ def _build_cli_args(req: ScanRequest) -> Namespace:
 
 def _serialize_findings(findings) -> list[dict[str, str]]:
     serialized: list[dict[str, str]] = []
-    for finding in findings:
+    for finding in sorted(findings, key=_finding_sort_key):
         payload_obj = finding.payload
         severity = str(getattr(payload_obj, "risk_level", "HIGH"))
         attack_type = str(
@@ -239,6 +240,7 @@ def _serialize_findings(findings) -> list[dict[str, str]]:
                 "severity": severity,
                 "location": location_text,
                 "parameter": str(finding.parameter),
+                "url": str(getattr(finding.surface, "url", "") or ""),
                 "type": attack_type,
                 "payload": payload_value,
             }
