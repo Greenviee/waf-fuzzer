@@ -74,6 +74,14 @@ async def run_scan(args, *, base_url: str, surfaces) -> None:
         delay=context["delay"],
     )
 
+    async def _request_sender(session, surface, parameter, payload):
+        if args.type == "bruteforce":
+            pv = str(payload.value) if hasattr(payload, "value") else str(payload)
+            if pv == "password":
+                print(f"[BF DEBUG] {parameter}={pv!r}")
+
+        return await build_and_send_request(session, surface, parameter, payload)
+
     scan_task = asyncio.create_task(
         engine.run_with_attack_modules(
             surfaces=surfaces,
@@ -89,8 +97,4 @@ async def run_scan(args, *, base_url: str, surfaces) -> None:
     reporter = ReportGenerator(stats=stats, findings=engine.findings)
     reporter.print_cli_report()
     reporter.export_to_json(args.output)
-
-
-async def _request_sender(session, surface, parameter, payload):
-    return await build_and_send_request(session, surface, parameter, payload)
 

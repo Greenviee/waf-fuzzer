@@ -157,12 +157,22 @@ class SessionManager:
         login_page = await self.get(auth_config.login_url)
 
         if not login_page:
+            logger.warning(
+                "로그인 페이지 GET 실패(타임아웃·연결 거부·DNS 등): %s",
+                auth_config.login_url,
+            )
             return False
 
         html = login_page.get("text", "")
         csrf_token = None
         if auth_config.csrf_token_name:
             csrf_token = self._extract_csrf_token(html, auth_config.csrf_token_name)
+            if not csrf_token:
+                logger.warning(
+                    "CSRF 필드(%s) 값을 찾지 못했습니다. 사이트가 DVWA와 다르면 "
+                    "--csrf-field 를 비우거나 실제 hidden 필드명으로 맞춰 보세요.",
+                    auth_config.csrf_token_name,
+                )
 
         login_data = {
             auth_config.username_field: auth_config.username,
@@ -184,10 +194,15 @@ class SessionManager:
         )
 
         if not response:
+            logger.warning(
+                "로그인 POST 응답 없음(네트워크 오류 등): %s",
+                auth_config.login_url,
+            )
             return False
 
         text = response.get("text", "")
         final_url = response.get("url", "")
+        status = response.get("status")
 
         redirect_url = self._extract_meta_redirect(text, auth_config.login_url)
         if redirect_url:
@@ -212,6 +227,11 @@ class SessionManager:
             self._authenticated = True
             return True
 
+        logger.warning(
+            "로그인 실패로 판단: status=%s final_url=%s",
+            status,
+            final_url,
+        )
         return False
 
     @property

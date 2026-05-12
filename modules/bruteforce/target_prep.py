@@ -54,33 +54,27 @@ def select_bruteforce_target_param(
         "pwd",
         "otp",
         "pin",
-        "token",
-        "code",
-        "auth_code",
-        "verification_code",
+        "passcode",
     ]
     for candidate in candidate_order:
         found = find_param_key(parameters, candidate)
         if found:
             return found
 
-    username_key = find_param_key(parameters, username_param)
-    skip_keys = {"login", "submit", "action", "btnlogin", "btnsubmit"}
-    for key in parameters.keys():
-        key_lower = key.lower()
-        if key_lower in skip_keys:
-            continue
-        if username_key and key == username_key:
-            continue
-        return key
-
-    return next(iter(parameters.keys()), None)
+    # Conservative mode:
+    # do not brute-force ambiguous params when no explicit password-like key exists.
+    return None
 
 
 def prepare_bruteforce_surfaces(
     surfaces: list[AttackSurface],
     args,
 ) -> list[AttackSurface]:
+    """
+    레거시 헬퍼: 크롤된 표면에 FUZZ 마커를 미리 주입하는 방식.
+    현재는 BruteforceModule.get_target_parameters 의 휴리스틱 모드를
+    통해 모듈 내부에서 처리하므로, --bf-request-file 등 명시적 모드에서만 사용된다.
+    """
     prepared: list[AttackSurface] = []
     for surface in surfaces:
         params = getattr(surface, "parameters", None)
@@ -106,4 +100,27 @@ def prepare_bruteforce_surfaces(
         prepared.append(surface)
 
     return prepared
+
+
+def apply_username_to_surfaces(
+    surfaces: list[AttackSurface],
+    *,
+    username_param: str,
+    username_value: str,
+) -> list[AttackSurface]:
+    """
+    크롤 모드 브루트포스 전처리: 유저네임 파라미터 값만 고정하고,
+    FUZZ 마킹이나 표면 필터링은 BruteforceModule.get_target_parameters 에 위임한다.
+    parameters dict 가 없는 표면은 조용히 제외한다.
+    """
+    result: list[AttackSurface] = []
+    for surface in surfaces:
+        params = getattr(surface, "parameters", None)
+        if not isinstance(params, dict) or not params:
+            continue
+        username_key = find_param_key(params, username_param)
+        if username_key:
+            params[username_key] = username_value
+        result.append(surface)
+    return result
 

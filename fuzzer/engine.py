@@ -486,6 +486,12 @@ class FuzzerEngine:
         if stop_event is not None and stop_event.is_set():
             return
 
+        if module.name == "Brute Force":
+            payload_value = str(getattr(payload, "value", payload))
+            print(
+                f"[BF DEBUG] url={surface.url} param={parameter} payload={payload_value!r}"
+            )
+
         response: Any
         try:
             async with self._semaphore:

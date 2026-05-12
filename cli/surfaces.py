@@ -10,8 +10,8 @@ from crawler.engine import CrawlConfig, CrawlerEngine
 from crawler.session_manager import AuthConfig
 from modules.bruteforce.request_parser import parse_raw_request
 from modules.bruteforce.target_prep import (
+    apply_username_to_surfaces,
     build_targeted_bruteforce_surface,
-    prepare_bruteforce_surfaces,
 )
 from parsers.surface_builder import SurfaceBuilder
 
@@ -96,6 +96,34 @@ async def _resolve_crawled_surfaces(
     return surfaces
 
 
+async def _login_and_get_cookies(args, *, extra_cookies: dict[str, str]) -> dict[str, str]:
+    """
+    --login-url 이 설정된 경우 임시 크롤러 세션으로 로그인한 뒤 쿠키를 반환한다.
+    로그인 설정이 없거나 실패하면 extra_cookies 를 그대로 반환한다.
+    """
+    login_url = (args.login_url or "").strip()
+    if not login_url:
+        return dict(extra_cookies)
+
+    crawler = CrawlerEngine(queue_manager=None, config=CrawlConfig())
+    if extra_cookies:
+        crawler.session_manager.set_cookies(extra_cookies)
+    try:
+        await crawler.session_manager.create_session()
+        success = await _login_if_configured(args, crawler)
+        if success:
+            session_cookies = crawler.session_manager.get_cookies()
+            merged = dict(extra_cookies)
+            merged.update(session_cookies)
+            return merged
+    finally:
+        try:
+            await crawler.session_manager.close()
+        except Exception:
+            pass
+    return dict(extra_cookies)
+
+
 async def _login_if_configured(args, crawler: CrawlerEngine) -> bool:
     username = (args.username or "").strip()
     password = (args.password or "").strip()
@@ -135,24 +163,34 @@ async def _resolve_bruteforce_surfaces(
         return _resolve_raw_request_mode(args, cookies)
 
     if args.bf_target_url:
+        # --bf-target-url 이 주어져도 --login-url 이 있으면 먼저 로그인해서
+        # 세션 쿠키를 확보한 뒤 AttackSurface 에 병합한다.
+        session_cookies = await _login_and_get_cookies(args, extra_cookies=cookies)
         target_label = args.bf_target_param or args.bf_fuzz_param
         print(f"[*] Targeted URL mode: {args.bf_target_url} [{target_label}=FUZZ]")
-        return [build_targeted_bruteforce_surface(args, cookies)]
+        return [build_targeted_bruteforce_surface(args, session_cookies)]
 
-    # 실제 크롤러로 표면을 수집한 뒤 bruteforce용으로 가공
+    # 크롤 모드: 크롤러가 수집한 raw 표면 전체를 BruteforceModule 에 넘기고,
+    # 모듈 내부 휴리스틱(get_target_parameters / _is_brute_candidate)이
+    # 브루트포스 후보를 선별한다.
+    # 여기서는 유저네임 파라미터 값만 사전에 주입해 둔다.
     surfaces = await _resolve_crawled_surfaces(
         args=args,
         start_url=base_url,
         cookies=cookies,
     )
-    surfaces = prepare_bruteforce_surfaces(surfaces, args)
+    surfaces = apply_username_to_surfaces(
+        surfaces,
+        username_param=args.bf_username_param,
+        username_value=args.bf_username,
+    )
     if not surfaces:
         print(
-            "No suitable parser surfaces found for bruteforce mode. "
-            "Use --bf-target-url or --bf-request-file."
+            "No attack surfaces collected for bruteforce mode. "
+            "Use --bf-target-url or --bf-request-file for direct targeting."
         )
         return []
-    print(f"[*] Parser mode: prepared {len(surfaces)} brute-force surface(s).")
+    print(f"[*] Crawler mode: passing {len(surfaces)} surface(s) to bruteforce module heuristics.")
     return surfaces
 
 
