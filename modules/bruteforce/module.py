@@ -118,7 +118,17 @@ class BruteforceModule(BaseModule):
         if fuzz_params:
             return fuzz_params
 
-        # Mode 2: 휴리스틱 자동 선별
+        # Mode 2: 명시 타겟 파라미터 우선(--bf-target-param)
+        # 사용자가 타겟 파라미터를 지정한 경우 URL/키워드 휴리스틱보다 우선 적용한다.
+        if self.bf_target_param:
+            explicit = select_bruteforce_target_param(
+                surface_params,
+                username_param=self.username_param,
+                explicit_target=self.bf_target_param,
+            )
+            return [explicit] if explicit else []
+
+        # Mode 3: 휴리스틱 자동 선별
         if not self._is_brute_candidate(surface):
             return []
 

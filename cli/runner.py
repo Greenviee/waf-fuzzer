@@ -75,11 +75,6 @@ async def run_scan(args, *, base_url: str, surfaces) -> None:
     )
 
     async def _request_sender(session, surface, parameter, payload):
-        if args.type == "bruteforce":
-            pv = str(payload.value) if hasattr(payload, "value") else str(payload)
-            if pv == "password":
-                print(f"[BF DEBUG] {parameter}={pv!r}")
-
         return await build_and_send_request(session, surface, parameter, payload)
 
     scan_task = asyncio.create_task(

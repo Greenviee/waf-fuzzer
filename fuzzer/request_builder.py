@@ -262,6 +262,70 @@ def _is_file_payload(payload: Any) -> bool:
     )
 
 
+_BASELINE_FUZZ_SENTINEL = "__BASELINE_INVALID_PW__"
+
+
+def _substitute_fuzz_marker_in_params(params: dict[str, Any]) -> dict[str, Any]:
+    """Replace literal FUZZ placeholders so baseline requests are consistent vs attacks."""
+    out: dict[str, Any] = {}
+    for k, v in params.items():
+        if v == "FUZZ":
+            out[k] = _BASELINE_FUZZ_SENTINEL
+        else:
+            out[k] = v
+    return out
+
+
+def _baseline_delivery_kwargs(
+    surface: AttackSurface,
+    *,
+    url: str,
+    req_params: dict[str, Any],
+    headers: dict[str, Any],
+    cookies: dict[str, Any],
+) -> tuple[str, dict[str, Any]]:
+    """
+    Build request kwargs for a baseline shot, matching build_and_send_request encoding
+    (query vs body vs json vs headers vs cookies). Previously baseline always used query
+    params, which broke POST form bruteforce comparisons (false positives on every payload).
+    """
+    request_kwargs: dict[str, Any] = {}
+    loc = surface.param_location
+
+    if loc == ParamLocation.QUERY:
+        if req_params:
+            request_kwargs["params"] = req_params
+    elif loc == ParamLocation.BODY_FORM:
+        request_kwargs["data"] = req_params
+    elif loc == ParamLocation.BODY_JSON:
+        request_kwargs["json"] = req_params
+    elif loc == ParamLocation.HEADER:
+        merged = _sanitize_headers_for_request(dict(headers), is_file_payload=False)
+        for k, v in req_params.items():
+            merged[str(k)] = str(v)
+        request_kwargs["headers"] = merged
+    elif loc == ParamLocation.COOKIE:
+        merged_c = dict(cookies)
+        for k, v in req_params.items():
+            merged_c[str(k)] = str(v)
+        request_kwargs["cookies"] = merged_c
+    elif loc == ParamLocation.PATH:
+        if req_params:
+            pk = next(iter(req_params))
+            url = _inject_path_payload(url, pk, str(req_params[pk]))
+        if req_params:
+            request_kwargs["params"] = req_params
+    else:
+        if req_params:
+            request_kwargs["params"] = req_params
+
+    if loc != ParamLocation.HEADER and headers:
+        request_kwargs["headers"] = headers
+    if loc != ParamLocation.COOKIE and cookies:
+        request_kwargs["cookies"] = cookies
+    return url, request_kwargs
+
+
 def _inject_path_payload(url: str, parameter: str, payload: str) -> str:
     """
     Replace a path placeholder with encoded payload.
@@ -449,6 +513,7 @@ async def send_baseline_request(
 ) -> FuzzerResponse:
     """
     Send one non-injected baseline request for comparison analyzers.
+    Uses the same delivery shape as build_and_send_request (body vs query vs json).
     """
     method = getattr(surface.method, "value", str(surface.method))
     url = surface.url
@@ -460,19 +525,25 @@ async def send_baseline_request(
     if isinstance(req_params, list):
         req_params = {str(k): "" for k in req_params}
 
-    request_kwargs: dict[str, Any] = {}
-    if req_params:
-        request_kwargs["params"] = req_params
-    if headers:
-        request_kwargs["headers"] = headers
-    if cookies:
-        request_kwargs["cookies"] = cookies
+    if isinstance(req_params, dict):
+        req_params = _substitute_fuzz_marker_in_params(req_params)
+
+    headers = _sanitize_headers_for_request(headers, is_file_payload=False)
+
     dynamic_tokens = getattr(surface, "dynamic_tokens", None) or {}
+
     if not dynamic_tokens:
+        u2, request_kwargs = _baseline_delivery_kwargs(
+            surface,
+            url=url,
+            req_params=req_params,
+            headers=headers,
+            cookies=cookies,
+        )
         return await _send_prepared_request(
             session,
             method=method,
-            url=url,
+            url=u2,
             request_kwargs=request_kwargs,
         )
 
@@ -502,16 +573,16 @@ async def send_baseline_request(
                 cookies=cookies,
             )
 
-        if req_params:
-            request_kwargs["params"] = req_params
-        if headers:
-            request_kwargs["headers"] = headers
-        if cookies:
-            request_kwargs["cookies"] = cookies
-
+        u2, request_kwargs = _baseline_delivery_kwargs(
+            surface,
+            url=url,
+            req_params=req_params,
+            headers=headers,
+            cookies=cookies,
+        )
         return await _send_prepared_request(
             session,
             method=method,
-            url=url,
+            url=u2,
             request_kwargs=request_kwargs,
         )

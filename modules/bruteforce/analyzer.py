@@ -31,9 +31,14 @@ def detect_login_success(
     if fail_markers and _contains_any(res_text, fail_markers):
         return False, []
 
-    # 2) Explicit success keywords.
+    # 2) Explicit success keywords — only when NEW vs baseline (avoid nav chrome:
+    #    "Logout", "dashboard" 링크 등은 로그인 실패 응답에도 동일하게 붙는 경우가 많음).
     if success_markers and _contains_any(res_text, success_markers):
-        evidences.append("[Keyword] Success keyword found in response body")
+        base_text_for_kw = ""
+        if original_res is not None:
+            base_text_for_kw = getattr(original_res, "text", "") or ""
+        if not base_text_for_kw or not _contains_any(base_text_for_kw, success_markers):
+            evidences.append("[Keyword] Success keyword found in response body")
 
     # 3) Compare with baseline response (wrong credential baseline recommended).
     if original_res is not None:

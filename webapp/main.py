@@ -291,11 +291,6 @@ async def _run_real_scan(scan_id: str, req: ScanRequest) -> None:
         )
 
         async def _request_sender(session, surface, parameter, payload):
-            if req.scan_type == "bruteforce":
-                pv = str(payload.value) if hasattr(payload, "value") else str(payload)
-                if pv == "password":
-                    _scan_log(scan, f"[BF DEBUG] {parameter}={pv!r}")
-
             return await build_and_send_request(session, surface, parameter, payload)
 
         total_requests = max(1, context["total_requests"])
