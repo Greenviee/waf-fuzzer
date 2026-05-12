@@ -13,13 +13,8 @@ def select_modules(args) -> list:
 
     if args.type in ("sqli", "all"):
         sqli_module = SQLiModule(
-            enable_case_bypass=args.evasion_case,
-            enable_null_byte_bypass=args.evasion_null_byte,
-            enable_keyword_split_bypass=args.evasion_keyword_split,
-            enable_double_url_encoding=args.evasion_double_url,
-            enable_unicode_escape=args.evasion_unicode,
-            include_time_based=args.include_time_based,
-            max_time_payloads=args.max_time_payloads,
+            include_time_based=args.sqli_time_based,
+            max_time_payloads=args.sqli_time_max,
             evasion_level=args.sqli_evasion_level,
         )
         selected.append(sqli_module)
@@ -48,8 +43,8 @@ def select_modules(args) -> list:
     if args.type in ("ssrf", "all"):
         selected.append(
             SSRFModule(
-                include_oob_templates=args.ssrf_include_oob,
-                bypass_level=args.ssrf_bypass_level,
+                include_oob_templates=args.ssrf_oob,
+                bypass_level=args.ssrf_evasion_level,
             )
         )
 
