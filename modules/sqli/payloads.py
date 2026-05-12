@@ -5,7 +5,7 @@ from core.models import Payload
 
 def _resolve_payload_file() -> str | None:
     candidates = [
-        os.path.join("config", "payloads", "sqli.txt"),
+        os.path.join("config", "payloads", "sqli", "sqli.txt"),
     ]
     for candidate in candidates:
         if os.path.exists(candidate):

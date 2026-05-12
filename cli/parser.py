@@ -106,7 +106,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--bf-wordlist",
         type=str,
-        default=os.path.join("config", "payloads", "common_passwords.txt"),
+        default=os.path.join("config", "payloads", "bruteforce", "common_passwords.txt"),
         help="Bruteforce dictionary file path (absolute or relative)",
     )
     parser.add_argument(

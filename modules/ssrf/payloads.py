@@ -140,9 +140,9 @@ def get_ssrf_payloads(
     include_oob_templates: bool = False,
     bypass_level: int = 0,
 ) -> list[SSRFPayload]:
-    inband_path = os.path.join("config", "payloads", "ssrf_inband.txt")
-    oob_path = os.path.join("config", "payloads", "ssrf_oob_template.txt")
-    fallback_path = os.path.join("config", "payloads", "ssrf.txt")
+    inband_path = os.path.join("config", "payloads", "ssrf", "ssrf_inband.txt")
+    oob_path = os.path.join("config", "payloads", "ssrf", "ssrf_oob_template.txt")
+    fallback_path = os.path.join("config", "payloads", "ssrf", "ssrf.txt")
 
     # Prefer split files; fallback keeps backward compatibility.
     payloads = _load_ssrf_payload_file(inband_path)
