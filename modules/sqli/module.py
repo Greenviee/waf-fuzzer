@@ -44,7 +44,7 @@ class SQLiModule(BaseModule):
         self._time_phase_active = False
 
     def _load_json(self, filename: str) -> list:
-        file_path = os.path.join("config", "payloads", filename)
+        file_path = os.path.join("config", "payloads", "sqli", filename)
         if os.path.exists(file_path):
             try:
                 with open(file_path, "r", encoding="utf-8") as f:
