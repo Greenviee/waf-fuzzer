@@ -29,11 +29,59 @@ def build_parser() -> argparse.ArgumentParser:
         help="Cookie header value (e.g. 'PHPSESSID=abc; security=low')",
     )
     parser.add_argument(
+        "--login-url",
+        type=str,
+        default="",
+        help="Login page URL used before crawling (e.g. http://target/login.php)",
+    )
+    parser.add_argument(
+        "--username",
+        type=str,
+        default="",
+        help="Login username used before crawling",
+    )
+    parser.add_argument(
+        "--password",
+        type=str,
+        default="",
+        help="Login password used before crawling",
+    )
+    parser.add_argument(
+        "--username-field",
+        type=str,
+        default="username",
+        help="Form field name for username (default: username)",
+    )
+    parser.add_argument(
+        "--password-field",
+        type=str,
+        default="password",
+        help="Form field name for password (default: password)",
+    )
+    parser.add_argument(
+        "--csrf-field",
+        type=str,
+        default="user_token",
+        help="CSRF token field name on login form (default: user_token)",
+    )
+    parser.add_argument(
+        "--submit-field",
+        type=str,
+        default="Login",
+        help="Submit field name on login form (default: Login)",
+    )
+    parser.add_argument(
         "-o",
         "--output",
         type=str,
         default="scan_report.json",
         help="JSON report output path",
+    )
+    parser.add_argument(
+        "--surfaces-output",
+        type=str,
+        default="attack_surfaces.json",
+        help="JSON output path for crawled attack surfaces",
     )
     parser.add_argument(
         "-t",

@@ -15,6 +15,19 @@ from core.models import AttackSurface, ParamLocation
 
 _DYNAMIC_TOKEN_LOCKS: dict[str, asyncio.Lock] = {}
 _DYNAMIC_TOKEN_LOCKS_GUARD = asyncio.Lock()
+_HOP_BY_HOP_OR_RESPONSE_HEADERS = {
+    "content-length",
+    "content-encoding",
+    "transfer-encoding",
+    "connection",
+    "keep-alive",
+    "upgrade",
+    "trailer",
+    "te",
+    "date",
+    "server",
+    "via",
+}
 
 
 @dataclass(slots=True)
@@ -226,6 +239,22 @@ def _resolve_payload_value(payload: Any) -> str:
     return str(payload)
 
 
+def _sanitize_headers_for_request(headers: dict[str, Any], *, is_file_payload: bool) -> dict[str, Any]:
+    """
+    AttackSurface may carry crawled response headers.
+    Strip response-only headers and let aiohttp set multipart Content-Type.
+    """
+    sanitized: dict[str, Any] = {}
+    for key, value in headers.items():
+        key_lower = str(key).lower()
+        if key_lower in _HOP_BY_HOP_OR_RESPONSE_HEADERS:
+            continue
+        if is_file_payload and key_lower == "content-type":
+            continue
+        sanitized[key] = value
+    return sanitized
+
+
 def _is_file_payload(payload: Any) -> bool:
     return all(
         hasattr(payload, attr)
@@ -295,6 +324,7 @@ async def build_and_send_request(
     payload_value = _resolve_payload_value(payload)
     is_file_payload = _is_file_payload(payload)
     is_lfi_payload = type(payload).__name__ == "LFIPayload"
+    headers = _sanitize_headers_for_request(headers, is_file_payload=is_file_payload)
 
     if surface.param_location == ParamLocation.QUERY:
         req_params[parameter] = payload_value

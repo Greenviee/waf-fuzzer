@@ -120,6 +120,7 @@ class SurfaceBuilder:
                 headers=page_data.headers,
                 cookies=page_data.cookies,
                 dynamic_tokens=page_data.dynamic_tokens.copy(),
+                server_info=page_data.server_info.copy(),
                 source_url=str(page_data.url),
                 description=f"Form (risk: {form.get('risk_level')}, tokens: {len(page_data.dynamic_tokens)})"
             ))
@@ -156,6 +157,7 @@ class SurfaceBuilder:
                 headers=page_data.headers,
                 cookies=page_data.cookies,
                 dynamic_tokens=page_data.dynamic_tokens.copy(),
+                server_info=page_data.server_info.copy(),
                 source_url=str(page_data.url),
                 description="Link Query Params"
             ))
@@ -179,6 +181,13 @@ class SurfaceBuilder:
         # ==========================================
         for surface in surfaces:
             if not surface.url: continue
+            # DVWA CSRF page changes current user password; exclude from active testing.
+            if "/vulnerabilities/csrf/" in str(surface.url).lower():
+                continue
+            # dynamic token이 필요한 surface는 테스트 대상에서 제외
+            # (토큰 갱신 오버헤드/실패로 인한 지연 완화 목적)
+            if getattr(surface, "dynamic_tokens", None):
+                continue
 
             sig = self._generate_signature(surface)
             if sig in self._seen_signatures: continue

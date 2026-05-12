@@ -17,6 +17,7 @@ logger = get_logger(__name__)
 
 
 class URLFilter:
+    SNOWDEN_DOMAIN = "snowden.kr"
     EXCLUDED_EXTENSIONS = {
         '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.ico', '.webp',
         '.css', '.js', '.map',
@@ -146,6 +147,8 @@ class URLFilter:
         """URL을 크롤링해야 하는지 결정 (구조, 확장자 등 일반 필터링)"""
         try:
             parsed = urlparse(url)
+            domain = parsed.netloc.lower()
+            path = parsed.path.lower()
 
             if parsed.scheme not in self.allowed_schemes:
                 return False
@@ -154,6 +157,11 @@ class URLFilter:
                 return False
 
             if not self._is_domain_allowed(parsed.netloc):
+                return False
+
+            # Temporary DVWA guard: when crawling snowden.kr, exclude security.php
+            # to prevent scanner session-side security toggles.
+            if domain == self.SNOWDEN_DOMAIN and path.endswith("/security.php"):
                 return False
 
             if self._has_excluded_extension(parsed.path):
