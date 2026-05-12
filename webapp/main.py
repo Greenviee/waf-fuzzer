@@ -46,7 +46,6 @@ class EngineOptions(BaseModel):
 
 
 class SQLiOptions(BaseModel):
-    sqli_evasion_level: int = Field(default=1, ge=0, le=3)
     include_time_based: bool = False
     max_time_payloads: int = Field(default=0, ge=0)
 
@@ -73,23 +72,18 @@ class BruteforceOptions(BaseModel):
     bf_extra_params: list[str] = Field(default_factory=list)
 
 
-class LFIOptions(BaseModel):
-    lfi_evasion_level: int = Field(default=1, ge=0, le=3)
-
-
 class SSRFOptions(BaseModel):
-    ssrf_bypass_level: int = Field(default=1, ge=0, le=2)
     ssrf_include_oob: bool = False
 
 
 class ScanRequest(BaseModel):
     target_url: str = Field(..., min_length=1, max_length=2048, alias="url")
     scan_type: Literal["all", "sqli", "bruteforce", "lfi", "file_upload", "ssrf"] = "all"
+    level: int = Field(default=1, ge=0, le=3)
     auth: AuthSettings = Field(default_factory=AuthSettings)
     engine: EngineOptions = Field(default_factory=EngineOptions)
     sqli: SQLiOptions = Field(default_factory=SQLiOptions)
     bruteforce: BruteforceOptions = Field(default_factory=BruteforceOptions)
-    lfi: LFIOptions = Field(default_factory=LFIOptions)
     ssrf: SSRFOptions = Field(default_factory=SSRFOptions)
 
     model_config = {"populate_by_name": True}
@@ -119,9 +113,7 @@ async def get_schema() -> dict:
         "defaults": {
             "rps": 50,
             "session_pool_size": 3,
-            "sqli_evasion_level": 1,
-            "lfi_evasion_level": 1,
-            "ssrf_bypass_level": 1,
+            "level": 1,
             "bf_mutation_level": 1,
             "bf_method": "GET",
         },
@@ -178,6 +170,11 @@ def _build_cli_args(req: ScanRequest) -> Namespace:
             req.bruteforce.bf_max_length,
         )
 
+    level = req.level
+    sqli_evasion_level = level
+    lfi_evasion_level = level
+    ssrf_evasion_level = min(level, 2)
+
     return Namespace(
         # Core scan options
         url=req.target_url,
@@ -194,6 +191,7 @@ def _build_cli_args(req: ScanRequest) -> Namespace:
         surfaces_output=req.engine.surfaces_output,
         type=req.scan_type,
         session_pool_size=req.engine.session_pool_size,
+        level=level,
         # Bruteforce options
         bf_wordlist=req.bruteforce.bf_wordlist,
         bf_disable_mutation=req.bruteforce.bf_disable_mutation,
@@ -214,18 +212,13 @@ def _build_cli_args(req: ScanRequest) -> Namespace:
         bf_username_param=req.bruteforce.bf_username_param,
         bf_username=req.bruteforce.bf_username,
         bf_extra_params=req.bruteforce.bf_extra_params,
-        # SQLi / LFI / SSRF options
-        evasion_case=False,
-        evasion_null_byte=False,
-        evasion_keyword_split=False,
-        evasion_double_url=False,
-        evasion_unicode=False,
-        sqli_evasion_level=req.sqli.sqli_evasion_level,
-        include_time_based=req.sqli.include_time_based,
-        max_time_payloads=req.sqli.max_time_payloads,
-        lfi_evasion_level=req.lfi.lfi_evasion_level,
-        ssrf_bypass_level=req.ssrf.ssrf_bypass_level,
-        ssrf_include_oob=req.ssrf.ssrf_include_oob,
+        # SQLi / LFI / SSRF (names aligned with cli.parser / fuzzer.setup)
+        sqli_evasion_level=sqli_evasion_level,
+        sqli_time_based=req.sqli.include_time_based,
+        sqli_time_max=req.sqli.max_time_payloads,
+        lfi_evasion_level=lfi_evasion_level,
+        ssrf_evasion_level=ssrf_evasion_level,
+        ssrf_oob=req.ssrf.ssrf_include_oob,
     )
 
 

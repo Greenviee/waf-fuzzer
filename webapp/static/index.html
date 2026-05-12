@@ -430,6 +430,13 @@
                 <option value="ssrf">ssrf</option>
               </select>
             </div>
+            <div class="mt-3">
+              <label class="form-label" for="level">우회 단계</label>
+              <input id="level" type="number" class="form-control" min="0" max="3" value="1">
+              <div class="field-help">
+                전체 모듈에 공통 적용되며, bruteforce에는 적용되지 않습니다.
+              </div>
+            </div>
           </div>
         </div>
 
@@ -522,20 +529,16 @@
         <div class="section">
           <div class="section-header">
             <span>5) 선택 입력: 모듈별 상세</span>
-            <span class="hint">SQLi / BF / LFI / SSRF</span>
+            <span class="hint">SQLi / Bruteforce / SSRF</span>
           </div>
           <div class="section-body">
             <div class="row g-2 mb-3">
               <div class="col-12 hint">SQLi</div>
-              <div class="col-md-4">
-                <label class="form-label" for="sqli_evasion_level">우회 단계</label>
-                <input id="sqli_evasion_level" type="number" class="form-control" min="0" max="3" value="1">
-              </div>
-              <div class="col-md-4">
+              <div class="col-md-6">
                 <label class="form-label" for="max_time_payloads">시간기반 상한</label>
                 <input id="max_time_payloads" type="number" class="form-control" min="0" value="0">
               </div>
-              <div class="col-md-4 d-flex align-items-end">
+              <div class="col-md-6 d-flex align-items-end">
                 <div class="form-check mb-2">
                   <input id="include_time_based" type="checkbox" class="form-check-input">
                   <label for="include_time_based" class="form-check-label">시간기반 포함</label>
@@ -634,16 +637,8 @@
             </div>
 
             <div class="row g-2">
-              <div class="col-12 hint">LFI / SSRF</div>
-              <div class="col-md-4">
-                <label class="form-label" for="lfi_evasion_level">LFI 우회 단계</label>
-                <input id="lfi_evasion_level" type="number" class="form-control" min="0" max="3" value="1">
-              </div>
-              <div class="col-md-4">
-                <label class="form-label" for="ssrf_bypass_level">SSRF 우회 단계</label>
-                <input id="ssrf_bypass_level" type="number" class="form-control" min="0" max="2" value="1">
-              </div>
-              <div class="col-md-4 d-flex align-items-end">
+              <div class="col-12 hint">SSRF</div>
+              <div class="col-md-6 d-flex align-items-end">
                 <div class="form-check mb-2">
                   <input id="ssrf_include_oob" type="checkbox" class="form-check-input">
                   <label for="ssrf_include_oob" class="form-check-label">OOB 포함</label>
@@ -836,6 +831,7 @@
       return {
         url: document.getElementById("url").value.trim(),
         scan_type: document.getElementById("scan_type").value,
+        level: toInt("level", 1),
         auth: {
           login_url: document.getElementById("login_url").value.trim(),
           cookie: document.getElementById("cookie").value.trim(),
@@ -853,7 +849,6 @@
           surfaces_output: document.getElementById("surfaces_output").value
         },
         sqli: {
-          sqli_evasion_level: toInt("sqli_evasion_level", 1),
           include_time_based: document.getElementById("include_time_based").checked,
           max_time_payloads: toInt("max_time_payloads", 0)
         },
@@ -878,9 +873,7 @@
           bf_username: document.getElementById("bf_username").value.trim(),
           bf_extra_params: parseExtraParams(document.getElementById("bf_extra_params").value)
         },
-        lfi: { lfi_evasion_level: toInt("lfi_evasion_level", 1) },
         ssrf: {
-          ssrf_bypass_level: toInt("ssrf_bypass_level", 1),
           ssrf_include_oob: document.getElementById("ssrf_include_oob").checked
         }
       };

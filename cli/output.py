@@ -30,6 +30,11 @@ def print_scan_configuration(
     attack_type: str,
     module_count: int,
     payload_count: int,
+    level: int | None,
+    sqli_evasion_level: int,
+    lfi_evasion_level: int,
+    ssrf_evasion_level: int,
+    ssrf_oob: bool,
     sqli_time_based: bool,
     sqli_time_max: int,
     total_requests: int,
@@ -44,13 +49,24 @@ def print_scan_configuration(
     print(f"Attack type:    {attack_type}")
     print(f"Module count:   {module_count}")
     print(f"Payload count:  {payload_count}")
+    if level is not None:
+        print(
+            f"Unified --level: {level} "
+            "(SQLi/LFI/SSRF; SSRF effective level capped at 2)"
+        )
+    print(f"SQLi evasion:   level {sqli_evasion_level}")
+    print(f"LFI evasion:    level {lfi_evasion_level}")
+    ssrf_line = f"SSRF evasion:   level {ssrf_evasion_level}"
+    if ssrf_oob:
+        ssrf_line += " (+ OOB/template payloads)"
+    print(ssrf_line)
+    time_max_note = "all" if sqli_time_max == 0 else str(sqli_time_max)
     print(
         "SQLi timing:    "
         + ("included" if sqli_time_based else "excluded (fast mode)")
-        + (f", max={sqli_time_max}" if sqli_time_based else "")
+        + (f", max={time_max_note}" if sqli_time_based else "")
     )
     print(f"Total requests: {total_requests}")
-    print("Evasions:       off (mutator disabled)")
     print(f"Throttle (rps): {rps} (delay {delay:.3f}s)")
     print(f"Queue workers:  {queue_workers}")
     print(f"Session pool:   {session_pool_size}")
