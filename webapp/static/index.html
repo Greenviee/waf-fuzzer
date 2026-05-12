@@ -697,12 +697,7 @@
               <div class="col-md-4">
                 <label class="form-label" for="bf_target_url">직접 타깃 URL</label>
                 <input id="bf_target_url" class="form-control" placeholder="http://target/login.php">
-                <div class="field-help">브루트포스 시 표면 JSON과 동시에 쓸 수 없습니다.</div>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label" for="bf_surfaces_file">표면 JSON 파일</label>
-                <input id="bf_surfaces_file" class="form-control" placeholder="attack_surfaces.json">
-                <div class="field-help">내보낸 공격면 배열 JSON (--surfaces-output). 다른 타깃 옵션과 동시에 쓸 수 없습니다.</div>
+                <div class="field-help">비우면 타깃 URL을 크롤해 모듈 휴리스틱으로 필터합니다.</div>
               </div>
               <div class="col-md-3">
                 <label class="form-label" for="bf_fuzz_param">FUZZ 파라미터</label>
@@ -1051,7 +1046,6 @@
           bf_max_dictionary: toInt("bf_max_dictionary", 0),
           bf_max_true_random: toInt("bf_max_true_random", 0),
           bf_stop_on_first_hit: document.getElementById("bf_stop_on_first_hit").checked,
-          bf_surfaces_file: document.getElementById("bf_surfaces_file").value.trim(),
           bf_target_url: document.getElementById("bf_target_url").value.trim(),
           bf_method: document.getElementById("bf_method").value,
           bf_fuzz_param: document.getElementById("bf_fuzz_param").value.trim(),

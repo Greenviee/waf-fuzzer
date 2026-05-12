@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
 
 from core import AttackSurface
 from core.queue_manager import QueueManager
@@ -19,39 +18,6 @@ def _export_surfaces_json(surfaces: list[AttackSurface], output_path: str) -> No
     payload = [surface.to_dict() for surface in surfaces]
     with open(output_path, "w", encoding="utf-8") as fp:
         json.dump(payload, fp, ensure_ascii=False, indent=2)
-
-
-def _bf_explicit_sources(args) -> tuple[bool, bool]:
-    """Returns (target_url, surfaces_json) flags for bruteforce targeting."""
-    tgt = bool((getattr(args, "bf_target_url", "") or "").strip())
-    js = bool((getattr(args, "bf_surfaces_file", "") or "").strip())
-    return tgt, js
-
-
-def load_attack_surfaces_from_json(path: str) -> list[AttackSurface]:
-    """
-    Load AttackSurface objects from JSON (array of objects or {\"surfaces\": [...]}).
-    Compatible with files produced by --surfaces-output (to_dict format).
-    """
-    with open(path, encoding="utf-8") as fp:
-        raw = json.load(fp)
-
-    if isinstance(raw, dict) and "surfaces" in raw:
-        raw = raw["surfaces"]
-
-    if not isinstance(raw, list):
-        raise ValueError("JSON root must be an array of attack surfaces (or an object with \"surfaces\").")
-
-    surfaces: list[AttackSurface] = []
-    for i, item in enumerate(raw):
-        if not isinstance(item, dict):
-            raise ValueError(f"Item {i} is not a JSON object.")
-        try:
-            surfaces.append(AttackSurface.from_dict(item))
-        except (KeyError, TypeError, ValueError) as exc:
-            raise ValueError(f"Item {i}: invalid attack surface ({exc})") from exc
-
-    return surfaces
 
 
 async def resolve_surfaces(args, base_url: str, cookies: dict[str, str]) -> list[AttackSurface]:
@@ -191,63 +157,27 @@ async def _resolve_bruteforce_surfaces(
     base_url: str,
     cookies: dict[str, str],
 ) -> list[AttackSurface]:
-    tgt, js = _bf_explicit_sources(args)
-    chosen = sum((tgt, js))
-    if chosen > 1:
-        print(
-            "Bruteforce mode: specify exactly one of:\n"
-            "  --bf-target-url     (single URL)\n"
-            "  --bf-surfaces-file  (JSON array of attack surfaces)"
-        )
-        return []
-    if chosen == 0:
-        print(
-            "Bruteforce mode requires an explicit target (crawler auto-selection is disabled).\n"
-            "Provide exactly one of:\n"
-            "  --bf-target-url URL        Single endpoint (with --bf-method, --bf-fuzz-param, ...)\n"
-            "  --bf-surfaces-file FILE    JSON array, e.g. from --surfaces-output"
-        )
-        return []
-
-    if tgt:
+    if (getattr(args, "bf_target_url", "") or "").strip():
         session_cookies = await _login_and_get_cookies(args, extra_cookies=cookies)
         target_label = args.bf_target_param or args.bf_fuzz_param
         print(f"[*] Targeted URL mode: {args.bf_target_url} [{target_label}=FUZZ]")
         return [build_targeted_bruteforce_surface(args, session_cookies)]
 
-    return await _resolve_surfaces_json_file(args, cookies)
-
-
-async def _resolve_surfaces_json_file(
-    args,
-    cookies: dict[str, str],
-) -> list[AttackSurface]:
-    path = (getattr(args, "bf_surfaces_file", "") or "").strip()
-    if not os.path.isfile(path):
-        print(f"Surfaces JSON file not found: {path}")
-        return []
-
-    try:
-        surfaces = load_attack_surfaces_from_json(path)
-    except (OSError, json.JSONDecodeError, ValueError) as exc:
-        print(f"Failed to load surfaces JSON: {exc}")
-        return []
-
-    if not surfaces:
-        print(f"No attack surfaces in JSON file: {path}")
-        return []
-
-    session_cookies = await _login_and_get_cookies(args, extra_cookies=cookies)
-    for surface in surfaces:
-        merged = dict(session_cookies)
-        merged.update(surface.cookies or {})
-        surface.cookies = merged
-
+    surfaces = await _resolve_crawled_surfaces(
+        args=args,
+        start_url=base_url,
+        cookies=cookies,
+    )
     surfaces = apply_username_to_surfaces(
         surfaces,
         username_param=args.bf_username_param,
         username_value=args.bf_username,
     )
-
-    print(f"[*] Loaded {len(surfaces)} attack surface(s) from {path}")
+    if not surfaces:
+        print(
+            "No attack surfaces collected for bruteforce mode. "
+            "Use --bf-target-url for direct targeting."
+        )
+        return []
+    print(f"[*] Crawler mode: passing {len(surfaces)} surface(s) to bruteforce module heuristics.")
     return surfaces

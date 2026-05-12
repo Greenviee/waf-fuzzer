@@ -63,7 +63,6 @@ class BruteforceOptions(BaseModel):
     bf_max_dictionary: int = Field(default=0, ge=0)
     bf_max_true_random: int = Field(default=0, ge=0)
     bf_stop_on_first_hit: bool = True
-    bf_surfaces_file: str = ""
     bf_target_url: str = ""
     bf_method: Literal["GET", "POST"] = "GET"
     bf_fuzz_param: str = "password"
@@ -205,7 +204,6 @@ def _build_cli_args(req: ScanRequest) -> Namespace:
         bf_max_dictionary=req.bruteforce.bf_max_dictionary,
         bf_max_true_random=req.bruteforce.bf_max_true_random,
         bf_stop_on_first_hit=req.bruteforce.bf_stop_on_first_hit,
-        bf_surfaces_file=req.bruteforce.bf_surfaces_file,
         bf_target_url=req.bruteforce.bf_target_url,
         bf_method=req.bruteforce.bf_method,
         bf_fuzz_param=req.bruteforce.bf_fuzz_param,
