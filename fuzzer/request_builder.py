@@ -29,6 +29,35 @@ _HOP_BY_HOP_OR_RESPONSE_HEADERS = {
     "via",
 }
 
+# Names almost always copied from an HTML *response* into crawled AttackSurface.headers.
+# Forwarding them on fuzz requests looks like a browser POST but confuses servers and logs.
+_CRAWLED_RESPONSE_METADATA_HEADERS = frozenset(
+    {
+        "content-type",
+        "etag",
+        "x-powered-by",
+        "last-modified",
+        "expires",
+        "vary",
+        "age",
+        "cache-control",
+        "pragma",
+        "cf-ray",
+        "cf-cache-status",
+        "x-cache",
+        "x-served-by",
+        "x-frame-options",
+        "x-content-type-options",
+        "content-security-policy",
+        "strict-transport-security",
+        "report-to",
+        "nel",
+        "server-timing",
+    }
+)
+
+_HEADERS_STRIP_FROM_OUTBOUND = _HOP_BY_HOP_OR_RESPONSE_HEADERS | _CRAWLED_RESPONSE_METADATA_HEADERS
+
 
 @dataclass(slots=True)
 class FuzzerResponse:
@@ -112,6 +141,9 @@ async def fetch_dynamic_tokens(
     cookies = copy.deepcopy(cookies_override) if cookies_override is not None else (
         copy.deepcopy(surface.cookies) if surface.cookies else {}
     )
+
+    if headers:
+        headers = _sanitize_headers_for_request(headers)
 
     request_kwargs: dict[str, Any] = {}
     if headers:
@@ -239,17 +271,18 @@ def _resolve_payload_value(payload: Any) -> str:
     return str(payload)
 
 
-def _sanitize_headers_for_request(headers: dict[str, Any], *, is_file_payload: bool) -> dict[str, Any]:
+def _sanitize_headers_for_request(headers: dict[str, Any]) -> dict[str, Any]:
     """
-    AttackSurface may carry crawled response headers.
-    Strip response-only headers and let aiohttp set multipart Content-Type.
+    AttackSurface may carry crawled *response* headers.
+
+    Drop hop-by-hop / response metadata so outbound requests resemble a normal
+    client: aiohttp sets ``Content-Type`` for form/json/multipart; crawled
+    ``Etag``, ``X-Powered-By``, etc. must not be replayed on POST.
     """
     sanitized: dict[str, Any] = {}
     for key, value in headers.items():
         key_lower = str(key).lower()
-        if key_lower in _HOP_BY_HOP_OR_RESPONSE_HEADERS:
-            continue
-        if is_file_payload and key_lower == "content-type":
+        if key_lower in _HEADERS_STRIP_FROM_OUTBOUND:
             continue
         sanitized[key] = value
     return sanitized
@@ -324,7 +357,7 @@ async def build_and_send_request(
     payload_value = _resolve_payload_value(payload)
     is_file_payload = _is_file_payload(payload)
     is_lfi_payload = type(payload).__name__ == "LFIPayload"
-    headers = _sanitize_headers_for_request(headers, is_file_payload=is_file_payload)
+    headers = _sanitize_headers_for_request(headers)
 
     if surface.param_location == ParamLocation.QUERY:
         req_params[parameter] = payload_value
@@ -459,6 +492,8 @@ async def send_baseline_request(
 
     if isinstance(req_params, list):
         req_params = {str(k): "" for k in req_params}
+
+    headers = _sanitize_headers_for_request(headers)
 
     request_kwargs: dict[str, Any] = {}
     if req_params:
