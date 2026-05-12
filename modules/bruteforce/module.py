@@ -45,6 +45,7 @@ class BruteforceModule(BaseModule):
         success_keywords: list[str] | None = None,
         fail_keywords: list[str] | None = None,
         username_param: str = "username",
+        bf_username: str = "admin",
         bf_target_param: str = "",
     ):
         super().__init__("Brute Force")
@@ -59,6 +60,7 @@ class BruteforceModule(BaseModule):
         self.max_true_bf_candidates = max_true_bf_candidates
         self.stop_on_first_hit = stop_on_first_hit
         self.username_param = username_param
+        self.bf_username = bf_username
         self.bf_target_param = bf_target_param
         self.success_keywords = success_keywords or [
             "welcome",
@@ -105,7 +107,7 @@ class BruteforceModule(BaseModule):
         공격 대상 파라미터를 결정한다.
 
         Mode 1 (명시적): surface.parameters 에 FUZZ 마커가 있으면 그 파라미터만 반환.
-                         --bf-target-url / --bf-request-file 경로가 여기에 해당한다.
+                         --bf-target-url 경로가 여기에 해당한다.
 
         Mode 2 (휴리스틱): FUZZ 마커가 없을 때 크롤러가 수집한 raw surface 에서
                           URL 경로·파라미터 이름을 기준으로 브루트포스 후보를 자동 선별.

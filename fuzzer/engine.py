@@ -8,6 +8,7 @@ from typing import Any, Awaitable, Callable, Iterable, Protocol
 
 import aiohttp
 from fuzzer.request_builder import send_baseline_request
+from modules.bruteforce.target_prep import inject_bf_username_into_surface
 
 try:
     from core.models import AttackSurface  # type: ignore
@@ -439,12 +440,20 @@ class FuzzerEngine:
                 if not params or not payloads:
                     continue
 
-                baseline_response = await send_baseline_request(session, surface)
+                if module.name == "Brute Force":
+                    inject_bf_username_into_surface(
+                        surface,
+                        preferred_username_param=getattr(module, "username_param", "username"),
+                        username_value=getattr(module, "bf_username", "admin"),
+                    )
+
                 attack_units = [
                     (parameter, payload)
                     for parameter in params
                     for payload in payloads
                 ]
+
+                baseline_response = await send_baseline_request(session, surface)
                 batch_size = max(1, self.max_concurrent_requests)
                 for batch in self._chunked(attack_units, batch_size):
                     if stop_event is not None and stop_event.is_set():

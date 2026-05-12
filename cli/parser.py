@@ -89,7 +89,10 @@ def build_parser() -> argparse.ArgumentParser:
         type=str,
         default="all",
         choices=["sqli", "bruteforce", "lfi", "file_upload", "ssrf", "all"],
-        help="Attack category to run (default: all, excludes bruteforce)",
+        help=(
+            "Attack category (default: all). For bruteforce, set exactly one of "
+            "--bf-target-url or --bf-surfaces-file (no crawler auto-targeting)."
+        ),
     )
     parser.add_argument(
         "--level",
@@ -176,24 +179,24 @@ def build_parser() -> argparse.ArgumentParser:
         help="Stop bruteforce module after first verified credential hit (default: enabled)",
     )
     parser.add_argument(
-        "--bf-request-file",
-        type=str,
-        default="",
-        metavar="FILE",
-        help=(
-            "Path to a raw HTTP request file (Burp-style). "
-            "Mark the brute-force target parameter value with 'FUZZ'. "
-            "Supports GET query strings and POST form-encoded / JSON bodies."
-        ),
-    )
-    parser.add_argument(
         "--bf-target-url",
         type=str,
         default="",
         metavar="URL",
         help=(
-            "Direct target URL for bruteforce (simple mode, no request file). "
-            "Combine with --bf-fuzz-param and --bf-extra-params."
+            "Bruteforce: single explicit URL (requires --bf-fuzz-param / --bf-method as needed). "
+            "Mutually exclusive with --bf-surfaces-file."
+        ),
+    )
+    parser.add_argument(
+        "--bf-surfaces-file",
+        type=str,
+        default="",
+        metavar="FILE",
+        help=(
+            "Bruteforce: JSON file containing an array of attack surfaces "
+            "(e.g. attack_surfaces.json from --surfaces-output). "
+            "Mutually exclusive with --bf-target-url."
         ),
     )
     parser.add_argument(

@@ -30,12 +30,59 @@ def build_targeted_bruteforce_surface(args, cookies: dict[str, str]) -> AttackSu
     )
 
 
+_USERNAME_FIELD_FALLBACKS = (
+    "username",
+    "user",
+    "login",
+    "email",
+    "account",
+    "userid",
+    "uname",
+    "id",
+)
+
+
 def find_param_key(parameters: dict[str, str], target_key: str) -> str | None:
     target = target_key.strip().lower()
     for key in parameters.keys():
         if key.lower() == target:
             return key
     return None
+
+
+def resolve_username_field_key(parameters: dict[str, str], preferred_param: str) -> str | None:
+    """
+    Pick the form field that should receive --bf-username.
+    Honors --bf-username-param first; if absent, tries common login field names.
+    """
+    key = find_param_key(parameters, preferred_param)
+    if key:
+        return key
+    seen_lower = {preferred_param.strip().lower()}
+    for cand in _USERNAME_FIELD_FALLBACKS:
+        cl = cand.lower()
+        if cl in seen_lower:
+            continue
+        seen_lower.add(cl)
+        found = find_param_key(parameters, cand)
+        if found:
+            return found
+    return None
+
+
+def inject_bf_username_into_surface(
+    surface: AttackSurface,
+    *,
+    preferred_username_param: str,
+    username_value: str,
+) -> None:
+    """Mutates surface.parameters so every bruteforce HTTP shot carries the fixed username."""
+    params = getattr(surface, "parameters", None)
+    if not isinstance(params, dict) or not params:
+        return
+    key = resolve_username_field_key(params, preferred_username_param)
+    if key:
+        params[key] = username_value
 
 
 def select_bruteforce_target_param(
@@ -73,7 +120,7 @@ def prepare_bruteforce_surfaces(
     """
     레거시 헬퍼: 크롤된 표면에 FUZZ 마커를 미리 주입하는 방식.
     현재는 BruteforceModule.get_target_parameters 의 휴리스틱 모드를
-    통해 모듈 내부에서 처리하므로, --bf-request-file 등 명시적 모드에서만 사용된다.
+    통해 모듈 내부에서 처리하므로, 레거시 명시적 FUZZ 주입 모드에서만 사용된다.
     """
     prepared: list[AttackSurface] = []
     for surface in surfaces:
@@ -81,7 +128,7 @@ def prepare_bruteforce_surfaces(
         if not isinstance(params, dict) or not params:
             continue
 
-        username_key = find_param_key(params, args.bf_username_param)
+        username_key = resolve_username_field_key(params, args.bf_username_param)
         if username_key:
             params[username_key] = args.bf_username
 
@@ -118,7 +165,7 @@ def apply_username_to_surfaces(
         params = getattr(surface, "parameters", None)
         if not isinstance(params, dict) or not params:
             continue
-        username_key = find_param_key(params, username_param)
+        username_key = resolve_username_field_key(params, username_param)
         if username_key:
             params[username_key] = username_value
         result.append(surface)
