@@ -22,6 +22,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="Target requests per second throttle (default: 100)",
     )
     parser.add_argument(
+        "-w",
+        "--workers",
+        type=int,
+        default=0,
+        help="Number of queue workers (0 = auto-calculate based on rps)",
+    )
+    parser.add_argument(
         "-c",
         "--cookie",
         type=str,
@@ -88,11 +95,8 @@ def build_parser() -> argparse.ArgumentParser:
         "--type",
         type=str,
         default="all",
-        choices=["sqli", "bruteforce", "lfi", "file_upload", "ssrf", "all"],
-        help=(
-            "Attack category (default: all). For bruteforce without --bf-target-url, "
-            "surfaces come from the crawler; BruteforceModule.get_target_parameters filters targets."
-        ),
+        choices=["sqli", "bruteforce", "lfi", "file_upload", "ssrf", "stored_xss", "all"],
+        help="Attack category to run (default: all, excludes bruteforce)",
     )
     parser.add_argument(
         "--level",
@@ -179,13 +183,24 @@ def build_parser() -> argparse.ArgumentParser:
         help="Stop bruteforce module after first verified credential hit (default: enabled)",
     )
     parser.add_argument(
+        "--bf-request-file",
+        type=str,
+        default="",
+        metavar="FILE",
+        help=(
+            "Path to a raw HTTP request file (Burp-style). "
+            "Mark the brute-force target parameter value with 'FUZZ'. "
+            "Supports GET query strings and POST form-encoded / JSON bodies."
+        ),
+    )
+    parser.add_argument(
         "--bf-target-url",
         type=str,
         default="",
         metavar="URL",
         help=(
-            "Bruteforce: single explicit URL (requires --bf-fuzz-param / --bf-method as needed). "
-            "If omitted, crawl -u and filter with module heuristics."
+            "Direct target URL for bruteforce (simple mode, no request file). "
+            "Combine with --bf-fuzz-param and --bf-extra-params."
         ),
     )
     parser.add_argument(
@@ -293,6 +308,22 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="SSRF: add OOB/template payloads to the runtime payload set",
     )
+
+    parser.add_argument(
+        "--sxss-evasion-level",
+        type=int,
+        choices=[0, 1, 2, 3],
+        default=1,
+        help="stored_XSS payload mutation level (0=off/raw, 1=basic WAF bypass, 2=advanced/encoding, 3=obfuscation)"
+        )
+
+    parser.add_argument(
+        "--exclude-urls",
+        nargs="+",
+        default=[],
+        help="크롤링 및 공격에서 제외할 URL 정규식 패턴 목록 (예: '/setup\.php' '/admin/.*')"
+    )
+
     return parser
 
 

@@ -2,14 +2,17 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 
 from core import AttackSurface
 from core.queue_manager import QueueManager
 from crawler.engine import CrawlConfig, CrawlerEngine
 from crawler.session_manager import AuthConfig
+from crawler.url_filter import URLFilter
+from modules.bruteforce.request_parser import parse_raw_request
 from modules.bruteforce.target_prep import (
-    apply_username_to_surfaces,
     build_targeted_bruteforce_surface,
+    prepare_bruteforce_surfaces,
 )
 from parsers.surface_builder import SurfaceBuilder
 
@@ -55,6 +58,12 @@ async def _resolve_crawled_surfaces(
         queue_manager=queue_manager,
         config=CrawlConfig(),
     )
+    # CLI 인자로 받은 제외 패턴을 URLFilter에 주입
+    exclude_patterns = getattr(args, "exclude_urls", [])
+    if exclude_patterns:
+        custom_filter = URLFilter(excluded_patterns=exclude_patterns)
+        crawler.url_filter = custom_filter
+        crawler.session_manager.url_filter = custom_filter
 
     # CLI에서 전달받은 쿠키(-c 옵션)를 크롤러 세션에 주입
     if cookies:
@@ -94,34 +103,6 @@ async def _resolve_crawled_surfaces(
     return surfaces
 
 
-async def _login_and_get_cookies(args, *, extra_cookies: dict[str, str]) -> dict[str, str]:
-    """
-    --login-url 이 설정된 경우 임시 크롤러 세션으로 로그인한 뒤 쿠키를 반환한다.
-    로그인 설정이 없거나 실패하면 extra_cookies 를 그대로 반환한다.
-    """
-    login_url = (args.login_url or "").strip()
-    if not login_url:
-        return dict(extra_cookies)
-
-    crawler = CrawlerEngine(queue_manager=None, config=CrawlConfig())
-    if extra_cookies:
-        crawler.session_manager.set_cookies(extra_cookies)
-    try:
-        await crawler.session_manager.create_session()
-        success = await _login_if_configured(args, crawler)
-        if success:
-            session_cookies = crawler.session_manager.get_cookies()
-            merged = dict(extra_cookies)
-            merged.update(session_cookies)
-            return merged
-    finally:
-        try:
-            await crawler.session_manager.close()
-        except Exception:
-            pass
-    return dict(extra_cookies)
-
-
 async def _login_if_configured(args, crawler: CrawlerEngine) -> bool:
     username = (args.username or "").strip()
     password = (args.password or "").strip()
@@ -157,32 +138,43 @@ async def _resolve_bruteforce_surfaces(
     base_url: str,
     cookies: dict[str, str],
 ) -> list[AttackSurface]:
-    if (getattr(args, "bf_target_url", "") or "").strip():
-        session_cookies = await _login_and_get_cookies(args, extra_cookies=cookies)
+    if args.bf_request_file:
+        return _resolve_raw_request_mode(args, cookies)
+
+    if args.bf_target_url:
         target_label = args.bf_target_param or args.bf_fuzz_param
         print(f"[*] Targeted URL mode: {args.bf_target_url} [{target_label}=FUZZ]")
-        targeted = [build_targeted_bruteforce_surface(args, session_cookies)]
-        return apply_username_to_surfaces(
-            targeted,
-            username_param=args.bf_username_param,
-            username_value=args.bf_username,
-        )
+        return [build_targeted_bruteforce_surface(args, cookies)]
 
+    # 실제 크롤러로 표면을 수집한 뒤 bruteforce용으로 가공
     surfaces = await _resolve_crawled_surfaces(
         args=args,
         start_url=base_url,
         cookies=cookies,
     )
-    surfaces = apply_username_to_surfaces(
-        surfaces,
-        username_param=args.bf_username_param,
-        username_value=args.bf_username,
-    )
+    surfaces = prepare_bruteforce_surfaces(surfaces, args)
     if not surfaces:
         print(
-            "No attack surfaces collected for bruteforce mode. "
-            "Use --bf-target-url for direct targeting."
+            "No suitable parser surfaces found for bruteforce mode. "
+            "Use --bf-target-url or --bf-request-file."
         )
         return []
-    print(f"[*] Crawler mode: passing {len(surfaces)} surface(s) to bruteforce module heuristics.")
+    print(f"[*] Parser mode: prepared {len(surfaces)} brute-force surface(s).")
     return surfaces
+
+
+def _resolve_raw_request_mode(args, cookies: dict[str, str]) -> list[AttackSurface]:
+    if not os.path.exists(args.bf_request_file):
+        print(f"Request file not found: {args.bf_request_file}")
+        return []
+    try:
+        surface = parse_raw_request(args.bf_request_file)
+        # CLI cookies override request file cookies when provided.
+        if cookies:
+            surface.cookies.update(cookies)
+    except (ValueError, OSError) as exc:
+        print(f"Failed to parse request file: {exc}")
+        return []
+
+    print(f"[*] Raw request mode: {surface.description}")
+    return [surface]
