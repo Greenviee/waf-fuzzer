@@ -8,7 +8,6 @@ from typing import Any, Awaitable, Callable, Iterable, Protocol
 
 import aiohttp
 from fuzzer.request_builder import send_baseline_request
-from modules.bruteforce.target_prep import inject_bf_username_into_surface
 
 try:
     from core.models import AttackSurface  # type: ignore
@@ -439,13 +438,6 @@ class FuzzerEngine:
                     params = tuple(selected) if selected is not None else ()
                 if not params or not payloads:
                     continue
-
-                if module.name == "Brute Force":
-                    inject_bf_username_into_surface(
-                        surface,
-                        preferred_username_param=getattr(module, "username_param", "username"),
-                        username_value=getattr(module, "bf_username", "admin"),
-                    )
 
                 attack_units = [
                     (parameter, payload)

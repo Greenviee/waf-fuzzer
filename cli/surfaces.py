@@ -161,7 +161,12 @@ async def _resolve_bruteforce_surfaces(
         session_cookies = await _login_and_get_cookies(args, extra_cookies=cookies)
         target_label = args.bf_target_param or args.bf_fuzz_param
         print(f"[*] Targeted URL mode: {args.bf_target_url} [{target_label}=FUZZ]")
-        return [build_targeted_bruteforce_surface(args, session_cookies)]
+        targeted = [build_targeted_bruteforce_surface(args, session_cookies)]
+        return apply_username_to_surfaces(
+            targeted,
+            username_param=args.bf_username_param,
+            username_value=args.bf_username,
+        )
 
     surfaces = await _resolve_crawled_surfaces(
         args=args,
