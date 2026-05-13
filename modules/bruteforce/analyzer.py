@@ -25,15 +25,25 @@ def detect_login_success(
     res_text = getattr(response, "text", "") or ""
     res_status = int(getattr(response, "status", 0) or 0)
     res_url = str(getattr(response, "url", "") or "")
+    transport_error = getattr(response, "error", None)
+
+    # 네트워크/타임아웃 등으로 본문이 없을 때 길이 비교 휴리스틱이 오탐하기 쉬움.
+    if transport_error or (res_status == 0 and not res_text.strip()):
+        return False, []
 
     # 1) Failure-first rule:
     # If explicit failure markers are still present, treat as failed immediately.
     if fail_markers and _contains_any(res_text, fail_markers):
         return False, []
 
-    # 2) Explicit success keywords.
+    # 2) Explicit success keywords — only when NEW vs baseline (avoid nav chrome:
+    #    "Logout", "dashboard" 링크 등은 로그인 실패 응답에도 동일하게 붙는 경우가 많음).
     if success_markers and _contains_any(res_text, success_markers):
-        evidences.append("[Keyword] Success keyword found in response body")
+        base_text_for_kw = ""
+        if original_res is not None:
+            base_text_for_kw = getattr(original_res, "text", "") or ""
+        if not base_text_for_kw or not _contains_any(base_text_for_kw, success_markers):
+            evidences.append("[Keyword] Success keyword found in response body")
 
     # 3) Compare with baseline response (wrong credential baseline recommended).
     if original_res is not None:

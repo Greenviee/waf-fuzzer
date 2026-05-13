@@ -27,6 +27,10 @@ STATIC_DIR = BASE_DIR / "static"
 
 SCAN_TYPES = ["all", "sqli", "bruteforce", "lfi", "file_upload", "ssrf"]
 
+# Web UI: true-random bruteforce는 total_requests 대비 진행률이 오래 안 바뀌는 경우가 있어
+# 이 모드에서만 N건 단위 보조 로그를 남긴다. (그 외는 진행률% 변경 시만 로그)
+SCAN_LOG_EVERY_COMPLETED_BF_TRUE_RANDOM = 1000
+
 
 class AuthSettings(BaseModel):
     login_url: str = ""
@@ -63,7 +67,6 @@ class BruteforceOptions(BaseModel):
     bf_max_dictionary: int = Field(default=0, ge=0)
     bf_max_true_random: int = Field(default=0, ge=0)
     bf_stop_on_first_hit: bool = True
-    bf_request_file: str = ""
     bf_target_url: str = ""
     bf_method: Literal["GET", "POST"] = "GET"
     bf_fuzz_param: str = "password"
@@ -205,7 +208,6 @@ def _build_cli_args(req: ScanRequest) -> Namespace:
         bf_max_dictionary=req.bruteforce.bf_max_dictionary,
         bf_max_true_random=req.bruteforce.bf_max_true_random,
         bf_stop_on_first_hit=req.bruteforce.bf_stop_on_first_hit,
-        bf_request_file=req.bruteforce.bf_request_file,
         bf_target_url=req.bruteforce.bf_target_url,
         bf_method=req.bruteforce.bf_method,
         bf_fuzz_param=req.bruteforce.bf_fuzz_param,
@@ -295,6 +297,12 @@ async def _run_real_scan(scan_id: str, req: ScanRequest) -> None:
 
         total_requests = max(1, context["total_requests"])
         last_logged_progress = -1
+        bf_true_random_milestone_logs = args.type == "bruteforce" and bool(
+            getattr(args, "bf_true_random", False)
+        )
+        next_completed_log_milestone = (
+            SCAN_LOG_EVERY_COMPLETED_BF_TRUE_RANDOM if bf_true_random_milestone_logs else 0
+        )
         scan_task = asyncio.create_task(
             engine.run_with_attack_modules(
                 surfaces=surfaces,
@@ -320,6 +328,15 @@ async def _run_real_scan(scan_id: str, req: ScanRequest) -> None:
                     f"진행률 {progress}% (completed={engine.stats.completed}, findings={engine.stats.findings}, failures={engine.stats.failures})",
                 )
                 last_logged_progress = progress
+            if bf_true_random_milestone_logs:
+                completed_now = engine.stats.completed
+                while completed_now >= next_completed_log_milestone:
+                    _scan_log(
+                        scan,
+                        f"[true-random BF] 누적 요청 완료 {next_completed_log_milestone}건 "
+                        f"(queued={engine.stats.queued}, findings={engine.stats.findings}, failures={engine.stats.failures})",
+                    )
+                    next_completed_log_milestone += SCAN_LOG_EVERY_COMPLETED_BF_TRUE_RANDOM
             await asyncio.sleep(0.3)
 
         stats = await scan_task

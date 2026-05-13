@@ -439,12 +439,13 @@ class FuzzerEngine:
                 if not params or not payloads:
                     continue
 
-                baseline_response = await send_baseline_request(session, surface)
                 attack_units = [
                     (parameter, payload)
                     for parameter in params
                     for payload in payloads
                 ]
+
+                baseline_response = await send_baseline_request(session, surface)
                 batch_size = max(1, self.max_concurrent_requests)
                 for batch in self._chunked(attack_units, batch_size):
                     if stop_event is not None and stop_event.is_set():

@@ -31,6 +31,9 @@ def select_modules(args) -> list:
             max_dictionary_candidates=args.bf_max_dictionary,
             max_true_bf_candidates=args.bf_max_true_random,
             stop_on_first_hit=args.bf_stop_on_first_hit,
+            username_param=args.bf_username_param,
+            bf_username=args.bf_username,
+            bf_target_param=args.bf_target_param,
         )
         selected.append(bruteforce_module)
 
