@@ -29,6 +29,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="Cookie header value (e.g. 'PHPSESSID=abc; security=low')",
     )
     parser.add_argument(
+        "-w",
+        "--workers",
+        type=int,
+        default=0,
+        help="Number of queue workers (0 = auto-calculate based on rps)",
+    )
+    parser.add_argument(
         "--login-url",
         type=str,
         default="",
@@ -88,7 +95,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--type",
         type=str,
         default="all",
-        choices=["sqli", "bruteforce", "lfi", "file_upload", "ssrf", "all"],
+        choices=["sqli", "bruteforce", "lfi", "file_upload", "ssrf", "stored_xss", "all"],
         help=(
             "Attack category (default: all). For bruteforce without --bf-target-url, "
             "surfaces come from the crawler; BruteforceModule.get_target_parameters filters targets."
@@ -292,6 +299,19 @@ def build_parser() -> argparse.ArgumentParser:
         "--ssrf-oob",
         action="store_true",
         help="SSRF: add OOB/template payloads to the runtime payload set",
+    )
+    parser.add_argument(
+        "--sxss-evasion-level",
+        type=int,
+        choices=[0, 1, 2, 3],
+        default=1,
+        help="stored_XSS payload mutation level (0=off/raw, 1=basic WAF bypass, 2=advanced/encoding, 3=obfuscation)"
+    )
+    parser.add_argument(
+        "--exclude-urls",
+        nargs="+",
+        default=[],
+        help="크롤링 및 공격에서 제외할 URL 정규식 패턴 목록(예: '/setup\.php' '/admin/.*')"
     )
     return parser
 

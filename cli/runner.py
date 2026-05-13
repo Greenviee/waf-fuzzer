@@ -27,7 +27,10 @@ def prepare_scan_context(args, surfaces):
 
     delay = (1.0 / args.rps) if args.rps > 0 else 0.0
     concurrency = max(1, args.rps)
-    queue_workers = max(1, args.rps * 2)
+    if hasattr(args, 'workers') and args.workers > 0:
+        queue_workers = args.workers
+    else:
+        queue_workers = max(1, args.rps * 2)
     total_requests = estimate_total_requests(surfaces, selected_modules)
 
     return {
