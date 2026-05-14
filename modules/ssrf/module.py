@@ -7,6 +7,9 @@ from modules.base_module import BaseModule
 from modules.ssrf.analyzer import analyze_ssrf
 from modules.ssrf.payloads import SSRFPayload, get_ssrf_payloads
 
+# Default display name; keep in sync with ``__init__(name=...)`` default.
+SSRF_MODULE_REPORT_NAME = "Server-Side Request Forgery"
+
 
 class SSRFModule(BaseModule):
     _NAME_TARGETS = (
@@ -52,7 +55,7 @@ class SSRFModule(BaseModule):
 
     def __init__(
         self,
-        name: str = "Server-Side Request Forgery",
+        name: str = SSRF_MODULE_REPORT_NAME,
         *,
         include_oob_templates: bool = False,
         bypass_level: int = 0,
