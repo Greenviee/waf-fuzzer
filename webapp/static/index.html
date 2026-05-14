@@ -132,9 +132,8 @@
       display: flex;
     }
     .view.active.scan-view {
-      display: grid;
-      grid-template-columns: minmax(340px, min(52vw, 920px)) minmax(300px, 1fr);
-      gap: 12px;
+      display: flex;
+      flex-direction: column;
       padding: 12px;
       min-height: 0;
       width: 100%;
@@ -153,9 +152,15 @@
       display: flex;
       flex-direction: column;
       min-height: 0;
-      width: auto;
-      max-width: 960px;
+      width: 100%;
+      max-width: min(1100px, 100%);
+      margin: 0 auto;
       min-width: 0;
+    }
+
+    .left-pane > #scanForm.left-scroll {
+      flex: 1;
+      min-height: 0;
     }
 
     .left-scroll {
@@ -254,56 +259,87 @@
     }
     .btn-poll:hover { background: rgba(33, 52, 90, 0.65); }
 
-    .right-pane {
-      background: var(--terminal);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-      min-width: 0;
-      box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.5);
+    .scan-progress-compact {
+      flex-shrink: 0;
+      border-top: 1px solid var(--border);
+      padding: 10px 16px 12px;
+      background: rgba(7, 12, 24, 0.92);
     }
-    .terminal-head {
-      border-bottom: 1px solid #1f2b44;
-      padding: 10px 14px;
+    .scan-progress-compact-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.78rem;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 0.72rem;
       color: #94a3b8;
-      background: rgba(15, 23, 42, 0.5);
-    }
-    .dots span {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      margin-right: 6px;
-    }
-    .dot-r { background: #fb7185; }
-    .dot-y { background: #fbbf24; }
-    .dot-g { background: #34d399; }
-
-    .terminal-meta {
-      border-bottom: 1px solid #1f2b44;
-      padding: 8px 14px;
-      color: #93c5fd;
-      font-size: 0.78rem;
       font-family: "JetBrains Mono", monospace;
     }
-    .terminal-body {
+    .scan-progress-compact-top #scanMeta {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+    }
+    .progress-percent-inline {
+      flex-shrink: 0;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #e0f2fe;
+      font-variant-numeric: tabular-nums;
+    }
+    .progress-track {
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid #1e293b;
+      overflow: hidden;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #38bdf8, #22d3ee 45%, #34d399);
+      transition: width 0.2s ease-out;
+    }
+    .progress-stats {
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .progress-stat {
       flex: 1;
-      overflow: auto;
-      padding: 14px;
-      white-space: pre-wrap;
-      color: #86efac;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.82rem;
-      line-height: 1.55;
+      min-width: 0;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 6px 8px;
+      background: rgba(15, 23, 42, 0.55);
+      text-align: center;
     }
-    .terminal-body::-webkit-scrollbar { width: 8px; }
-    .terminal-body::-webkit-scrollbar-thumb { background: #263247; border-radius: 8px; }
+    .progress-stat .muted {
+      display: block;
+      font-size: 0.65rem;
+      color: #94a3b8;
+      margin-bottom: 2px;
+    }
+    .progress-stat strong {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.88rem;
+      color: #f1f5f9;
+      font-variant-numeric: tabular-nums;
+    }
+    .scan-error-banner {
+      margin-top: 8px;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 0.76rem;
+      color: #fecaca;
+      background: rgba(127, 29, 29, 0.35);
+      border: 1px solid rgba(248, 113, 113, 0.4);
+      word-break: break-word;
+    }
 
     .report-view {
       width: 100%;
@@ -432,9 +468,6 @@
     .muted { color: var(--muted); font-size: 0.84rem; }
 
     @media (min-width: 1240px) {
-      .view.active.scan-view {
-        grid-template-columns: minmax(400px, min(56vw, 980px)) 1fr;
-      }
       .left-scroll {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -490,7 +523,6 @@
       .advanced-wrap.open {
         display: block !important;
       }
-      .right-pane { min-height: 420px; }
       .stat-grid { grid-template-columns: repeat(2, minmax(150px, 1fr)); }
     }
   </style>
@@ -765,18 +797,31 @@
         <button id="startBtn" type="submit" form="scanForm" class="btn-launch">스캔 시작</button>
         <button id="checkStatusBtn" type="button" class="btn-poll">상태 조회</button>
       </div>
-    </section>
 
-    <section class="right-pane">
-      <div class="terminal-head">
-        <div class="dots">
-          <span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span>
+      <div class="scan-progress-compact">
+        <div class="scan-progress-compact-top">
+          <span id="scanMeta">scan_id: (없음)</span>
+          <span class="progress-percent-inline" id="scanProgressPercent">0.0%</span>
         </div>
-        <div>mws@runtime:~/scan</div>
+        <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="scanProgressTrack">
+          <div class="progress-fill" id="scanProgressFill"></div>
+        </div>
+        <div class="progress-stats">
+          <div class="progress-stat">
+            <span class="muted">전체</span>
+            <strong id="statTotal">—</strong>
+          </div>
+          <div class="progress-stat">
+            <span class="muted">성공</span>
+            <strong id="statSuccess">—</strong>
+          </div>
+          <div class="progress-stat">
+            <span class="muted">실패</span>
+            <strong id="statFail">—</strong>
+          </div>
+        </div>
+        <div id="scanErrorBanner" class="scan-error-banner" hidden></div>
       </div>
-      <div class="terminal-meta" id="scanMeta">scan_id: (없음)</div>
-      <div class="terminal-body" id="responseLog">[INIT] Modular Web Scanner console online.
-[INFO] 대상/옵션 입력 후 '스캔 시작' 버튼을 누르세요.</div>
     </section>
     </section>
 
@@ -815,8 +860,14 @@
   </div>
 
   <script>
-    const responseLog = document.getElementById("responseLog");
     const scanMeta = document.getElementById("scanMeta");
+    const scanProgressPercent = document.getElementById("scanProgressPercent");
+    const scanProgressFill = document.getElementById("scanProgressFill");
+    const scanProgressTrack = document.getElementById("scanProgressTrack");
+    const statTotal = document.getElementById("statTotal");
+    const statSuccess = document.getElementById("statSuccess");
+    const statFail = document.getElementById("statFail");
+    const scanErrorBanner = document.getElementById("scanErrorBanner");
     const form = document.getElementById("scanForm");
     const checkStatusBtn = document.getElementById("checkStatusBtn");
     const advancedToggle = document.getElementById("advancedToggle");
@@ -839,7 +890,58 @@
     const moduleDetailHint = document.getElementById("moduleDetailHint");
     let lastScanId = "";
     let pollTimer = null;
-    let displayedServerLogCount = 0;
+
+    function showScanError(msg) {
+      scanErrorBanner.textContent = msg;
+      scanErrorBanner.hidden = !msg;
+    }
+
+    function clearScanError() {
+      scanErrorBanner.hidden = true;
+      scanErrorBanner.textContent = "";
+    }
+
+    function formatProgressPercent(scan) {
+      const p = scan.progress_percent;
+      if (typeof p === "number" && !Number.isNaN(p)) return `${p.toFixed(1)}%`;
+      const q = scan.progress;
+      if (typeof q === "number" && !Number.isNaN(q)) return `${Number(q).toFixed(1)}%`;
+      return "0.0%";
+    }
+
+    function updateScanProgressUI(scan) {
+      const sum = scan.summary || {};
+      const totalRaw = scan.total_requests != null ? scan.total_requests : sum.total_requests;
+      const totalNum = totalRaw != null && totalRaw !== "" ? Number(totalRaw) : NaN;
+      const completed = Number(sum.completed ?? 0);
+      const failures = Number(sum.failures ?? 0);
+      const ok = Math.max(0, completed - failures);
+
+      if (!Number.isNaN(totalNum) && totalNum > 0) {
+        statTotal.textContent = String(totalNum);
+        statSuccess.textContent = String(ok);
+        statFail.textContent = String(failures);
+      } else {
+        statTotal.textContent = "—";
+        statSuccess.textContent = "—";
+        statFail.textContent = "—";
+      }
+
+      let pct = 0;
+      if (typeof scan.progress_percent === "number" && !Number.isNaN(scan.progress_percent)) {
+        pct = scan.progress_percent;
+      } else if (!Number.isNaN(totalNum) && totalNum > 0) {
+        pct = Math.min(100, Math.round((completed / totalNum) * 1000) / 10);
+      } else {
+        pct = Number(scan.progress ?? 0);
+      }
+      if (scan.status === "completed") pct = 100;
+      pct = Math.min(100, Math.max(0, pct));
+
+      scanProgressPercent.textContent = `${pct.toFixed(1)}%`;
+      scanProgressFill.style.width = `${pct}%`;
+      scanProgressTrack.setAttribute("aria-valuenow", String(Math.round(pct * 10) / 10));
+    }
 
     sidebarToggle.addEventListener("click", () => {
       sidebar.classList.toggle("collapsed");
@@ -887,25 +989,6 @@
     scanTypeSelect.addEventListener("change", syncModuleDetailPanels);
     syncModuleDetailPanels();
 
-    function now() {
-      return new Date().toISOString().replace("T", " ").slice(11, 19);
-    }
-
-    function appendLog(level, message) {
-      const markers = { INFO: "[*]", OK: "[+]", ERR: "[-]" };
-      responseLog.textContent += `\n[${now()}] ${markers[level] || "[*]"} ${message}`;
-      responseLog.scrollTop = responseLog.scrollHeight;
-    }
-
-    function appendServerLogs(logs) {
-      if (!Array.isArray(logs)) return;
-      for (let i = displayedServerLogCount; i < logs.length; i += 1) {
-        responseLog.textContent += `\n${logs[i]}`;
-      }
-      displayedServerLogCount = logs.length;
-      responseLog.scrollTop = responseLog.scrollHeight;
-    }
-
     function toInt(id, fallback = 0) {
       const n = parseInt(document.getElementById(id).value, 10);
       return Number.isNaN(n) ? fallback : n;
@@ -946,7 +1029,7 @@
       const findings = reportVulns.length ? reportVulns : (scan.findings || []);
       reportScanId.textContent = `scan_id: ${scan.scan_id || "(없음)"}`;
       reportStatus.textContent = scan.status || "-";
-      reportProgress.textContent = `${scan.progress ?? 0}%`;
+      reportProgress.textContent = formatProgressPercent(scan);
       reportTarget.textContent = scan.target || scan.request?.url || "-";
       reportFindings.textContent = String(findings.length);
 
@@ -997,7 +1080,8 @@
       if (!lastScanId) return;
       const data = await requestJson(`/api/scan/${lastScanId}`);
       scanMeta.textContent = `scan_id: ${lastScanId}`;
-      appendServerLogs(data.logs || []);
+      clearScanError();
+      updateScanProgressUI(data);
       renderReport(data);
 
       if (data.status === "completed" || data.status === "failed") {
@@ -1070,8 +1154,7 @@
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const payload = buildPayload();
-      appendLog("INFO", `스캔 요청 준비: target=${payload.url}, type=${payload.scan_type}`);
-      appendLog("INFO", "POST /api/scan/start 전송");
+      clearScanError();
       try {
         const data = await requestJson("/api/scan/start", {
           method: "POST",
@@ -1079,38 +1162,39 @@
           body: JSON.stringify(payload)
         });
         lastScanId = data.scan_id;
-        displayedServerLogCount = 0;
         scanMeta.textContent = `scan_id: ${lastScanId}`;
-        appendLog("OK", `요청 접수됨: scan_id=${lastScanId}`);
         reportScanId.textContent = `scan_id: ${lastScanId}`;
         reportTarget.textContent = data.request?.url || "-";
         reportStatus.textContent = "queued";
-        reportProgress.textContent = "0%";
+        reportProgress.textContent = "0.0%";
         reportFindings.textContent = "0";
         findingList.innerHTML = '<div class="muted">스캔 진행 중입니다. 상태 조회 후 리포트가 갱신됩니다.</div>';
-        appendLog("INFO", "응답 JSON:");
-        appendLog("INFO", JSON.stringify(data, null, 2));
+        updateScanProgressUI({
+          status: "queued",
+          progress_percent: 0,
+          progress: 0,
+          summary: {},
+          total_requests: null
+        });
         if (pollTimer) clearInterval(pollTimer);
         pollTimer = setInterval(() => {
-          syncScanState().catch((err) => appendLog("ERR", `자동 동기화 실패: ${err}`));
+          syncScanState().catch((err) => showScanError(`동기화 실패: ${err}`));
         }, 1000);
         await syncScanState();
       } catch (err) {
-        appendLog("ERR", `요청 실패: ${err}`);
+        showScanError(`요청 실패: ${err}`);
       }
     });
 
     checkStatusBtn.addEventListener("click", async () => {
       if (!lastScanId) {
-        appendLog("ERR", "먼저 스캔을 시작해 scan_id를 생성하세요.");
+        showScanError("먼저 스캔을 시작해 scan_id를 생성하세요.");
         return;
       }
-      appendLog("INFO", `GET /api/scan/${lastScanId}`);
       try {
-        const data = await syncScanState();
-        appendLog("OK", `상태=${data.status}, 진행률=${data.progress}%`);
+        await syncScanState();
       } catch (err) {
-        appendLog("ERR", `상태 조회 실패: ${err}`);
+        showScanError(`상태 조회 실패: ${err}`);
       }
     });
   </script>
