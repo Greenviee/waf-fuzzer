@@ -6,6 +6,12 @@ from typing import Any
 
 from fuzzer import EngineStats, Finding
 
+from reporter.dedupe import (
+    dedupe_vulnerabilities,
+    full_report_path,
+    vulnerability_sort_key,
+)
+
 
 def _severity_rank(raw: str) -> int:
     """Lower is more severe (critical first)."""
@@ -100,11 +106,58 @@ class ReportGenerator:
         print(f"Total findings: {len(self.findings)}")
         print("=" * table_width + "\n")
 
+    def _finding_to_dict(self, finding: Finding) -> dict[str, Any]:
+        payload_obj = finding.payload
+        payload_value = getattr(payload_obj, "value", str(payload_obj))
+        attack_type = getattr(payload_obj, "attack_type", "Unknown")
+        severity = getattr(payload_obj, "risk_level", "high")
+        description = getattr(payload_obj, "description", "")
+
+        response = finding.response
+        status_code = getattr(response, "status", 0)
+        response_time = getattr(response, "elapsed_time", getattr(response, "elapsed", 0.0))
+        error_log = getattr(response, "error", None)
+
+        method = getattr(finding.surface.method, "name", str(finding.surface.method))
+        location = getattr(
+            getattr(finding.surface, "param_location", "unknown"),
+            "name",
+            str(getattr(finding.surface, "param_location", "unknown")),
+        )
+
+        return {
+            "target": {
+                "url": finding.surface.url,
+                "method": method,
+                "location": location,
+                "parameter": finding.parameter,
+            },
+            "attack_info": {
+                "payload_value": payload_value,
+                "type": attack_type,
+                "severity": severity,
+                "description": description,
+            },
+            "evidence": {
+                "status_code": status_code,
+                "response_time": round(float(response_time), 4),
+                "error_log": error_log,
+            },
+        }
+
     def export_to_json(self, filepath: str = "scan_result.json") -> None:
         """
-        Exports the scan result to a JSON file.
+        Writes a deduplicated report to ``filepath`` (one PoC per URL / parameter / type)
+        and the complete per-payload list to ``<stem>_full<suffix>``.
         """
-        report_data: dict[str, Any] = {
+        full_vulnerabilities = [
+            self._finding_to_dict(f) for f in sorted(self.findings, key=_finding_sort_key)
+        ]
+        discovery_vulnerabilities = [self._finding_to_dict(f) for f in self.findings]
+        deduped = dedupe_vulnerabilities(discovery_vulnerabilities, mode="first_in_order")
+        deduped_sorted = sorted(deduped, key=vulnerability_sort_key)
+
+        full_report: dict[str, Any] = {
             "metadata": {
                 "scan_time": self.timestamp,
                 "summary": {
@@ -114,51 +167,27 @@ class ReportGenerator:
                     "findings": self.stats.findings,
                 },
             },
-            "vulnerabilities": [],
+            "vulnerabilities": full_vulnerabilities,
+        }
+        deduped_report: dict[str, Any] = {
+            "metadata": {
+                "scan_time": self.timestamp,
+                "summary": {
+                    "queued": self.stats.queued,
+                    "completed": self.stats.completed,
+                    "failures": self.stats.failures,
+                    "findings": len(deduped_sorted),
+                    "findings_raw": self.stats.findings,
+                },
+            },
+            "vulnerabilities": deduped_sorted,
         }
 
-        for finding in sorted(self.findings, key=_finding_sort_key):
-            payload_obj = finding.payload
-            payload_value = getattr(payload_obj, "value", str(payload_obj))
-            attack_type = getattr(payload_obj, "attack_type", "Unknown")
-            severity = getattr(payload_obj, "risk_level", "high")
-            description = getattr(payload_obj, "description", "")
-
-            response = finding.response
-            status_code = getattr(response, "status", 0)
-            response_time = getattr(response, "elapsed_time", getattr(response, "elapsed", 0.0))
-            error_log = getattr(response, "error", None)
-
-            method = getattr(finding.surface.method, "name", str(finding.surface.method))
-            location = getattr(
-                getattr(finding.surface, "param_location", "unknown"),
-                "name",
-                str(getattr(finding.surface, "param_location", "unknown")),
-            )
-
-            report_data["vulnerabilities"].append(
-                {
-                    "target": {
-                        "url": finding.surface.url,
-                        "method": method,
-                        "location": location,
-                        "parameter": finding.parameter,
-                    },
-                    "attack_info": {
-                        "payload_value": payload_value,
-                        "type": attack_type,
-                        "severity": severity,
-                        "description": description,
-                    },
-                    "evidence": {
-                        "status_code": status_code,
-                        "response_time": round(float(response_time), 4),
-                        "error_log": error_log,
-                    },
-                }
-            )
-
+        full_path = full_report_path(filepath)
         with open(filepath, "w", encoding="utf-8") as file:
-            json.dump(report_data, file, ensure_ascii=False, indent=2)
+            json.dump(deduped_report, file, ensure_ascii=False, indent=2)
+        with open(full_path, "w", encoding="utf-8") as file:
+            json.dump(full_report, file, ensure_ascii=False, indent=2)
 
-        print(f"report saved: {filepath}")
+        print(f"report saved (deduplicated): {filepath}")
+        print(f"report saved (full payloads): {full_path}")
