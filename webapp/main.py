@@ -132,6 +132,7 @@ async def start_scan(req: ScanRequest, background_tasks: BackgroundTasks) -> dic
         "scan_id": scan_id,
         "status": "queued",
         "progress": 0,
+        "progress_percent": 0.0,
         "created_at": now,
         "updated_at": now,
         "request": req.model_dump(by_alias=True),
@@ -147,6 +148,8 @@ async def start_scan(req: ScanRequest, background_tasks: BackgroundTasks) -> dic
         "logs": [],
         "report_json": None,
         "result": None,
+        "total_requests": None,
+        "progress_percent": 0.0,
     }
     background_tasks.add_task(_run_real_scan, scan_id, req)
     return {
@@ -296,7 +299,8 @@ async def _run_real_scan(scan_id: str, req: ScanRequest) -> None:
             return await build_and_send_request(session, surface, parameter, payload)
 
         total_requests = max(1, context["total_requests"])
-        last_logged_progress = -1
+        scan["total_requests"] = total_requests
+        last_logged_progress = -1.0
         bf_true_random_milestone_logs = args.type == "bruteforce" and bool(
             getattr(args, "bf_true_random", False)
         )
@@ -312,22 +316,24 @@ async def _run_real_scan(scan_id: str, req: ScanRequest) -> None:
 
         while not scan_task.done():
             completed = min(engine.stats.completed, total_requests)
-            progress = min(int((completed / total_requests) * 100), 99)
-            scan["progress"] = progress
+            progress_pct = min(99.9, round(completed / total_requests * 100, 1))
+            scan["progress_percent"] = progress_pct
+            scan["progress"] = int(progress_pct)
             scan["summary"] = {
                 "queued": engine.stats.queued,
                 "completed": engine.stats.completed,
                 "failures": engine.stats.failures,
                 "findings": engine.stats.findings,
                 "elapsed_time": round(time.monotonic() - started_at, 2),
+                "total_requests": total_requests,
             }
             scan["updated_at"] = time.time()
-            if progress != last_logged_progress:
+            if progress_pct != last_logged_progress:
                 _scan_log(
                     scan,
-                    f"진행률 {progress}% (completed={engine.stats.completed}, findings={engine.stats.findings}, failures={engine.stats.failures})",
+                    f"진행률 {progress_pct}% (completed={engine.stats.completed}, findings={engine.stats.findings}, failures={engine.stats.failures})",
                 )
-                last_logged_progress = progress
+                last_logged_progress = progress_pct
             if bf_true_random_milestone_logs:
                 completed_now = engine.stats.completed
                 while completed_now >= next_completed_log_milestone:
@@ -355,6 +361,7 @@ async def _run_real_scan(scan_id: str, req: ScanRequest) -> None:
         findings = _serialize_findings(engine.findings)
         scan["status"] = "completed"
         scan["progress"] = 100
+        scan["progress_percent"] = 100.0
         scan["findings"] = findings
         scan["summary"] = {
             "queued": stats.queued,
@@ -362,6 +369,7 @@ async def _run_real_scan(scan_id: str, req: ScanRequest) -> None:
             "failures": stats.failures,
             "findings": stats.findings,
             "elapsed_time": round(time.monotonic() - started_at, 2),
+            "total_requests": total_requests,
         }
         scan["result"] = {
             "summary": {
@@ -377,14 +385,16 @@ async def _run_real_scan(scan_id: str, req: ScanRequest) -> None:
         _scan_log(scan, "스캔 완료")
     except Exception as exc:
         scan["status"] = "failed"
-        scan["progress"] = 100
+        scan["progress"] = int(scan.get("progress_percent") or scan.get("progress") or 0)
         scan["error"] = str(exc)
+        prev = scan.get("summary") or {}
         scan["summary"] = {
-            "queued": 0,
-            "completed": 0,
-            "failures": 0,
-            "findings": 0,
+            "queued": prev.get("queued", 0),
+            "completed": prev.get("completed", 0),
+            "failures": prev.get("failures", 0),
+            "findings": prev.get("findings", 0),
             "elapsed_time": round(time.monotonic() - started_at, 2),
+            "total_requests": scan.get("total_requests"),
         }
         scan["updated_at"] = time.time()
         _scan_log(scan, f"스캔 실패: {exc}")
