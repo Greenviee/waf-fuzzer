@@ -125,7 +125,7 @@ class ReportGenerator:
             str(getattr(finding.surface, "param_location", "unknown")),
         )
 
-        return {
+        row: dict[str, Any] = {
             "target": {
                 "url": finding.surface.url,
                 "method": method,
@@ -144,6 +144,12 @@ class ReportGenerator:
                 "error_log": error_log,
             },
         }
+        if finding.module_name:
+            row["module"] = finding.module_name
+        ch = getattr(payload_obj, "channel", None)
+        if ch is not None:
+            row["ssrf_channel"] = ch
+        return row
 
     def export_to_json(self, filepath: str = "scan_result.json") -> None:
         """

@@ -12,9 +12,11 @@ class SSRFPayload:
     attack_type: str
     risk_level: str
     expected_signature: str | None = None
+    # In-band payloads (ssrf_inband.txt) vs OOB/template payloads (ssrf_oob_template.txt).
+    channel: str = "inband"
 
 
-def _load_ssrf_payload_file(file_path: str) -> list[SSRFPayload]:
+def _load_ssrf_payload_file(file_path: str, *, channel: str = "inband") -> list[SSRFPayload]:
     payloads: list[SSRFPayload] = []
     if not os.path.exists(file_path):
         return payloads
@@ -41,6 +43,7 @@ def _load_ssrf_payload_file(file_path: str) -> list[SSRFPayload]:
                     attack_type=attack_type,
                     risk_level=risk_level,
                     expected_signature=expected_signature or None,
+                    channel=channel,
                 )
             )
 
@@ -99,6 +102,7 @@ def _apply_ssrf_bypass(payload: SSRFPayload, bypass_level: int) -> list[SSRFPayl
                     attack_type=f"{payload.attack_type}_path_encode",
                     risk_level=payload.risk_level,
                     expected_signature=payload.expected_signature,
+                    channel=payload.channel,
                 )
             )
 
@@ -128,6 +132,7 @@ def _apply_ssrf_bypass(payload: SSRFPayload, bypass_level: int) -> list[SSRFPayl
                             attack_type=f"{payload.attack_type}_{suffix}",
                             risk_level=payload.risk_level,
                             expected_signature=payload.expected_signature,
+                            channel=payload.channel,
                         )
                     )
         except ValueError:
@@ -145,12 +150,12 @@ def get_ssrf_payloads(
     fallback_path = os.path.join("config", "payloads", "ssrf", "ssrf.txt")
 
     # Prefer split files; fallback keeps backward compatibility.
-    payloads = _load_ssrf_payload_file(inband_path)
+    payloads = _load_ssrf_payload_file(inband_path, channel="inband")
     if not payloads:
-        payloads = _load_ssrf_payload_file(fallback_path)
+        payloads = _load_ssrf_payload_file(fallback_path, channel="inband")
 
     if include_oob_templates:
-        payloads.extend(_load_ssrf_payload_file(oob_path))
+        payloads.extend(_load_ssrf_payload_file(oob_path, channel="oob"))
     seen: set[str] = set()
     expanded: list[SSRFPayload] = []
     for payload in payloads:

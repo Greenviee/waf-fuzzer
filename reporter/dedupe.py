@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+import copy
 import json
 from collections import defaultdict
 from pathlib import Path
 from typing import Any, Literal
+
+from modules.ssrf.module import SSRF_MODULE_REPORT_NAME
+
+_SSRF_INTERNAL_CLASS = "SSRF-Internal"
 
 
 def severity_rank(raw: str) -> int:
@@ -49,20 +54,51 @@ def canonical_attack_type_for_grouping(raw: str) -> str:
     return s if s else original
 
 
-def vulnerability_group_key(record: dict[str, Any]) -> tuple[str, str, str, str, str]:
-    """
-    Group by URL, HTTP method, parameter placement, parameter name, and attack class
-    (mutation suffixes on ``attack_info.type`` are ignored for grouping).
-    """
-    target = record.get("target") or {}
+def _is_inband_ssrf_record(record: dict[str, Any]) -> bool:
+    if record.get("ssrf_channel") == "oob":
+        return False
+    if record.get("ssrf_channel") == "inband":
+        return True
+    # Legacy JSON without channel: treat SSRF module rows as in-band.
+    return record.get("module") == SSRF_MODULE_REPORT_NAME
+
+
+def grouping_attack_class(record: dict[str, Any]) -> str:
+    """Logical attack class for dedupe keys (in-band SSRF collapses to one bucket)."""
+    if _is_inband_ssrf_record(record):
+        return _SSRF_INTERNAL_CLASS
     attack = record.get("attack_info") or {}
     raw_type = str(attack.get("type") or "")
+    return canonical_attack_type_for_grouping(raw_type)
+
+
+def presentation_for_vulnerability_record(record: dict[str, Any]) -> dict[str, Any]:
+    """Apply display labels after dedupe (e.g. in-band SSRF -> SSRF-Internal)."""
+    out = copy.deepcopy(record)
+    if not _is_inband_ssrf_record(out):
+        return out
+    attack = out.setdefault("attack_info", {})
+    original = str(attack.get("type") or "")
+    attack["type"] = _SSRF_INTERNAL_CLASS
+    if original and original != _SSRF_INTERNAL_CLASS:
+        attack["ssrf_variant"] = original
+    return out
+
+
+def vulnerability_group_key(record: dict[str, Any]) -> tuple[str, str, str, str, str]:
+    """
+    Group by URL, HTTP method, parameter placement, parameter name, and attack class.
+
+    In-band SSRF rows share one class (``SSRF-Internal``). Other types use
+    ``attack_info.type`` with mutation suffixes stripped.
+    """
+    target = record.get("target") or {}
     return (
         str(target.get("url") or ""),
         str(target.get("method") or ""),
         str(target.get("location") or ""),
         str(target.get("parameter") or ""),
-        canonical_attack_type_for_grouping(raw_type),
+        grouping_attack_class(record),
     )
 
 
@@ -96,7 +132,7 @@ def dedupe_vulnerabilities(
             if key in seen:
                 continue
             seen.add(key)
-            out.append(rec)
+            out.append(presentation_for_vulnerability_record(rec))
         return out
 
     buckets: dict[tuple[str, str, str, str, str], list[tuple[int, dict[str, Any]]]] = (
@@ -114,7 +150,7 @@ def dedupe_vulnerabilities(
             return (severity_rank(str(attack.get("severity") or "high")), len(payload), idx)
 
         picked.append(min(items, key=score)[1])
-    return picked
+    return [presentation_for_vulnerability_record(r) for r in picked]
 
 
 def dedupe_report_document(
@@ -123,8 +159,6 @@ def dedupe_report_document(
     mode: Literal["first_in_order", "best_evidence"] = "best_evidence",
 ) -> dict[str, Any]:
     """Return a deep-copied report with vulnerabilities deduped and summary updated."""
-    import copy
-
     data = copy.deepcopy(report)
     vulns = list(data.get("vulnerabilities") or [])
     raw_count = len(vulns)
