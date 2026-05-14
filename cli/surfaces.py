@@ -12,7 +12,7 @@ from modules.bruteforce.target_prep import (
     build_targeted_bruteforce_surface,
 )
 from parsers.surface_builder import SurfaceBuilder
-
+from crawler.url_filter import URLFilter
 
 def _export_surfaces_json(surfaces: list[AttackSurface], output_path: str) -> None:
     payload = [surface.to_dict() for surface in surfaces]
@@ -55,6 +55,12 @@ async def _resolve_crawled_surfaces(
         queue_manager=queue_manager,
         config=CrawlConfig(),
     )
+    # CLI 인자로 받은 제외 패턴을 URLFilter에 주입
+    exclude_patterns = getattr(args, "exclude_urls", [])
+    if exclude_patterns:
+        custom_filter = URLFilter(excluded_patterns=exclude_patterns)
+        crawler.url_filter = custom_filter
+        crawler.session_manager.url_filter = custom_filter
 
     # CLI에서 전달받은 쿠키(-c 옵션)를 크롤러 세션에 주입
     if cookies:
