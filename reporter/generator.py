@@ -124,6 +124,7 @@ class ReportGenerator:
             "name",
             str(getattr(finding.surface, "param_location", "unknown")),
         )
+        evidences = getattr(finding, "evidences", [])
 
         row: dict[str, Any] = {
             "target": {
@@ -135,6 +136,7 @@ class ReportGenerator:
             "attack_info": {
                 "payload_value": payload_value,
                 "type": attack_type,
+                "analysis_details": evidences,
                 "severity": severity,
                 "description": description,
             },
