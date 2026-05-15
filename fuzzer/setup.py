@@ -51,9 +51,15 @@ def select_modules(args) -> list:
             )
         )
     if args.type in ("stored_xss", "all"):
+        sxss_categories = getattr(args, "sxss_categories", None) or []
+        sxss_target_params = getattr(args, "sxss_target_params", None) or []
         selected.append(
             StoredXSSModule(
-                bypass_level=args.sxss_evasion_level,
+                bypass_level=getattr(args, "sxss_evasion_level", 1),
+                scan_mode=getattr(args, "sxss_scan_mode", "full"),
+                max_risk_level=getattr(args, "sxss_max_risk_level", "Critical"),
+                categories=sxss_categories if sxss_categories else None,
+                target_params=sxss_target_params if sxss_target_params else None,
             )
         )
 
