@@ -5,7 +5,7 @@ from modules.bruteforce.module import BruteforceModule
 from modules.lfi.module import LFIModule
 from modules.file_upload.module import FileUploadModule
 from modules.sqli.module import SQLiModule
-from modules.osci.module import OSCIModule
+from modules.osci.module import OSCiModule
 from modules.ssrf.module import SSRFModule
 
 
@@ -21,7 +21,7 @@ def select_modules(args) -> list:
         selected.append(sqli_module)
 
     if args.type in ("osci", "all"):
-        osci_module = OSCIModule(
+        osci_module = OSCiModule(
             include_time_based=args.osci_time_based,
             max_time_payloads=args.osci_time_max,
             evasion_level=args.osci_evasion_level,

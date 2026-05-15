@@ -215,38 +215,35 @@ MARKER_LEN_WC = MARKER_LEN + 1    # 9 (wc -c는 개행 포함)
 
 def _finalize(val: str, metadata: str) -> Payload:
     m_parts = metadata.split(":::")
+    target_os = m_parts[2]
+    action_level = m_parts[3]
+    
     n1 = random.randint(10, 99)
     n2 = 100 - n1
 
     res = val.replace("[MARKER]", MARKER)
     res = res.replace("[N1]", str(n1)).replace("[N2]", str(n2))
 
+    # [N] 치환 로직 (기존 유지)
     wc_pattern = r"wc -c.*\[N\]|\[N\].*wc -c"
-
-    marker_len_patterns = [
-        r"-ne \[N\]",
-        r"-eq \[N\]",
-        r"\.Length -ne \[N\]",
-        r"\.Length -eq \[N\]",
-        r"==\[N\]",
-        r"== \[N\]",
-    ]
-
+    marker_len_patterns = [r"-ne \[N\]", r"-eq \[N\]", r"\.Length -ne \[N\]", r"\.Length -eq \[N\]", r"==\[N\]", r"== \[N\]"]
     ping_pattern = r"ping -n \[N\]"
 
     if re.search(wc_pattern, val):
-        res = res.replace("[N]", str(MARKER_LEN_WC))   # 9
+        res = res.replace("[N]", str(MARKER_LEN_WC))
     elif re.search(ping_pattern, val):
-        res = res.replace("[N]", "5")                   # ping 5회
+        res = res.replace("[N]", "5")
     elif any(re.search(p, val) for p in marker_len_patterns):
-        res = res.replace("[N]", str(MARKER_LEN))       # 8
+        res = res.replace("[N]", str(MARKER_LEN))
     else:
-        res = res.replace("[N]", str(n1 + n2))          # 100
+        res = res.replace("[N]", str(n1 + n2))
+
+    final_value = res
+    if target_os == "Windows":
+        final_value = f"{res}|||{action_level}"
 
     return Payload(
-        value=res,
+        value=final_value,
         attack_type=m_parts[0],
         risk_level=m_parts[1],
-        target_os=m_parts[2],
-        action_level=m_parts[3]
     )

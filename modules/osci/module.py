@@ -14,11 +14,11 @@ from modules.osci.analyzer import detect_osci, verify_osci_logic
 from core.models import Payload
 
 @dataclass(frozen=True, slots=True)
-class OSCIInternalPayload(Payload):
+class OSCiInternalPayload(Payload):
     _is_serial: bool = False
     _real_time_value: Optional[str] = None
 
-class OSCIModule(BaseModule):
+class OSCiModule(BaseModule):
     def __init__(self, **kwargs):
         super().__init__("OS Command Injection")
         
@@ -79,26 +79,21 @@ class OSCIModule(BaseModule):
             self.get_payload_count()
 
         all_raw = get_osci_payloads()
-        
         filtered = [p for p in all_raw if getattr(p, 'target_os', 'Unix') == self.target_os]
         
         fast_indices = [i for i, p in enumerate(filtered) if not self._is_time_payload(p)]
         time_indices = [i for i, p in enumerate(filtered) if self._is_time_payload(p)]
 
-        # 일반 페이로드 (병렬 처리)
         for level in range(self.evasion_level + 1):
             for idx in fast_indices:
                 p = filtered[idx]
-                yield OSCIInternalPayload(
+                yield OSCiInternalPayload(
                     value=self._apply_evasion_by_level(p.value, level),
                     attack_type=p.attack_type,
                     risk_level=p.risk_level,
-                    target_os=p.target_os,
-                    action_level=p.action_level,
                     _is_serial=False
                 )
 
-        # 시간 기반 페이로드 (직렬 처리)
         if self.include_time_based and time_indices:
             random.seed(self.random_seed)
             limit = self.max_time_payloads if self.max_time_payloads > 0 else len(time_indices)
@@ -106,19 +101,18 @@ class OSCIModule(BaseModule):
             for level in range(self.evasion_level + 1):
                 for idx in selected_indices:
                     p = filtered[idx]
-                    yield OSCIInternalPayload(
+                    yield OSCiInternalPayload(
                         value="1",
                         attack_type=p.attack_type,
                         risk_level=p.risk_level,
-                        target_os=p.target_os,
-                        action_level=p.action_level,
                         _is_serial=True,
                         _real_time_value=self._apply_evasion_by_level(p.value, level)
                     )
 
     def _apply_evasion_by_level(self, value: str, level: int) -> str:
-
-        action_level = getattr(self.current_payload, "action_level", "SHELL")
+        current_action_level = "SHELL"
+        if "|||" in value:
+            value, current_action_level = value.rsplit("|||", 1)
 
         if level == 0:
             return value
@@ -128,9 +122,7 @@ class OSCIModule(BaseModule):
             if self.target_os == "Unix":
                 value = value.replace(" ", "$IFS")
             else:
-                if "PS" in action_level:
-                    pass
-                else:
+                if "PS" not in current_action_level:
                     value = value.replace(" ", ",")
         
         # Level 2: 키워드 난독화
@@ -141,7 +133,7 @@ class OSCIModule(BaseModule):
             else:
                 value = value.replace("echo", "ec^ho")
                 value = value.replace("set", "s^et")
-                if "PS" in action_level:
+                if "PS" in current_action_level:
                     value = value.replace("Write-Output", "W'rite-O'utput")
         
         # Level 3: URL 인코딩
