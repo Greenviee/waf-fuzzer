@@ -5,9 +5,8 @@ from modules.bruteforce.module import BruteforceModule
 from modules.lfi.module import LFIModule
 from modules.file_upload.module import FileUploadModule
 from modules.sqli.module import SQLiModule
-from modules.osci.module import OSCiModule
 from modules.ssrf.module import SSRFModule
-
+from modules.stored_xss.module import StoredXSSModule
 
 def select_modules(args) -> list:
     selected = []
@@ -19,14 +18,6 @@ def select_modules(args) -> list:
             evasion_level=args.sqli_evasion_level,
         )
         selected.append(sqli_module)
-
-    if args.type in ("osci", "all"):
-        osci_module = OSCiModule(
-            include_time_based=args.osci_time_based,
-            max_time_payloads=args.osci_time_max,
-            evasion_level=args.osci_evasion_level,
-        )
-        selected.append(osci_module)
 
     if args.type == "bruteforce":
         bruteforce_module = BruteforceModule(
@@ -57,6 +48,12 @@ def select_modules(args) -> list:
             SSRFModule(
                 include_oob_templates=args.ssrf_oob,
                 bypass_level=args.ssrf_evasion_level,
+            )
+        )
+    if args.type in ("stored_xss", "all"):
+        selected.append(
+            StoredXSSModule(
+                bypass_level=args.sxss_evasion_level,
             )
         )
 
