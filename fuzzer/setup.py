@@ -6,7 +6,7 @@ from modules.lfi.module import LFIModule
 from modules.file_upload.module import FileUploadModule
 from modules.sqli.module import SQLiModule
 from modules.ssrf.module import SSRFModule
-
+from modules.stored_xss.module import StoredXSSModule
 
 def select_modules(args) -> list:
     selected = []
@@ -48,6 +48,12 @@ def select_modules(args) -> list:
             SSRFModule(
                 include_oob_templates=args.ssrf_oob,
                 bypass_level=args.ssrf_evasion_level,
+            )
+        )
+    if args.type in ("stored_xss", "all"):
+        selected.append(
+            StoredXSSModule(
+                bypass_level=args.sxss_evasion_level,
             )
         )
 
