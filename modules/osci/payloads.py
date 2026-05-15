@@ -224,7 +224,7 @@ def _finalize(val: str, metadata: str) -> Payload:
     res = val.replace("[MARKER]", MARKER)
     res = res.replace("[N1]", str(n1)).replace("[N2]", str(n2))
 
-    # [N] 치환 로직 (기존 유지)
+    # [N] 치환 로직
     wc_pattern = r"wc -c.*\[N\]|\[N\].*wc -c"
     marker_len_patterns = [r"-ne \[N\]", r"-eq \[N\]", r"\.Length -ne \[N\]", r"\.Length -eq \[N\]", r"==\[N\]", r"== \[N\]"]
     ping_pattern = r"ping -n \[N\]"
