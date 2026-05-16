@@ -292,6 +292,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="OSCI: max time-based payloads when --osci-time-based is set (0=all)",
     )
     parser.add_argument(
+        "--target-os",
+        choices=["linux", "windows", "all"],
+        default="linux",
+        help="selects target os for OSCI module (linux runs Unix payloads internally)"
+    )
+    parser.add_argument(
         "--session-pool-size",
         type=int,
         default=3,

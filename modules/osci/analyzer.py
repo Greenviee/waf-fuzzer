@@ -123,6 +123,7 @@ async def verify_osci_logic(response, payload, original_res, requester, is_hit, 
         return is_hit, evidences
 
     marker = "SVSDAAAA"
+    arithmetic_sum = 100
     payload_value = getattr(payload, "value", "")
 
     # [A] 강한 증거 즉시 반환

@@ -25,6 +25,7 @@ def select_modules(args) -> list:
             include_time_based=args.osci_time_based,
             max_time_payloads=args.osci_time_max,
             evasion_level=args.osci_evasion_level,
+            target_os=args.target_os
         )
         selected.append(osci_module)
 

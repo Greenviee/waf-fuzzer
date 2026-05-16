@@ -55,6 +55,7 @@ async def run_scan(args, *, base_url: str, surfaces) -> None:
         module_count=len(context["modules"]),
         payload_count=context["payload_count"],
         level=args.level,
+        target_os=args.target_os,
         sqli_evasion_level=args.sqli_evasion_level,
         osci_evasion_level=args.osci_evasion_level,
         lfi_evasion_level=args.lfi_evasion_level,

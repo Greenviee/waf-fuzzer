@@ -15,6 +15,8 @@ from core.models import Payload
 
 @dataclass(frozen=True, slots=True)
 class OSCiInternalPayload(Payload):
+    target_os: str = "Unix"
+    action_level: str = "SHELL"
     _is_serial: bool = False
     _real_time_value: Optional[str] = None
 
@@ -22,11 +24,19 @@ class OSCiModule(BaseModule):
     def __init__(self, **kwargs):
         super().__init__("OS Command Injection")
         
+        # CLI 입력 매핑
+        raw_os = kwargs.get('target_os', 'linux').lower()
+        if raw_os == 'windows':
+            self.target_os = "Windows"
+        elif raw_os == 'all':
+            self.target_os = "all"
+        else:
+            self.target_os = "Unix"
+        
         self.evasion_level = kwargs.get('evasion_level', 0)
         self.include_time_based = kwargs.get('include_time_based', False)
         self.max_time_payloads = kwargs.get('max_time_payloads', 0)
         self.random_seed = kwargs.get('random_seed', 37)
-        self.target_os = kwargs.get('target_os', 'Unix')
         
         self._global_time_lock = asyncio.Lock()
         self._fast_per_param = 0
@@ -58,12 +68,10 @@ class OSCiModule(BaseModule):
         return params
 
     def get_payload_count(self) -> int:
-        all_raw = get_osci_payloads()
+        all_raw = get_osci_payloads(self.target_os)
         
-        filtered = [p for p in all_raw if getattr(p, 'target_os', 'Unix') == self.target_os]
-        
-        fast_c = sum(1 for p in filtered if not self._is_time_payload(p))
-        time_c = sum(1 for p in filtered if self._is_time_payload(p))
+        fast_c = sum(1 for p in all_raw if not self._is_time_payload(p))
+        time_c = sum(1 for p in all_raw if self._is_time_payload(p))
         
         selected_time_count = 0
         if self.include_time_based:
@@ -78,62 +86,65 @@ class OSCiModule(BaseModule):
         if self._fast_per_param == 0: 
             self.get_payload_count()
 
-        all_raw = get_osci_payloads()
-        filtered = [p for p in all_raw if getattr(p, 'target_os', 'Unix') == self.target_os]
+        filtered = get_osci_payloads(self.target_os)
         
-        fast_indices = [i for i, p in enumerate(filtered) if not self._is_time_payload(p)]
-        time_indices = [i for i, p in enumerate(filtered) if self._is_time_payload(p)]
+        fast_payloads = [p for p in filtered if not self._is_time_payload(p)]
+        time_payloads = [p for p in filtered if self._is_time_payload(p)]
 
+        # 일반 페이로드 (병렬)
         for level in range(self.evasion_level + 1):
-            for idx in fast_indices:
-                p = filtered[idx]
+            for p in fast_payloads:
                 yield OSCiInternalPayload(
-                    value=self._apply_evasion_by_level(p.value, level),
+                    value=self._apply_evasion_by_level(p.value, level, p.target_os, p.action_level),
                     attack_type=p.attack_type,
                     risk_level=p.risk_level,
+                    target_os=p.target_os,
+                    action_level=p.action_level,
                     _is_serial=False
                 )
 
-        if self.include_time_based and time_indices:
+        # 시간 기반 페이로드 (직렬)
+        if self.include_time_based and time_payloads:
             random.seed(self.random_seed)
-            limit = self.max_time_payloads if self.max_time_payloads > 0 else len(time_indices)
-            selected_indices = random.sample(time_indices, min(limit, len(time_indices)))
+            limit = self.max_time_payloads if self.max_time_payloads > 0 else len(time_payloads)
+            selected_indices = random.sample(range(len(time_payloads)), min(limit, len(time_payloads)))
+            
             for level in range(self.evasion_level + 1):
                 for idx in selected_indices:
-                    p = filtered[idx]
+                    p = time_payloads[idx]
                     yield OSCiInternalPayload(
                         value="1",
                         attack_type=p.attack_type,
                         risk_level=p.risk_level,
+                        target_os=p.target_os,
+                        action_level=p.action_level,
                         _is_serial=True,
-                        _real_time_value=self._apply_evasion_by_level(p.value, level)
+                        _real_time_value=self._apply_evasion_by_level(p.value, level, p.target_os, p.action_level),
                     )
 
-    def _apply_evasion_by_level(self, value: str, level: int) -> str:
-        current_action_level = "SHELL"
-        if "|||" in value:
-            value, current_action_level = value.rsplit("|||", 1)
-
+    def _apply_evasion_by_level(self, value: str, level: int, t_os: str, action_level: str) -> str:
         if level == 0:
             return value
         
         # Level 1: 공백 우회
         if level >= 1:
-            if self.target_os == "Unix":
+            if t_os == "Unix":
                 value = value.replace(" ", "$IFS")
             else:
-                if "PS" not in current_action_level:
+                # Windows CMD/PHP 환경에서는 쉼표(,) 우회 사용, PowerShell은 제외
+                if "PS" not in action_level:
                     value = value.replace(" ", ",")
         
         # Level 2: 키워드 난독화
         if level >= 2:
-            if self.target_os == "Unix":
+            if t_os == "Unix":
                 value = value.replace("echo", "ec\\ho")
                 value = value.replace("cat", "c\\at")
             else:
                 value = value.replace("echo", "ec^ho")
                 value = value.replace("set", "s^et")
-                if "PS" in current_action_level:
+                
+                if "PS" in action_level:
                     value = value.replace("Write-Output", "W'rite-O'utput")
         
         # Level 3: URL 인코딩
@@ -148,7 +159,6 @@ class OSCiModule(BaseModule):
 
         # [A] 일반 페이로드 분석 (병렬)
         if not is_serial:
-            # 시간 페이즈 종료까지 대기
             while self._time_phase_active:
                 await asyncio.sleep(2.0)
 
@@ -180,10 +190,8 @@ class OSCiModule(BaseModule):
                 self._time_attack_in_flight += 1
 
             try:
-                # 1. 장벽 대기
                 if not self._barrier_event.is_set():
                     try:
-                        # 25초 후 데드락 해제
                         await asyncio.wait_for(self._barrier_event.wait(), timeout=25.0)
                     except asyncio.TimeoutError:
                         if not self._time_phase_active:
@@ -192,7 +200,6 @@ class OSCiModule(BaseModule):
                 if not self._time_phase_active:
                     self._time_phase_active = True
 
-                # 2. 전역 직렬 실행 락
                 async with self._global_time_lock:
                     real_val = getattr(payload, "_real_time_value", "test")
                     actual_payload = dataclasses.replace(payload, value=real_val)
@@ -202,7 +209,6 @@ class OSCiModule(BaseModule):
                         real_res = await requester(real_val)
                         real_elapsed = asyncio.get_event_loop().time() - start_ts
                         
-                        # 서버 회복 대기
                         await asyncio.sleep(4.5)
 
                         is_hit, evidences = detect_osci(

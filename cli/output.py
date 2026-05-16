@@ -31,6 +31,7 @@ def print_scan_configuration(
     module_count: int,
     payload_count: int,
     level: int | None,
+    target_os: str,
     sqli_evasion_level: int,
     osci_evasion_level: int,
     lfi_evasion_level: int,
@@ -48,6 +49,7 @@ def print_scan_configuration(
 ) -> None:
     print("=" * 60)
     print(f"Target URL:     {base_url}")
+    print(f"[*] Target OS: {target_os}")
     print(f"Surface count:  {surface_count}")
     print(f"Attack type:    {attack_type}")
     print(f"Module count:   {module_count}")
