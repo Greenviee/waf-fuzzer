@@ -7,6 +7,7 @@ from modules.file_upload.module import FileUploadModule
 from modules.sqli.module import SQLiModule
 from modules.ssrf.module import SSRFModule
 from modules.stored_xss.module import StoredXSSModule
+from modules.reflected_xss.module import ReflectedXSSModule
 
 def select_modules(args) -> list:
     selected = []
@@ -62,6 +63,12 @@ def select_modules(args) -> list:
                 target_params=sxss_target_params if sxss_target_params else None,
             )
         )
+    if args.type in ("reflected_xss", "all"):
+        selected.append(
+            ReflectedXSSModule(
+                evasion_level=args.rxss_evasion_level
+            )
+        )    
 
     return selected
 
