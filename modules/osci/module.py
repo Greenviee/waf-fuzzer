@@ -129,7 +129,7 @@ class OSCiModule(BaseModule):
         # Level 1: 공백 우회
         if level >= 1:
             if t_os == "Unix":
-                value = value.replace(" ", "$IFS")
+                value = value.replace(" ", "${IFS}")
             else:
                 # Windows CMD/PHP 환경에서는 쉼표(,) 우회 사용, PowerShell은 제외
                 if "PS" not in action_level:
@@ -138,8 +138,8 @@ class OSCiModule(BaseModule):
         # Level 2: 키워드 난독화
         if level >= 2:
             if t_os == "Unix":
-                value = value.replace("echo", "ec\\ho")
-                value = value.replace("cat", "c\\at")
+                value = value.replace("echo", "e'c'ho")
+                value = value.replace("cat", "c'a't")
             else:
                 value = value.replace("echo", "ec^ho")
                 value = value.replace("set", "s^et")
